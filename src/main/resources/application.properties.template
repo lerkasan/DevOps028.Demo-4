@@ -2,9 +2,9 @@ spring.freemarker.template-loader-path: classpath:/templates
 spring.freemarker.suffix: .ftl
 logging.level.root=info
 server.port=9000
-spring.datasource.url=jdbc:postgresql://%DB_HOST%:5432/auradb
-spring.datasource.username=aura
-spring.datasource.password=mysecretpassword
+spring.datasource.url=jdbc:postgresql://%DB_HOST%:%DB_PORT%/%DB_NAME%
+spring.datasource.username=%DB_USER%
+spring.datasource.password=%DB_PASS%
 spring.datasource.driver-class-name=org.postgresql.Driver
 spring.jpa.hibernate.ddl-auto=validate
 jwtTokenCookieName=JWT-TOKEN
