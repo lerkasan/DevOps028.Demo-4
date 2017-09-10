@@ -1,0 +1,39 @@
+database_location: vagrant
+# alternative database_location: aws_rds
+# aws_rds: auradb.co7bbd9vzwhv.us-west-2.rds.amazonaws.com
+
+db_host: ansible_all_ipv4_addresses[0]
+
+db:
+  port: 5432
+  name: auradb
+  user: aura
+  password: mysecretpassword
+  allowed_lan: "{{ db_host }}/24"
+
+app_props:
+  path: /home/ubuntu/demo1/src/main/resources
+  template: "{{ app_props.path }}/application.properties.template.j2"
+  properties: "{{ app_props.path }}/application.properties"
+
+liquibase:
+  path: /home/ubuntu/demo1/liquibase
+  bin_dir: liquibase/bin
+  template: "{{ liquibase.path }}/liquibase.properties.template.j2"
+  properties: "{{ liquibase.path }}/liquibase.properties"
+  download_url: "https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.5.3/liquibase-3.5.3-bin.tar.gz"
+
+s3:
+  bucket_name: ansible-demo1
+  aws_region: us-west-2
+  retries: 20
+  jdk_filename: jdk-8u144-linux-x64.tar.gz
+
+project_dir: /home/ubuntu/demo1
+
+package_manager: apt
+
+jdk:
+  path: /usr/lib/jvm/idk8
+
+postgres_jdbc_driver_url: "https://jdbc.postgresql.org/download/postgresql-42.1.4.jar"

@@ -1,0 +1,9 @@
+driver: org.postgresql.Driver
+url: jdbc:postgresql://{{ db_host }}:{{ db.port }}/{{ db.name }}
+username: {{ db.user }}
+password: {{ db.password }}
+
+changeLogFile: /home/ubuntu/demo1/liquibase/changelogs/changelog-main.xml
+
+# specifies packages where entities are and database dialect, used for liquibase:diff command
+referenceUrl: hibernate:spring:academy.softserve.aura.core.entity?dialect=org.hibernate.dialect.PostgreSQL9Dialect

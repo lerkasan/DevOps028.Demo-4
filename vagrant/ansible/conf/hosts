@@ -1,0 +1,5 @@
+[ansible_local]
+localhost ansible_connection=local
+
+[ansible_vagrant]
+vagrant_vm ansible_ssh_host=127.0.0.1 ansible_ssh_port=2222

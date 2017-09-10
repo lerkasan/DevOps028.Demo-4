@@ -1,0 +1,197 @@
+- name: Configure developer environment with JDK and PostgreSQL
+  hosts: ansible_vagrant
+  sudo: True
+  vars_files:
+    - ../conf/variables.yml
+    - ../conf/vault.yml
+  tasks:
+    - pip:
+        name: boto3
+
+    - name: Download JDK8 from AWS S3 bucket
+      s3:
+        bucket={{ s3.bucket_name }}
+        region={{ s3.aws_region }}
+        aws_access_key={{ aws_access_key }}
+        aws_secret_key={{ aws_secret_key }}
+        object={{ s3.jdk_filename }}
+        dest={{ project_dir }}/jdk8.tar.gz
+        mode=get
+        retries={{ s3.retries }}
+
+    - name: Create directory for extracted JDK8
+      file:
+        path={{ jdk.path }}
+        state=directory
+
+    - name: Extract downloaded JDK8 tar.gz archive
+      unarchive:
+        src: {{ project_dir }}/jdk8.tar.gz
+        dest: {{ jdk.path }}
+
+    - name: Add JAVA_HOME variable to /etc/environment file
+      lineinfile:
+        path: /etc/environment
+        regexp: '^JAVA_HOME'
+        line: 'JAVA_HOME={{ jdk.path }}'
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Reload environment variables file
+      shell: "source /etc/environment"
+
+    - name: Make java from downloaded JDK8 prime alternative with the highest priority
+      alternatives:
+        name: java
+        path: {{ jdk.path }}/bin/java
+        priority: 30000
+
+    - name: Make javac from downloaded JDK8 prime alternative with the highest priority
+      alternatives:
+        name: javac
+        path: {{ jdk.path }}/bin/javac
+        priority: 30000
+
+    - name: Install Maven, PostgreSQL, Python-Pip and MC
+      apt: pkg={{ package_manager }} update_cache=yes cache_valid_time=3600
+      with_items:
+        - maven
+        - postgresql
+        - python-pip
+        - mc
+
+    - name: Obtain database URL from AWS RDS
+      rds:
+        command=facts
+        instance_name=auradb
+        region=us-west-2
+        aws_access_key={{ aws_access_key }}
+        aws_secret_key={{ aws_secret_key }}
+      register: rds_facts
+      until: not(rds_facts.instance.endpoint is none)
+      retries: 20
+      delay: 30
+      when: '"vagrant" not in {{ database_location }}'
+
+    - name: Set database URL from AWS RDS as db_host variable
+      set_fact:
+        db_host: "{{ rds_facts.instance.endpoint }}"
+
+    - name: Generate application.properties from template using database endpoint variables
+      template: src={{ app_props.template }} dest={{ app_props.properties }}
+        mode=0644
+
+    - name: Generate liquibase.properties from template using database endpoint variables
+      template: src={{ liquibase.template }} dest={{ liquibase.properties }}
+        mode=0644
+
+    - name: Find PostgreSQL postgresql.conf configuration file path
+      command: "find /etc/postgresql -name 'postgresql.conf'"
+      register: postgres_conf_path
+      when: '"vagrant" in {{ database_location }}'
+
+    - name: Find PostgreSQL pg_hba.conf configuration file path
+      command: "find /etc/postgresql -name 'pg_hba.conf'"
+      register: pg_hba_path
+      when: '"vagrant" in {{ database_location }}'
+
+    - name: Add vagrant private_network IP-address as PostgreSQL listen_address
+      lineinfile:
+        path: {{ postgres_conf_path.stdout }}
+        regexp: '^#listen_address = '
+        line: "listen_address = '{{ db_host }}, 127.0.0.1'"
+        owner: postgres
+        group: postgres
+        mode: 0644
+      when: '"vagrant" in {{ database_location }}'
+
+    - name: Add custom port as PostgreSQL listen_port
+      lineinfile:
+        path: {{ postgres_conf_path.stdout }}
+        regexp: '^port = 5432'
+        line: "port = {{ db.port }}"
+        owner: postgres
+        group: postgres
+        mode: 0644
+      when: '"vagrant" in {{ database_location }}'
+
+    - name: Add permission for DB_USER to connect to DB_NAME from host machine by IP from vagrant private_network
+      lineinfile:
+        path: {{ pg_hba_path.stdout }}
+        insertafter: EOF
+        line: "host \t {{ db.name }} \t {{ db.user }} \t {{ db.allowed_lan }} \t md5"
+        owner: postgres
+        group: postgres
+        mode: 0644
+      when: '"vagrant" in {{ database_location }}'
+
+    - name: Restart PostgreSQL
+      service: name=postgresql state=restarted
+
+    - name: Create PostgreSQL database
+      postgresql_db:
+        name: {{ db.name }}
+        encoding: UTF-8
+        lc_collate: en_US.UTF-8
+        lc_ctype: en_US.UTF-8
+
+    - name: Create user for database connectivity
+      postgresql_user:
+        db: {{ db.name }}
+        name: {{ db.user }}
+        password: {{ db.password }}
+        priv: "ALL"
+
+    - name: Create directory where liquibase binaries will be downloaded
+      file: path={{ liquibase.bin_dir }} state=directory
+
+    - name: Download Liquibase binaries
+      get_url:
+        url: {{ liquibase.download_url }}
+        dest: {{ project_dir }}/{{ liquibase.bin_dir }}/liquibase-bin.tar.gz
+        mode: 0440
+        register: liquibase_download_status
+        retries: 10
+        delay: 15
+        until: liquibase_download_status|succeeded
+
+    - name: Report error if there was a connectivity problem while downloading Liquibase binaries
+      fail:
+        msg: 'Unable to download {{liquibase.download_url}}: {{liquibase_download_status.response|default(liquibase_download_status.msg)}}'
+      when: not liquibase_download_status|succeeded
+
+    - name: Extract downloaded Liquibase binaries from tar.gz archive
+      unarchive:
+        src: {{ project_dir }}/{{ liquibase.bin_dir }}/liquibase-bin.tar.gz
+        dest: {{ project_dir }}/{{ liquibase.bin_dir }}
+
+    - name: Download PostgreSQL JDBC driver
+      get_url:
+        url: {{ postgres_jdbc_driver_url }}
+        dest: {{ project_dir }}/{{ liquibase.bin_dir }}/lib/postgresql-jdbc-driver.jar
+        mode: 0440
+      register: jdbc_driver_download_status
+      retries: 10
+      delay: 15
+      until: jdbc_driver_download_status|succeeded
+
+    - name: Report error if there was a connectivity problem while downloading PostgreSQL JDBC driver
+      fail:
+        msg: 'Unable to download {{postgres_jdbc_driver_url}}: {{jdbc_driver_download_status.response|default(jdbc_driver_download_status.msg)}}'
+      when: not jdbc_driver_download_status|succeeded
+
+    - name: Symlink liquibase.properties files to Liquibase binary directory
+      file:
+        src: {{ project_dir }}/{{ liquibase.bin_dir }}/../liquibase.properties
+        dest: {{ project_dir }}/{{ liquibase.bin_dir }}/liquibase.properties
+        state: link
+
+    - name: Update database using Liquibase
+      command: "{{ project_dir }}/{{ liquibase.bin_dir }}/liquibase update"
+
+    - name: Create jar artifact using maven package
+      command: chdir={{ project_dir }} "mvn clean package"
+
+    - name: Run Java appliation
+      command: "java -jar {{ project_dir }}/*.jar"

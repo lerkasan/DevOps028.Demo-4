@@ -82,4 +82,9 @@ persistence/
 dataSources
 .ideaDataSources
 /src/main/resources/constants.properties
+
 .directory
+*.tar.gz
+*.retry
+.vault_pass
+/vagrant/ansible/conf/vault.yml

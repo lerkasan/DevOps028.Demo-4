@@ -1,0 +1,13 @@
+- name: Configure developer environment with JDK and PostgreSQL
+  hosts: ansible_vagrant
+  sudo: True
+  vars_files:
+    - ../conf/variables.yml
+    - ../conf/vault.yml
+  tasks:
+
+    - name: Create jar artifact using maven package
+      command: chdir={{ project_dir }} "mvn clean package"
+
+    - name: Run Java appliation
+      command: "java -jar {{ project_dir }}/*.jar"
