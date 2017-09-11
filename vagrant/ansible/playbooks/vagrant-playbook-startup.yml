@@ -3,11 +3,11 @@
   sudo: True
   vars_files:
     - ../conf/variables.yml
-    - ../conf/vault.yml
+ #  - ../conf/vault.yml
   tasks:
-
     - name: Create jar artifact using maven package
-      command: chdir={{ project_dir }} "mvn clean package"
+      # command: chdir={{ project_dir }} "mvn clean package"
+      shell: "cd {{ project_dir }} && mvn clean package"
 
     - name: Run Java appliation
-      command: "java -jar {{ project_dir }}/*.jar"
+      shell: "java -jar {{ project_dir }}/target/*.jar"

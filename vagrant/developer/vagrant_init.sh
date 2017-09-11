@@ -11,7 +11,7 @@ sudo apt-get -y dist-upgrade
 echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
 echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
 sudo apt-get -qq -y install oracle-java8-set-default
-sudo apt-get -y install maven postgresql python-pip mc
+sudo apt-get -y install maven postgresql python python-pip mc
 sudo pip install --upgrade pip
 sudo pip install ansible boto boto3 awscli
 

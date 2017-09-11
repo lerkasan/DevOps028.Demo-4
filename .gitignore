@@ -87,4 +87,4 @@ dataSources
 *.tar.gz
 *.retry
 .vault_pass
-/vagrant/ansible/conf/vault.yml
+vault.yml
