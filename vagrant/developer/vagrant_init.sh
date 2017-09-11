@@ -3,6 +3,11 @@
 export LC_ALL="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 
+export PROJECT_DIR="/home/ubuntu/demo1"
+export LIQUIBASE_BIN_DIR="liquibase/bin"
+export LIQUIBASE_URL="https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.5.3/liquibase-3.5.3-bin.tar.gz"
+export POSTGRES_JDBC_DRIVER_URL="https://jdbc.postgresql.org/download/postgresql-42.1.4.jar"
+
 # Install Java JDK8, Maven, PostgreSQL, Python-PIP, Ansible, Boto3, AWS-cli
 sudo add-apt-repository ppa:webupd8team/java
 sudo apt-get update
@@ -19,7 +24,7 @@ sudo pip install ansible boto boto3 awscli
 source "${PROJECT_DIR}/vagrant/developer/global_environment.sh"
 
 # Change listen address binding to Vagrant ethernet interface to provide host machine connectivity to postgres through forwarded port
-if [ `echo ${DB_HOST} | grep -v amazon` = "" ]; then
+if [[ -z `echo ${DB_HOST} | grep amazon` ]]; then
     POSTGRES_CONF_PATH=`find /etc/postgresql -name "postgresql.conf"`
     sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '${DB_HOST}, 127.0.0.1'/g" ${POSTGRES_CONF_PATH}
     sudo sed -i "s/port = 5432/port = ${DB_PORT}/g" ${POSTGRES_CONF_PATH}

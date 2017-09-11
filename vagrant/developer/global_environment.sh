@@ -3,11 +3,6 @@
 export JAVA_HOME="/usr/lib/jvm/java-8-oracle"
 export M2_HOME="/usr/share/maven"
 
-export PROJECT_DIR="/home/ubuntu/demo1"
-export LIQUIBASE_BIN_DIR="liquibase/bin"
-export LIQUIBASE_URL="https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.5.3/liquibase-3.5.3-bin.tar.gz"
-export POSTGRES_JDBC_DRIVER_URL="https://jdbc.postgresql.org/download/postgresql-42.1.4.jar"
-
 export DB_NAME="auradb"
 export DB_USER="aura"
 export DB_PASS="mysecretpassword"
