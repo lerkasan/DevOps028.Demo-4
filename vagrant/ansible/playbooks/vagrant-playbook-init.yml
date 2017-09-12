@@ -1,7 +1,9 @@
 - name: Configure developer environment with JDK and PostgreSQL
 #  hosts: ansible_vagrant
   hosts: all
-  sudo: True
+  become: yes
+  become_user: root
+#  sudo: True
   vars_files:
     - ../conf/variables.yml
     - ../conf/vault.yml

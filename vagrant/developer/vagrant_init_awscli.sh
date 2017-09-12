@@ -3,10 +3,15 @@
 export LC_ALL="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 
-export PROJECT_DIR="/home/ubuntu/demo1"
-export LIQUIBASE_BIN_DIR="liquibase/bin"
-export LIQUIBASE_URL="https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.5.3/liquibase-3.5.3-bin.tar.gz"
-export POSTGRES_JDBC_DRIVER_URL="https://jdbc.postgresql.org/download/postgresql-42.1.4.jar"
+PROJECT_DIR="/home/ubuntu/demo1"
+LIQUIBASE_BIN_DIR="liquibase/bin"
+LIQUIBASE_URL="https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.5.3/liquibase-3.5.3-bin.tar.gz"
+POSTGRES_JDBC_DRIVER_URL="https://jdbc.postgresql.org/download/postgresql-42.1.4.jar"
+
+BUCKET_NAME="ansible-demo1"
+LIQUIBASE_FILENAME="liquibase-3.5.3-bin.tar.gz"
+POSTGRES_JDBC_DRIVER_FILENAME="postgresql-42.1.4.jar"
+DOWNLOAD_RETRIES=5
 
 # Install Java JDK8, Maven, PostgreSQL, Python-PIP, Ansible, Boto3, AWS-cli
 sudo add-apt-repository ppa:webupd8team/java
@@ -21,7 +26,7 @@ sudo pip install --upgrade pip
 sudo pip install awscli
 
 # Export global variables
-source "${PROJECT_DIR}/vagrant/developer/global_environment.sh"
+source "${PROJECT_DIR}/vagrant/developer/global_environment_awscli.sh"
 
 # Change listen address binding to Vagrant ethernet interface to provide host machine connectivity to postgres through forwarded port
 if [[ -z `echo ${DB_HOST} | grep amazon` ]]; then
@@ -45,11 +50,26 @@ sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} to ${DB_US
 # -- Exceptions are server responses CONNECTIONS_REFUSED and NOT_FOUND - in these cases wget will not retry download
 mkdir -p ${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}
 if [ ! -e "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz" ]; then
-    wget "${LIQUIBASE_URL}" -O "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz"
-    tar -xzf "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz" -C ${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}
+#   wget "${LIQUIBASE_URL}" -O "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz"
+    until [  ${DOWNLOAD_RETRIES} -lt 0 ] || [ -e "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz" ]; do
+        aws s3 cp "s3://${BUCKET_NAME}/liquibase-3.5.3-bin.tar.gz" "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz"
+        let "DOWNLOAD_RETRIES--"
+        sleep 15
+    done
+
+    if [ -e "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz" ]; then
+        tar -xzf "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz" -C ${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}
+    fi
 fi
+
 if [ ! -e "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/lib/postgresql-jdbc-driver.jar" ]; then
-    wget "${POSTGRES_JDBC_DRIVER_URL}" -O "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/lib/postgresql-jdbc-driver.jar"
+#   wget "${POSTGRES_JDBC_DRIVER_URL}" -O "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/lib/postgresql-jdbc-driver.jar"
+    let DOWNLOAD_RETRIES=5
+    until [  ${DOWNLOAD_RETRIES} -lt 0 ] || [ -e "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/lib/postgresql-jdbc-driver.jar" ]; do
+        aws s3 cp "s3://${BUCKET_NAME}/postgresql-42.1.4.jar" "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/lib/postgresql-jdbc-driver.jar"
+        let "DOWNLOAD_RETRIES--"
+        sleep 15
+    done
 fi
 
 # Update database using Liquibase
@@ -62,4 +82,3 @@ fi
 echo "*********** INSTALLATION FINISHED. ************"
 # sudo reboot
 
-source "${PROJECT_DIR}/vagrant/developer/vagrant_startup.sh"
