@@ -57,8 +57,6 @@ sudo yum -y install python-pip mc
 pip install --upgrade pip
 pip install awscli
 
-echo ${AWS_ACCESS_KEY_ID}
-echo ${AWS_SECRET_ACCESS_KEY}
 # Create database and db_user
 EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port]' --output text | grep ${DB_INSTANCE_ID}`
 if [[ -z ${EXISTING_DB_INSTANCE_INFO} ]]; then
