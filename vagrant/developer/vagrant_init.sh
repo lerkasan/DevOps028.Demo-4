@@ -3,11 +3,6 @@
 export LC_ALL="en_US.UTF-8"
 export LC_CTYPE="en_US.UTF-8"
 
-export PROJECT_DIR="/home/ubuntu/demo1"
-export LIQUIBASE_BIN_DIR="liquibase/bin"
-export LIQUIBASE_URL="https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.5.3/liquibase-3.5.3-bin.tar.gz"
-export POSTGRES_JDBC_DRIVER_URL="https://jdbc.postgresql.org/download/postgresql-42.1.4.jar"
-
 # Install Java JDK8, Maven, PostgreSQL, Python-PIP, Ansible, Boto3, AWS-cli
 sudo add-apt-repository ppa:webupd8team/java
 sudo apt-get update
@@ -43,21 +38,24 @@ sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} to ${DB_US
 # Download Liquibase binaries and PostgreSQL JDBC driver
 # -- by default wget makes 20 tries to download file if there is an error response from server (or use --tries=40 to increase retries amount).
 # -- Exceptions are server responses CONNECTIONS_REFUSED and NOT_FOUND - in these cases wget will not retry download
-mkdir -p ${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}
-if [ ! -e "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz" ]; then
-    wget "${LIQUIBASE_URL}" -O "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz"
-    tar -xzf "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz" -C ${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}
+mkdir -p ${LIQUIBASE_BIN_DIR}
+if [ ! -e "${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz" ]; then
+    wget "${LIQUIBASE_URL}" -O "${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz"
+    tar -xzf "${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz" -C ${LIQUIBASE_BIN_DIR}
 fi
-if [ ! -e "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/lib/postgresql-jdbc-driver.jar" ]; then
-    wget "${POSTGRES_JDBC_DRIVER_URL}" -O "${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}/lib/postgresql-jdbc-driver.jar"
+if [ ! -e "${LIQUIBASE_BIN_DIR}/lib/postgresql-jdbc-driver.jar" ]; then
+    wget "${POSTGRES_JDBC_DRIVER_URL}" -O "${LIQUIBASE_BIN_DIR}/lib/postgresql-jdbc-driver.jar"
 fi
 
 # Update database using Liquibase
-cd ${PROJECT_DIR}/${LIQUIBASE_BIN_DIR}
-if [ ! -e liquibase.properties ]; then
-    ln -s ../liquibase.properties liquibase.properties
-fi
-./liquibase update
+#cd ${LIQUIBASE_BIN_DIR}
+#if [ ! -e liquibase.properties ]; then
+#    ln -s ../liquibase.properties liquibase.properties
+#fi
+#./liquibase update
+
+cd ${LIQUIBASE_BIN_DIR}
+./liquibase --changeLogFile=../changelogs/changelog-main.xml --defaultsFile=../liquibase.properties update
 
 echo "*********** INSTALLATION FINISHED. ************"
 # sudo reboot

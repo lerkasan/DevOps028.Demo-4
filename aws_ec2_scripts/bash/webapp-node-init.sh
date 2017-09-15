@@ -4,6 +4,7 @@ set -e
 export AWS_ACCESS_KEY_ID="---------------CHANGE_ME---------------"
 export AWS_SECRET_ACCESS_KEY="-----------CHANGE_ME---------------"
 export AWS_DEFAULT_REGION="us-west-2"
+
 export DB_NAME="auradb"
 export DB_USER="aura"
 export DB_PASS="mysecretpassword"
@@ -52,8 +53,9 @@ function download_from_s3 {
 
 # Install Python-PIP, AWS-cli
 sudo yum -y update
+sudo yum -y install python-pip mc
 pip install --upgrade pip
-sudo yum -y install mc
+pip install awscli
 
 # Create database and db_user
 EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port]' --output text | grep ${DB_INSTANCE_ID}`
