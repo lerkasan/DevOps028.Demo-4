@@ -23,6 +23,10 @@ JDK_FILENAME="jdk-8u144-linux-x64.tar.gz"
 JDK_URL="s3://${BUCKET_NAME}/${JDK_FILENAME}"
 JDK_DOWNLOAD_DIR="/usr/lib/jvm/downloaded"
 
+MAVEN_FILENAME="apache-maven-3.5.0-bin.tar.gz"
+MAVEN_URL="s3://${BUCKET_NAME}/${MAVEN_FILENAME}"
+MAVEN_DOWNLOAD_DIR="/home/${OS_USERNAME}"
+
 LIQUIBASE_PATH="${PROJECT_DIR}/liquibase"
 LIQUIBASE_BIN_DIR="${LIQUIBASE_PATH}/bin"
 LIQUIBASE_PROPERTIES_TEMPLATE="${LIQUIBASE_PATH}/liquibase.properties.template"
@@ -50,20 +54,37 @@ function download_from_s3 {
 }
 
 # Install Python-Pip, Git, Maven, PostgreSQL, AWS cli
+#sudo wget http://repos.fedorapeople.org/repos/dchen/apache-maven/epel-apache-maven.repo -O /etc/yum.repos.d/epel-apache-maven.repo
+#sudo sed -i s/\$releasever/6/g /etc/yum.repos.d/epel-apache-maven.repo
+
 sudo yum -y update
-sudo yum -y install python-pip git maven postgresql-server mc
-pip install --upgrade pip
-pip install awscli
+sudo yum -y install python-pip git mc #postgresql-server
+sudo `which pip` install --upgrade pip
+sudo `which pip` install awscli
 
 # Change listen address binding to ethernet interface
-POSTGRES_CONF_PATH=`find /etc/postgresql -name "postgresql.conf"`
-sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '${DB_HOST}, 127.0.0.1'/g" ${POSTGRES_CONF_PATH}
-sudo sed -i "s/port = 5432/port = ${DB_PORT}/g" ${POSTGRES_CONF_PATH}
+# sudo su - postgres
+# POSTGRES_CONF_DIR=`pwd`
+# logout
+
+POSTGRES_CONF_DIR=`sudo find /var/lib -name "pgsql*" | sort -u | tail -n 1`
+POSTGRES_SAMPLE_CONF_DIR=`sudo find /usr/share -name "pgsql*" | sort -u | tail -n 1`
+
+#POSTGRES_CONF_PATH="${POSTGRES_CONF_DIR}/postgresql.conf" # /var/lib/psql92 -конфиги, /usr/share/psql92
+#POSTGRES_SAMPLE_CONF_DIR="`echo ${POSTGRES_CONF_DIR} | sed "s/var\/lib/usr\/share/g"`"
+sudo cp "${POSTGRES_SAMPLE_CONF_DIR}/postgresql.conf.sample" "${POSTGRES_CONF_DIR}/postgresql.conf"
+sudo chown postgres:postgres "${POSTGRES_CONF_DIR}/postgresql.conf"
+sudo chmod -R 777 "${POSTGRES_CONF_DIR}"
+sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '${DB_HOST}, 127.0.0.1'/g" "${POSTGRES_CONF_DIR}/postgresql.conf"
+sudo sed -i "s/port = 5432/port = ${DB_PORT}/g" "${POSTGRES_CONF_DIR}/postgresql.conf"
 
 # Add permission for DB_USER to connect to DB_NAME from host machine by IP from vagrant private_network
-PG_HBA_PATH=`find /etc/postgresql -name "pg_hba.conf"`
-sudo echo -e "host \t ${DB_NAME} \t ${DB_USER} \t\t ${ALLOWED_LAN} \t\t md5" >> ${PG_HBA_PATH}
-service postgresql restart
+sudo cp "${POSTGRES_SAMPLE_CONF_DIR}/pg_hba.conf.sample" "${POSTGRES_CONF_DIR}/pg_hba.conf"
+sudo chown postgres:postgres "${POSTGRES_CONF_DIR}/pg_hba.conf"
+sudo chmod -R 777 "${POSTGRES_CONF_DIR}"
+sudo echo -e "host \t ${DB_NAME} \t ${DB_USER} \t\t ${ALLOWED_LAN} \t\t md5" >> "${POSTGRES_CONF_DIR}/pg_hba.conf"
+sudo service postgresql initdb
+sudo service postgresql restart
 
 # Create database and db_user
 sudo -u postgres createdb ${DB_NAME}
@@ -90,6 +111,12 @@ sudo alternatives --install /usr/bin/java java "${JAVA_HOME}/bin/java" 3
 sudo alternatives --install /usr/bin/javac javac "${JAVA_HOME}/bin/javac" 3
 sudo alternatives --set java "${JAVA_HOME}/bin/java"
 sudo alternatives --set javac "${JAVA_HOME}/bin/javac"
+
+
+
+# wget http://mirror.olnevhost.net/pub/apache/maven/binaries/apache-maven-3.2.1-bin.tar.gz
+# sudo tar xzf apache-maven-3.2.1-bin.tar.gz -C /usr/local
+# sudo ln -s /usr/local/apache-maven-3.2.1 maven
 
 # Upload Liquibase changelog to AWS S3
 if [ -e "${PROJECT_DIR}/${LIQUIBASE_CHANGELOG_FILENAME}" ]; then

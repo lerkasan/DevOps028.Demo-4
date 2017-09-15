@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-set -e
+#set -e
 
-export AWS_ACCESS_KEY_ID="---------------CHANGE_ME---------------"
+export AWS_ACCESS_KEY_ID="------------CHANGE_ME---------------"
 export AWS_SECRET_ACCESS_KEY="-----------CHANGE_ME---------------"
 export AWS_DEFAULT_REGION="us-west-2"
 
@@ -57,11 +57,12 @@ sudo yum -y install python-pip mc
 pip install --upgrade pip
 pip install awscli
 
+echo ${AWS_ACCESS_KEY_ID}
+echo ${AWS_SECRET_ACCESS_KEY}
 # Create database and db_user
 EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port]' --output text | grep ${DB_INSTANCE_ID}`
 if [[ -z ${EXISTING_DB_INSTANCE_INFO} ]]; then
-    aws rds create-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --db-instance-class ${DB_INSTANCE_CLASS} --engine ${DB_ENGINE} --allocated-storage 5 --db-name ${DB_NAME} --master-username ${DB_USER} --master-user-password ${DB_PASS}
-    aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
+    aws rds create-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --db-instance-class ${DB_INSTANCE_CLASS} --engine ${DB_ENGINE} --backup-retention-period 0 --allocated-storage 5 --db-name ${DB_NAME} --master-username ${DB_USER} --master-user-password ${DB_PASS}
 fi
 EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port]' --output text | grep ${DB_INSTANCE_ID}`
 export DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
@@ -114,6 +115,8 @@ sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" ${LIQUIBASE_PROPERTIES_TEMPLATE} |
     sed "s/%DB_NAME%/${DB_NAME}/g" |
     sed "s/%DB_USER%/${DB_USER}/g" |
     sed "s/%DB_PASS%/${DB_PASS}/g" > ${LIQUIBASE_PROPERTIES}
+
+aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
 
 cd ${LIQUIBASE_BIN_DIR}
 ./liquibase --changeLogFile=../changelogs/changelog-main.xml --defaultsFile=../liquibase.properties update
