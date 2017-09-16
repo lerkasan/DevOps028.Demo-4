@@ -95,7 +95,7 @@
     - name: Obtain database URL from AWS RDS
       rds:
         command=facts
-        instance_name={{ db.name }}
+        instance_name={{ db.instance }}
         region={{ s3.aws_region }}
         aws_access_key={{ aws_access_key }}
         aws_secret_key={{ aws_secret_key }}

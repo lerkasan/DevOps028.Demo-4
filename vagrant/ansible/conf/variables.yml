@@ -6,6 +6,7 @@ vagrant_ip: "{{ ansible_all_ipv4_addresses[0] }}"
 db_host: "{{ ansible_all_ipv4_addresses[0] }}"
 
 db:
+  instance: demo1
   port: 5432
   name: auradb
   user: aura
