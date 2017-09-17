@@ -43,7 +43,7 @@ function download_from_s3 {
     until [ ${RETRIES} -lt 0 ] || [ -e "$2" ]; do
         aws s3 cp $1 $2
         let "RETRIES--"
-        sleep 10
+        sleep 5
     done
     if [ ! -e "$2" ]; then
         echo "An error occurred during downloading file by URL $1"
@@ -53,7 +53,8 @@ function download_from_s3 {
 
 # Install Python-PIP, AWS-cli
 sudo yum -y update
-sudo yum -y install python-pip mc
+sudo yum -y install epel-release
+sudo yum -y install python python-pip mc
 pip install --upgrade pip
 pip install awscli
 

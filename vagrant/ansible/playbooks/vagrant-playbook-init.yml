@@ -1,9 +1,8 @@
 - name: Configure developer environment with JDK and PostgreSQL
-#  hosts: ansible_vagrant
+# hosts: ansible_vagrant
   hosts: all
   become: yes
   become_user: root
-#  sudo: True
   vars_files:
     - ../conf/variables.yml
     - ../conf/vault.yml
@@ -40,12 +39,6 @@
         dest: "{{ jdk.path }}"
         remote_src: yes
 
-  #  - name: Extract downloaded JDK8 tar.gz archive
-  #    command: "tar -xzf {{ files_dir }}/jdk8.tar.gz -C {{ jdk.path }}"
-
-  #  - name: Remove downloaded JDK8 tar.gz archive
-  #    file: path='{{ files_dir }}/jdk8.tar.gz' state=absent
-
     - name: Find exact to extracted JDK
       shell: "find '{{ jdk.path }}' -name java | grep -v openjdk | head -n 1 | rev | cut -c 10- | rev"
       register: jdk_home
@@ -64,9 +57,6 @@
         owner: root
         group: root
         mode: 0644
-
-  #  - name: Reload environment variables file
-  #    shell: "source /etc/environment"
 
     - name: Install Maven, PostgreSQL, Python-Pip and MC
       apt: pkg={{ item }} update_cache=yes cache_valid_time=3600
@@ -204,15 +194,6 @@
         url: "{{ liquibase.download_url }}"
         dest: "{{ liquibase.bin_dir }}/liquibase-bin.tar.gz"
         mode: 0440
-      #  register: liquibase_download_status
-      #  retries: 10
-      #  delay: 15
-      #  until: liquibase_download_status|succeeded
-
-  #  - name: Report error if there was a connectivity problem while downloading Liquibase binaries
-  #    fail:
-  #      msg: 'Unable to download {{liquibase.download_url}}: {{liquibase_download_status.response|default(liquibase_download_status.msg)}}'
-  #    when: not liquibase_download_status|succeeded
 
     - name: Extract downloaded Liquibase binaries from tar.gz archive
       unarchive:

@@ -51,7 +51,7 @@ function download_from_s3 {
     until [ ${RETRIES} -lt 0 ] || [ -e "$2" ]; do
         aws s3 cp $1 $2
         let "RETRIES--"
-        sleep 10
+        sleep 5
     done
     if [ ! -e "$2" ]; then
         echo "An error occurred during downloading file by URL $1"

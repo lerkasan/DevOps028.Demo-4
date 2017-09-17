@@ -36,10 +36,10 @@ sudo -u postgres psql -c "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASS}';"
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} to ${DB_USER};"
 
 # Download Liquibase binaries and PostgreSQL JDBC driver
-# -- by default wget makes 20 tries to download file if there is an error response from server (or use --tries=40 to increase retries amount).
-# -- Exceptions are server responses CONNECTIONS_REFUSED and NOT_FOUND - in these cases wget will not retry download
 mkdir -p ${LIQUIBASE_BIN_DIR}
 if [ ! -e "${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz" ]; then
+# -- by default wget makes 20 tries to download file if there is an error response from server (or use --tries=40 to increase retries amount).
+# -- Exceptions are server responses CONNECTIONS_REFUSED and NOT_FOUND - in these cases wget will not retry download
 #   wget "${LIQUIBASE_URL}" -O "${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz"
     until [  ${DOWNLOAD_RETRIES} -lt 0 ] || [ -e "${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz" ]; do
         aws s3 cp "s3://${BUCKET_NAME}/liquibase-3.5.3-bin.tar.gz" "${LIQUIBASE_BIN_DIR}/liquibase-bin.tar.gz"
@@ -65,11 +65,6 @@ fi
 # Update database using Liquibase
 cd ${LIQUIBASE_BIN_DIR}
 ./liquibase --changeLogFile=../changelogs/changelog-main.xml --defaultsFile=../liquibase.properties update
-#cd ${LIQUIBASE_BIN_DIR}
-#if [ ! -e liquibase.properties ]; then
-#    ln -s ../liquibase.properties liquibase.properties
-#fi
-#./liquibase update
 
 echo "*********** INSTALLATION FINISHED. ************"
 
