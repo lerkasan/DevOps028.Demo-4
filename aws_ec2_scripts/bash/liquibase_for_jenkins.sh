@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+export AWS_ACCESS_KEY_ID="---------------CHANGE_ME---------------"
+export AWS_SECRET_ACCESS_KEY="-----------CHANGE_ME---------------"
+export AWS_DEFAULT_REGION="us-west-2"
+
 DB_INSTANCE_ID="demo1"
 export DB_NAME="auradb"
 export DB_USER="aura"
