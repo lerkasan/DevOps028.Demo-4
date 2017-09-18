@@ -14,12 +14,12 @@ export DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
 export DB_PORT=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $3}'`
 
 BUCKET_NAME="ansible-demo1"
-LIQUIBASE_BIN_DIR="liquibase/bin"
+LIQUIBASE_BIN_DIR="${WORKSPACE}/liquibase/bin"
 LIQUIBASE_FILENAME="liquibase-3.5.3-bin.tar.gz"
 LIQUIBASE_URL="s3://${BUCKET_NAME}/${LIQUIBASE_FILENAME}"
-LIQUIBASE_PROPERTIES_TEMPLATE="liquibase/liquibase.properties.template"
-LIQUIBASE_PROPERTIES="liquibase/liquibase.properties"
-APP_PROPERTIES="src/resources/application.properties"
+LIQUIBASE_PROPERTIES_TEMPLATE="${WORKSPACE}/liquibase/liquibase.properties.template"
+LIQUIBASE_PROPERTIES="${WORKSPACE}/liquibase/liquibase.properties"
+APP_PROPERTIES="${WORKSPACE}/src/resources/application.properties"
 APP_PROPERTIES_TEMPLATE="${APP_PROPERTIES}.template"
 
 POSTGRES_JDBC_DRIVER_FILENAME="postgresql-42.1.4.jar"
@@ -80,6 +80,7 @@ cd ${WORKSPACE}
 sed -i "s/<name>Samsara<\/name>/<name>Samsara<\/name><packaging>war<\/packaging>/g" pom.xml
 mvn clean package
 ARTIFACT_FILENAME=`ls target | grep war | grep -v original`
+echo "Tomcat URL = ${TOMCAT_HOST}:8080"
 
 # Deploy Java application to remote Tomcat
 curl "http://${TOMCAT_USER}:${TOMCAT_PASSWORD}@${TOMCAT_HOST}:8080/manager/text/undeploy?path=/"
