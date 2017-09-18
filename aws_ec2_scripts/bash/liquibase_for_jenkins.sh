@@ -27,7 +27,7 @@ POSTGRES_JDBC_DRIVER_URL="s3://${BUCKET_NAME}/${POSTGRES_JDBC_DRIVER_FILENAME}"
 
 DOWNLOAD_RETRIES=5
 
-TOMCAT_USER="tomadm"
+TOMCAT_USER="tomcat"
 TOMCAT_PASSWORD="Rn7xU3kD2t"
 export TOMCAT_HOST=`aws ec2 describe-instances --filters "Name=tag:Name,Values=tomcat" --query 'Reservations[*].Instances[*].[PublicDnsName,Tags[*]]'  --output text | grep amazon`
 
@@ -83,7 +83,7 @@ ARTIFACT_FILENAME=`ls target | grep war | grep -v original`
 
 # Deploy Java application to remote Tomcat
 curl "http://${TOMCAT_USER}:${TOMCAT_PASSWORD}@${TOMCAT_HOST}:8080/manager/text/undeploy?path=/"
-curl "http://${TOMCAT_USER}:${TOMCAT_PASSWORD}@${TOMCAT_HOST}:8080/manager/text/deploy?path=/&war=file:target/${ARTIFACT_FILENAME}"
+curl "http://${TOMCAT_USER}:${TOMCAT_PASSWORD}@${TOMCAT_HOST}:8080/manager/text/deploy?path=/&war=file:${WORKSPACE}/target/${ARTIFACT_FILENAME}"
 
 # Run Java application
 # java -jar ../target/*.jar

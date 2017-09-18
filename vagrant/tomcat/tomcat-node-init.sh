@@ -74,13 +74,13 @@ sudo groupadd tomcat
 sudo useradd -M -s /bin/nologin -g tomcat -d ${TOMCAT_INSTALL_DIR} tomcat
 #sudo chgrp -R tomcat ${TOMCAT_INSTALL_DIR}
 sudo chown -R tomcat:tomcat ${TOMCAT_INSTALL_DIR}
-sudo chmod 750 -R ${TOMCAT_INS/etc/systemd/system/tomcat.serviceTALL_DIR}
+sudo chmod -R 750 ${TOMCAT_INSTALL_DIR}
 TOMCAT_STARTUP=`sudo find ${TOMCAT_INSTALL_DIR} -name "startup.sh"`
 
 mkdir ${TEMP_DIR}
 # Set root context for webapp in context.xml
 echo "<?xml version='1.0' encoding='utf-8'?>" > ${TEMP_DIR}/context.xml
-echo "<Context path="" docBase="Samsara-1.3.5.RELEASE.war" debug="0" reloadable="true"></Context>" >> ${TEMP_DIR}/context.xml
+echo '<Context path="" docBase="Samsara-1.3.5.RELEASE.war" debug="0" reloadable="true"></Context>' >> ${TEMP_DIR}/context.xml
 # Maybe it's better to use name Samsara.war and rename war-file after mvn clean package???
 sudo cp "${TEMP_DIR}/context.xml" "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/context.xml"
 sudo chmod 750 "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/context.xml"
@@ -89,15 +89,15 @@ sudo chown tomcat "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/co
 # Add user for curl deploy to tomcat-users.xml
 echo "<?xml version='1.0' encoding='utf-8'?>" > ${TEMP_DIR}/tomcat-users.xml
 echo '<tomcat-users xmlns="http://tomcat.apache.org/xml"' >> ${TEMP_DIR}/tomcat-users.xml
-echo ' \t\t         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' >> ${TEMP_DIR}/tomcat-users.xml
-echo ' \t\t         xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd" version="1.0">' >> ${TEMP_DIR}/tomcat-users.xml
-echo ' \t <role rolename="admin"/>' >> ${TEMP_DIR}/tomcat-users.xml
-echo ' \t <role rolename="admin-gui"/>' >> ${TEMP_DIR}/tomcat-users.xml
-echo ' \t <role rolename="manager"/>' >> ${TEMP_DIR}/tomcat-users.xml
-echo ' \t <role rolename="manager-gui"/>' >> ${TEMP_DIR}/tomcat-users.xml
-echo ' \t <role rolename="manager-script"/>' >> ${TEMP_DIR}/tomcat-users.xml
-echo ' \t <user username="tomadm" password="Rn7xU3kD2t" roles="admin,admin-gui,manager,manager-gui,manager-script" />' >> ${TEMP_DIR}/tomcat-users.xml
-echo ' \t </tomcat-users>' >> ${TEMP_DIR}/tomcat-users.xml
+echo '          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"' >> ${TEMP_DIR}/tomcat-users.xml
+echo '          xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd" version="1.0">' >> ${TEMP_DIR}/tomcat-users.xml
+echo '    <role rolename="admin"/>' >> ${TEMP_DIR}/tomcat-users.xml
+echo '    <role rolename="admin-gui"/>' >> ${TEMP_DIR}/tomcat-users.xml
+echo '    <role rolename="manager"/>' >> ${TEMP_DIR}/tomcat-users.xml
+echo '    <role rolename="manager-gui"/>' >> ${TEMP_DIR}/tomcat-users.xml
+echo '    <role rolename="manager-script"/>' >> ${TEMP_DIR}/tomcat-users.xml
+echo '    <user username="tomcat" password="Rn7xU3kD2t" roles="admin,admin-gui,manager,manager-gui,manager-script" />' >> ${TEMP_DIR}/tomcat-users.xml
+echo '</tomcat-users>' >> ${TEMP_DIR}/tomcat-users.xml
 sudo cp "${TEMP_DIR}/tomcat-users.xml" "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/tomcat-users.xml"
 sudo chmod 750 "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/tomcat-users.xml"
 sudo chown tomcat "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/tomcat-users.xml"
@@ -130,6 +130,7 @@ echo "" >> ${TEMP_DIR}/tomcat.service
 echo "[Install]" >> ${TEMP_DIR}/tomcat.service
 echo "WantedBy=multi-user.target" >> ${TEMP_DIR}/tomcat.service
 
+sudo rm -rf "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/webapps/ROOT/*"
 sudo cp ${TEMP_DIR}/tomcat.service /etc/systemd/system/tomcat.service
 sudo systemctl daemon-reload
 sudo systemctl start tomcat
