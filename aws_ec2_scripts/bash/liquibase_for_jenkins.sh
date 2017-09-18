@@ -83,8 +83,9 @@ ARTIFACT_FILENAME=`ls target | grep war | grep -v original`
 echo "Tomcat URL = ${TOMCAT_HOST}:8080"
 
 # Deploy Java application to remote Tomcat
+scp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ec2-user@${TOMCAT_HOST}:/home/ec2-user/ROOT.war
 curl "http://${TOMCAT_USER}:${TOMCAT_PASSWORD}@${TOMCAT_HOST}:8080/manager/text/undeploy?path=/"
-curl "http://${TOMCAT_USER}:${TOMCAT_PASSWORD}@${TOMCAT_HOST}:8080/manager/text/deploy?path=/&war=file:${WORKSPACE}/target/${ARTIFACT_FILENAME}"
+curl "http://${TOMCAT_USER}:${TOMCAT_PASSWORD}@${TOMCAT_HOST}:8080/manager/text/deploy?path=/&war=file:/home/ec2-user/ROOT.war"
 
 # Run Java application
 # java -jar ../target/*.jar

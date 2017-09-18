@@ -72,19 +72,21 @@ fi
 # Create user, group and change permissions
 sudo groupadd tomcat
 sudo useradd -M -s /bin/nologin -g tomcat -d ${TOMCAT_INSTALL_DIR} tomcat
-#sudo chgrp -R tomcat ${TOMCAT_INSTALL_DIR}
-sudo chown -R tomcat:tomcat ${TOMCAT_INSTALL_DIR}
-sudo chmod -R 750 ${TOMCAT_INSTALL_DIR}
 TOMCAT_STARTUP=`sudo find ${TOMCAT_INSTALL_DIR} -name "startup.sh"`
 
 mkdir ${TEMP_DIR}
+# Make changes to tomcat_dir/webapp/manager/META-INF/context.xml to allow deploy through tomcat manager from different IP
+sudo cp ${TOMCAT_INSTALL_DIR}/webapps/manager/META-INF/context.xml ${TEMP_DIR}/context.xml
+grep -v -e "Valve" -e "allow=" ${TEMP_DIR}/context.xml > ${TEMP_DIR}/context.xml
+sudo cp ${TEMP_DIR}/context.xml ${TOMCAT_INSTALL_DIR}/webapps/manager/META-INF/context.xml
+
 # Set root context for webapp in context.xml
-echo "<?xml version='1.0' encoding='utf-8'?>" > ${TEMP_DIR}/context.xml
-echo '<Context path="" docBase="Samsara-1.3.5.RELEASE.war" debug="0" reloadable="true"></Context>' >> ${TEMP_DIR}/context.xml
+#echo "<?xml version='1.0' encoding='utf-8'?>" > ${TEMP_DIR}/context.xml
+#echo '<Context path="" docBase="Samsara-1.3.5.RELEASE.war" debug="0" reloadable="true"></Context>' >> ${TEMP_DIR}/context.xml
 # Maybe it's better to use name Samsara.war and rename war-file after mvn clean package???
-sudo cp "${TEMP_DIR}/context.xml" "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/context.xml"
-sudo chmod 750 "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/context.xml"
-sudo chown tomcat "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/context.xml"
+#sudo cp "${TEMP_DIR}/context.xml" "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/context.xml"
+#sudo chmod 750 "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/context.xml"
+#sudo chown tomcat "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/context.xml"
 
 # Add user for curl deploy to tomcat-users.xml
 echo "<?xml version='1.0' encoding='utf-8'?>" > ${TEMP_DIR}/tomcat-users.xml
@@ -99,8 +101,8 @@ echo '    <role rolename="manager-script"/>' >> ${TEMP_DIR}/tomcat-users.xml
 echo '    <user username="tomcat" password="Rn7xU3kD2t" roles="admin,admin-gui,manager,manager-gui,manager-script" />' >> ${TEMP_DIR}/tomcat-users.xml
 echo '</tomcat-users>' >> ${TEMP_DIR}/tomcat-users.xml
 sudo cp "${TEMP_DIR}/tomcat-users.xml" "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/tomcat-users.xml"
-sudo chmod 750 "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/tomcat-users.xml"
-sudo chown tomcat "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/tomcat-users.xml"
+#sudo chmod 750 "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/tomcat-users.xml"
+#sudo chown tomcat "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/tomcat-users.xml"
 
 #Add tomcat to start up
 echo "# description: Tomcat Start Stop Restart Status" > ${TEMP_DIR}/tomcat
@@ -126,6 +128,10 @@ echo "status)" >> ${TEMP_DIR}/tomcat
 echo "ps -ef | grep tomcat" >> ${TEMP_DIR}/tomcat
 echo "esac" >> ${TEMP_DIR}/tomcat
 echo "exit 0" >> ${TEMP_DIR}/tomcat
+
+#sudo chgrp -R tomcat ${TOMCAT_INSTALL_DIR}
+sudo chown -R tomcat:tomcat ${TOMCAT_INSTALL_DIR}
+sudo chmod -R 750 ${TOMCAT_INSTALL_DIR}
 
 # Ansible template config file is much better!!!
 #echo "# Systemd unit file for tomcat" > ${TEMP_DIR}/tomcat.service
@@ -161,7 +167,7 @@ sudo chkconfig --add tomcat
 sudo chkconfig --level 234 tomcat on
 sudo chkconfig --list tomcat
 
-sudo rm -rf "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/webapps/ROOT/*"
+#sudo rm -rf "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/webapps/ROOT/*"
 sudo service tomcat restart
 #sudo cp ${TEMP_DIR}/tomcat.service /etc/systemd/system/tomcat.service
 #sudo systemctl daemon-reload
