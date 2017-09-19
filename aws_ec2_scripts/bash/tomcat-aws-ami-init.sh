@@ -17,6 +17,7 @@ TOMCAT_VERSION="8.5.20"
 TOMCAT_FILENAME="apache-tomcat-${TOMCAT_VERSION}.tar.gz"
 TOMCAT_URL="s3://${BUCKET_NAME}/${TOMCAT_FILENAME}"
 TOMCAT_INSTALL_DIR="/usr/local/tomcat"
+TOMCAT_HOME="${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}"
 TEMP_DIR="tmp"
 
 DOWNLOAD_DIR="/home/${OS_USERNAME}/${DEMO_DIR}/download"
@@ -76,17 +77,9 @@ TOMCAT_STARTUP=`sudo find ${TOMCAT_INSTALL_DIR} -name "startup.sh"`
 
 mkdir ${TEMP_DIR}
 # Make changes to tomcat_dir/webapp/manager/META-INF/context.xml to allow deploy through tomcat manager from different IP
-sudo cp ${TOMCAT_INSTALL_DIR}/webapps/manager/META-INF/context.xml ${TEMP_DIR}/context.xml
+sudo cp ${TOMCAT_HOME}/webapps/manager/META-INF/context.xml ${TEMP_DIR}/context.xml
 grep -v -e "Valve" -e "allow=" ${TEMP_DIR}/context.xml > ${TEMP_DIR}/context.xml
-sudo cp ${TEMP_DIR}/context.xml ${TOMCAT_INSTALL_DIR}/webapps/manager/META-INF/context.xml
-
-# Set root context for webapp in context.xml
-#echo "<?xml version='1.0' encoding='utf-8'?>" > ${TEMP_DIR}/context.xml
-#echo '<Context path="" docBase="Samsara-1.3.5.RELEASE.war" debug="0" reloadable="true"></Context>' >> ${TEMP_DIR}/context.xml
-# Maybe it's better to use name Samsara.war and rename war-file after mvn clean package???
-#sudo cp "${TEMP_DIR}/context.xml" "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/context.xml"
-#sudo chmod 750 "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/context.xml"
-#sudo chown tomcat "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/context.xml"
+sudo cp ${TEMP_DIR}/context.xml ${TOMCAT_HOME}/webapps/manager/META-INF/context.xml
 
 # Add user for curl deploy to tomcat-users.xml
 echo "<?xml version='1.0' encoding='utf-8'?>" > ${TEMP_DIR}/tomcat-users.xml
@@ -100,9 +93,7 @@ echo '    <role rolename="manager-gui"/>' >> ${TEMP_DIR}/tomcat-users.xml
 echo '    <role rolename="manager-script"/>' >> ${TEMP_DIR}/tomcat-users.xml
 echo '    <user username="tomcat" password="Rn7xU3kD2t" roles="admin,admin-gui,manager,manager-gui,manager-script" />' >> ${TEMP_DIR}/tomcat-users.xml
 echo '</tomcat-users>' >> ${TEMP_DIR}/tomcat-users.xml
-sudo cp "${TEMP_DIR}/tomcat-users.xml" "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/tomcat-users.xml"
-#sudo chmod 750 "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/tomcat-users.xml"
-#sudo chown tomcat "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/conf/tomcat-users.xml"
+sudo cp "${TEMP_DIR}/tomcat-users.xml" "${TOMCAT_HOME}/conf/tomcat-users.xml"
 
 #Add tomcat to start up
 echo "# description: Tomcat Start Stop Restart Status" > ${TEMP_DIR}/tomcat
@@ -112,7 +103,7 @@ echo "JAVA_HOME=${JAVA_HOME}" >> ${TEMP_DIR}/tomcat
 echo "export JAVA_HOME" >> ${TEMP_DIR}/tomcat
 echo "PATH=$JAVA_HOME/bin:$PATH" >> ${TEMP_DIR}/tomcat
 echo "export PATH" >> ${TEMP_DIR}/tomcat
-echo "CATALINA_HOME=${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}" >> ${TEMP_DIR}/tomcat
+echo "CATALINA_HOME=${TOMCAT_HOME}" >> ${TEMP_DIR}/tomcat
 echo 'case $1 in' >> ${TEMP_DIR}/tomcat
 echo "start)" >> ${TEMP_DIR}/tomcat
 echo 'sh ${CATALINA_HOME}/bin/startup.sh' >> ${TEMP_DIR}/tomcat
@@ -129,37 +120,8 @@ echo "ps -ef | grep tomcat" >> ${TEMP_DIR}/tomcat
 echo "esac" >> ${TEMP_DIR}/tomcat
 echo "exit 0" >> ${TEMP_DIR}/tomcat
 
-#sudo chgrp -R tomcat ${TOMCAT_INSTALL_DIR}
 sudo chown -R tomcat:tomcat ${TOMCAT_INSTALL_DIR}
 sudo chmod -R 750 ${TOMCAT_INSTALL_DIR}
-
-# Ansible template config file is much better!!!
-#echo "# Systemd unit file for tomcat" > ${TEMP_DIR}/tomcat.service
-#echo "[Unit]" >> ${TEMP_DIR}/tomcat.service
-#echo "Description=Apache Tomcat Web Application Container" >> ${TEMP_DIR}/tomcat.service
-#echo "After=syslog.target network.target" >> ${TEMP_DIR}/tomcat.service
-#echo "" >> ${TEMP_DIR}/tomcat.service
-#echo "[Service]" >> ${TEMP_DIR}/tomcat.service
-#echo "Type=forking" >> ${TEMP_DIR}/tomcat.service
-#echo "" >> ${TEMP_DIR}/tomcat.service
-#echo "Environment=JAVA_HOME=${JAVA_HOME}" >> ${TEMP_DIR}/tomcat.service
-#echo "Environment=CATALINA_PID=${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/temp/tomcat.pid" >> ${TEMP_DIR}/tomcat.service
-#echo "Environment=CATALINA_HOME=${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}" >> ${TEMP_DIR}/tomcat.service
-#echo "Environment=CATALINA_BASE=${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}" >> ${TEMP_DIR}/tomcat.service
-#echo "Environment='CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC'" >> ${TEMP_DIR}/tomcat.service
-#echo "Environment='JAVA_OPTS=-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom'" >> ${TEMP_DIR}/tomcat.service
-#echo "" >> ${TEMP_DIR}/tomcat.service
-#echo "ExecStart=${TOMCAT_STARTUP}" >> ${TEMP_DIR}/tomcat.service
-#echo "ExecStop=/bin/kill -15 $MAINPID" >> ${TEMP_DIR}/tomcat.service
-#echo "" >> ${TEMP_DIR}/tomcat.service
-#echo "User=tomcat" >> ${TEMP_DIR}/tomcat.service
-#echo "Group=tomcat" >> ${TEMP_DIR}/tomcat.service
-#echo "UMask=0007" >> ${TEMP_DIR}/tomcat.service
-#echo "RestartSec=10" >> ${TEMP_DIR}/tomcat.service
-#echo "Restart=always" >> ${TEMP_DIR}/tomcat.service
-#echo "" >> ${TEMP_DIR}/tomcat.service
-#echo "[Install]" >> ${TEMP_DIR}/tomcat.service
-#echo "WantedBy=multi-user.target" >> ${TEMP_DIR}/tomcat.service
 
 sudo cp ${TEMP_DIR}/tomcat /etc/init.d/tomcat
 sudo chmod 755 /etc/init.d/tomcat
@@ -167,8 +129,9 @@ sudo chkconfig --add tomcat
 sudo chkconfig --level 234 tomcat on
 sudo chkconfig --list tomcat
 
-#sudo rm -rf "${TOMCAT_INSTALL_DIR}/apache-tomcat-${TOMCAT_VERSION}/webapps/ROOT/*"
+sudo rm -rf "${TOMCAT_HOME}/webapps/ROOT"
 sudo service tomcat restart
-#sudo cp ${TEMP_DIR}/tomcat.service /etc/systemd/system/tomcat.service
-#sudo systemctl daemon-reload
-#sudo systemctl start tomcat
+
+echo "----------------------------------------INSTALLATION FINISHED -------------------------------------------"
+echo "-------------- PLEASE COPY JENKINS PUBLIC SSH KEY TO /home/ec2-user/.ssh/authorized_keys ----------------"
+

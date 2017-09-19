@@ -71,7 +71,7 @@ POSTGRES_CONF_DIR="${POSTGRES_CONF_UP}/data"
 POSTGRES_SAMPLE_CONF_DIR=`sudo find /usr/share -name "pgsql*" | sort -u | head -n 1`
 
 export PGDATA=${POSTGRES_CONF_DIR}
-if [[ -z `sudo ls -lh "${POSTGRES_CONF_UP}" | grep data ` ]]; then
+if [ `sudo ls -lh "${POSTGRES_CONF_UP}/data" | wc -l` -eq 1 ]; then
     sudo service postgresql initdb
 fi
 
