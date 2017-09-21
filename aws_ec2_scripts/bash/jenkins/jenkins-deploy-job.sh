@@ -44,14 +44,18 @@ TOMCAT_INSTANCE_ID=`aws ec2 run-instances --count 1 --instance-type ${TOMCAT_INS
     --security-group-ids ${TOMCAT_SECURITY_GROUP} --user-data "file://${TOMCAT_USERDATA_FILE_PATH}" \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=tomcat}]" --iam-instance-profile Name=${TOMCAT_IAM} \
     --disable-api-termination | grep INSTANCES | awk '{print $7}'`
+    aws ec2 wait instance-running --instance-ids ${TOMCAT_INSTANCE_ID}
     aws ec2 wait instance-status-ok --instance-ids ${TOMCAT_INSTANCE_ID} --filters "Name=instance-status.reachability,Values=passed"
+    sleep 180
 else
     # Start tomcat instance if needed
     TOMCAT_STATE=`echo ${TOMCAT_INSTANCE_INFO} | awk '{print $1}'`
     TOMCAT_INSTANCE_ID=`echo ${TOMCAT_INSTANCE_INFO} | awk '{print $2}'`
     if [[ ${TOMCAT_STATE} == "stopped" ]]; then
         aws ec2 start-instances --instance-ids ${TOMCAT_INSTANCE_ID}
+        aws ec2 wait instance-running --instance-ids ${TOMCAT_INSTANCE_ID}
         aws ec2 wait instance-status-ok --instance-ids ${TOMCAT_INSTANCE_ID} --filters "Name=instance-status.reachability,Values=passed"
+        sleep 180
     fi
 fi
 export TOMCAT_HOST=`aws ec2 describe-instances --instance-ids ${TOMCAT_INSTANCE_ID} --filters "Name=tag:Name,Values=tomcat" --query 'Reservations[*].Instances[*].[State.Name,InstanceId,PublicDnsName]'  --output text | awk '{print $3}' | grep -v -e terminated -e shutting-down | grep amazon`

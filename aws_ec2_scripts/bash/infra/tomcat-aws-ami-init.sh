@@ -96,7 +96,7 @@ echo '    <role rolename="admin-gui"/>' >> ${TEMP_DIR}/tomcat-users.xml
 echo '    <role rolename="manager"/>' >> ${TEMP_DIR}/tomcat-users.xml
 echo '    <role rolename="manager-gui"/>' >> ${TEMP_DIR}/tomcat-users.xml
 echo '    <role rolename="manager-script"/>' >> ${TEMP_DIR}/tomcat-users.xml
-echo '    <user username="${TOMCAT_USER}" password="${TOMCAT_PASSWORD}" roles="admin,admin-gui,manager,manager-gui,manager-script" />' >> ${TEMP_DIR}/tomcat-users.xml
+echo "    <user username=\"${TOMCAT_USER}\" password=\"${TOMCAT_PASSWORD}\" roles=\"admin,admin-gui,manager,manager-gui,manager-script\" />" >> ${TEMP_DIR}/tomcat-users.xml
 echo '</tomcat-users>' >> ${TEMP_DIR}/tomcat-users.xml
 sudo cp "${TEMP_DIR}/tomcat-users.xml" "${TOMCAT_HOME}/conf/tomcat-users.xml"
 
