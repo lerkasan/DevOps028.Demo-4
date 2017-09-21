@@ -69,12 +69,19 @@ if [[ -z `echo ${DB_SOURCE} | grep -v localhost` ]]; then
 
 else
     # Create database at RDS
-    EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port]' --output text | grep ${DB_INSTANCE_ID}`
+    EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text | grep ${DB_INSTANCE_ID}`
     if [[ -z ${EXISTING_DB_INSTANCE_INFO} ]]; then
-        aws rds create-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --db-instance-class ${DB_INSTANCE_CLASS} --engine ${DB_ENGINE} --backup-retention-period 0 --storage-type standard --allocated-storage 5 --db-name ${DB_NAME} --master-username ${DB_USER} --master-user-password ${DB_PASS}
+        aws rds create-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --db-instance-class ${DB_INSTANCE_CLASS} --engine ${DB_ENGINE} --backup-retention-period 0 --storage-type gp2 --allocated-storage 5 --db-name ${DB_NAME} --master-username ${DB_USER} --master-user-password ${DB_PASS}
         aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
     fi
-    EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port]' --output text | grep ${DB_INSTANCE_ID}`
+    EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text | grep ${DB_INSTANCE_ID}`
+
+    # Start database instance if needed
+    DB_STATUS=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $4}'`
+    if [[ ${DB_STATUS} == "stopped" ]]; then
+        aws rds start-db-instance --db-instance-identifier ${DB_INSTANCE_ID}
+        aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
+    fi
     export DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
     export DB_PORT=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $3}'`
 fi

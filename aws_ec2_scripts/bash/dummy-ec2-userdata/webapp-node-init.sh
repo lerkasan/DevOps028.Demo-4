@@ -1,13 +1,30 @@
 #!/usr/bin/env bash
 #set -e
 
-export AWS_ACCESS_KEY_ID="------------CHANGE_ME---------------"
-export AWS_SECRET_ACCESS_KEY="-----------CHANGE_ME---------------"
-export AWS_DEFAULT_REGION="us-west-2"
+function get_from_parameter_store {
+    aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
+}
 
-export DB_NAME="auradb"
-export DB_USER="aura"
-export DB_PASS="mysecretpassword"
+function download_from_s3 {
+    let RETRIES=$3
+    until [ ${RETRIES} -lt 0 ] || [ -e "$2" ]; do
+        aws s3 cp $1 $2
+        let "RETRIES--"
+        sleep 5
+    done
+    if [ ! -e "$2" ]; then
+        echo "An error occurred during downloading file by URL $1"
+        exit 1
+    fi
+}
+
+export AWS_DEFAULT_REGION="us-west-2"
+export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "SECRET_ACCESS_KEY"`
+export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
+
+export DB_NAME=`get_from_parameter_store "DB_NAME"`
+export DB_USER=`get_from_parameter_store "DB_USER"`
+export DB_PASS=`get_from_parameter_store "DB_PASS"`
 export LOGIN_HOST="localhost"
 
 DB_INSTANCE_ID="demo1"
@@ -38,19 +55,6 @@ POSTGRES_JDBC_DRIVER_URL="s3://${BUCKET_NAME}/${POSTGRES_JDBC_DRIVER_FILENAME}"
 
 DOWNLOAD_RETRIES=5
 
-function download_from_s3 {
-    let RETRIES=$3
-    until [ ${RETRIES} -lt 0 ] || [ -e "$2" ]; do
-        aws s3 cp $1 $2
-        let "RETRIES--"
-        sleep 5
-    done
-    if [ ! -e "$2" ]; then
-        echo "An error occurred during downloading file by URL $1"
-        exit 1
-    fi
-}
-
 # Install Python-PIP, AWS-cli
 sudo yum -y update
 sudo yum -y install epel-release
@@ -58,13 +62,20 @@ sudo yum -y install python python-pip mc
 pip install --upgrade pip
 pip install awscli
 
-# Create database and db_user
-EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port]' --output text | grep ${DB_INSTANCE_ID}`
+# Create database instance if needed
+EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text | grep ${DB_INSTANCE_ID}`
 if [[ -z ${EXISTING_DB_INSTANCE_INFO} ]]; then
-    aws rds create-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --db-instance-class ${DB_INSTANCE_CLASS} --engine ${DB_ENGINE} --backup-retention-period 0 --storage-type standard --allocated-storage 5 --db-name ${DB_NAME} --master-username ${DB_USER} --master-user-password ${DB_PASS}
+    aws rds create-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --db-instance-class ${DB_INSTANCE_CLASS} --engine ${DB_ENGINE} --backup-retention-period 0 --storage-type gp2 --allocated-storage 5 --db-name ${DB_NAME} --master-username ${DB_USER} --master-user-password ${DB_PASS}
     aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
 fi
-EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port]' --output text | grep ${DB_INSTANCE_ID}`
+EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text | grep ${DB_INSTANCE_ID}`
+
+# Start database instance if needed
+DB_STATUS=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $4}'`
+if [[ ${DB_STATUS} == "stopped" ]]; then
+    aws rds start-db-instance --db-instance-identifier ${DB_INSTANCE_ID}
+    aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
+fi
 export DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
 export DB_PORT=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $3}'`
 
