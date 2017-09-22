@@ -136,7 +136,3 @@ sudo chkconfig --list tomcat
 
 sudo rm -rf "${TOMCAT_HOME}/webapps/ROOT"
 sudo service tomcat restart
-
-export DB_NAME="auradbname"
-export DB_HOST="somehost"
-export DB_PORT=5432
