@@ -39,7 +39,7 @@
         dest: "{{ jdk.path }}"
         remote_src: yes
 
-    - name: Find exact to extracted JDK
+    - name: Find exactc path to extracted JDK
       shell: "find '{{ jdk.path }}' -name java | grep -v openjdk | head -n 1 | rev | cut -c 10- | rev"
       register: jdk_home
 
