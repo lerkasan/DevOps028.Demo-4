@@ -134,5 +134,6 @@ sudo chkconfig --add tomcat
 sudo chkconfig --level 234 tomcat on
 sudo chkconfig --list tomcat
 
+# Delete default start page Tomcat web application from root context
 sudo rm -rf "${TOMCAT_HOME}/webapps/ROOT"
 sudo service tomcat restart
