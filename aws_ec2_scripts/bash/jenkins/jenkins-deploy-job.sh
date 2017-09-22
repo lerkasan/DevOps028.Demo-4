@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#set -e
 
 function get_from_parameter_store {
     aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
@@ -36,11 +35,10 @@ TOMCAT_USERDATA_FILE_PATH="${WORKSPACE}/aws_ec2_scripts/bash/infra/tomcat-aws-am
 TOMCAT_IAM="demo1"
 
 # Create tomcat instance if needed
-TOMCAT_INSTANCE_INFO=`aws ec2 describe-instances --filters "Name=tag:Name,Values=tomcat" --query 'Reservations[*].Instances[*].[State.Name,InstanceId,PublicDnsName]'  --output text | grep -v -e terminated -e shutting-down`
+TOMCAT_INSTANCE_INFO=`aws ec2 describe-instances --filters "Name=tag:Name,Values=tomcat" \
+--query 'Reservations[*].Instances[*].[State.Name,InstanceId,PublicDnsName]' --output text | grep -v -e terminated -e shutting-down`
 if [[ -z ${TOMCAT_INSTANCE_INFO} ]]; then
-    #aws ec2 create-instance --instance-type ${TOMCAT_INSTANCE_TYPE} --os ${TOMCAT_OS} --availability-zone ${TOMCAT_AVAIL_ZONE} --root-device-type "ebs" --virtualization-type "hvm" --ssh-key-name ${TOMCAT_SSH_KEY_NAME} --install-updates-on-boot
-
-TOMCAT_INSTANCE_ID=`aws ec2 run-instances --count 1 --instance-type ${TOMCAT_INSTANCE_TYPE} --image-id ${TOMCAT_AMI} --key-name ${TOMCAT_SSH_KEY_NAME} \
+    TOMCAT_INSTANCE_ID=`aws ec2 run-instances --count 1 --instance-type ${TOMCAT_INSTANCE_TYPE} --image-id ${TOMCAT_AMI} --key-name ${TOMCAT_SSH_KEY_NAME} \
     --security-group-ids ${TOMCAT_SECURITY_GROUP} --user-data "file://${TOMCAT_USERDATA_FILE_PATH}" \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=tomcat}]" --iam-instance-profile Name=${TOMCAT_IAM} \
     --disable-api-termination | grep INSTANCES | awk '{print $7}'`
@@ -58,15 +56,11 @@ else
         sleep 180
     fi
 fi
-export TOMCAT_HOST=`aws ec2 describe-instances --instance-ids ${TOMCAT_INSTANCE_ID} --filters "Name=tag:Name,Values=tomcat" --query 'Reservations[*].Instances[*].[State.Name,InstanceId,PublicDnsName]'  --output text | awk '{print $3}' | grep -v -e terminated -e shutting-down | grep amazon`
+export TOMCAT_HOST=`aws ec2 describe-instances --instance-ids ${TOMCAT_INSTANCE_ID} --filters "Name=tag:Name,Values=tomcat" \
+--query 'Reservations[*].Instances[*].[State.Name,InstanceId,PublicDnsName]'  --output text | awk '{print $3}' | grep -v -e terminated -e shutting-down | grep amazon`
 
-# Create database instance if needed
-EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text | grep ${DB_INSTANCE_ID}`
-if [[ -z ${EXISTING_DB_INSTANCE_INFO} ]]; then
-    aws rds create-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --db-instance-class ${DB_INSTANCE_CLASS} --engine ${DB_ENGINE} --backup-retention-period 0 --storage-type gp2 --allocated-storage 5 --db-name ${DB_NAME} --master-username ${DB_USER} --master-user-password ${DB_PASS}
-    aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
-fi
-EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text | grep ${DB_INSTANCE_ID}`
+EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
+--query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
 
 # Start database instance if needed
 DB_STATUS=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $4}'`
@@ -85,6 +79,8 @@ sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" ${LIQUIBASE_PROPERTIES_TEMPLATE} |
     sed "s/%DB_NAME%/${DB_NAME}/g" |
     sed "s/%DB_USER%/${DB_USER}/g" |
     sed "s/%DB_PASS%/${DB_PASS}/g" > ${LIQUIBASE_PROPERTIES}
+
+echo "Database URL ${DB_HOST}:${DB_PORT}"
 
 cd ${LIQUIBASE_BIN_DIR}
 ./liquibase --changeLogFile=../changelogs/changelog-main.xml --defaultsFile=../liquibase.properties update
