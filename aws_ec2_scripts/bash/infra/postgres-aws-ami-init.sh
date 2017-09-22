@@ -53,7 +53,7 @@ POSTGRES_JDBC_DRIVER_URL="s3://${BUCKET_NAME}/${POSTGRES_JDBC_DRIVER_FILENAME}"
 DOWNLOAD_DIR="/home/${OS_USERNAME}/${DEMO_DIR}/download"
 DOWNLOAD_RETRIES=5
 
-# Install Python-Pip, Git, PostgreSQL, AWS cli
+# Install Python-Pip, PostgreSQL, AWS cli
 sudo yum -y update
 sudo yum -y install epel-release
 sudo yum -y install python python-pip postgresql-server mc

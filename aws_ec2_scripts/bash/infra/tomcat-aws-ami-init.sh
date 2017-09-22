@@ -42,7 +42,7 @@ TEMP_DIR="/home/${OS_USERNAME}/tmp"
 DOWNLOAD_DIR="/home/${OS_USERNAME}/${DEMO_DIR}/download"
 DOWNLOAD_RETRIES=5
 
-# Install Python-Pip, Git, PostgreSQL, AWS cli
+# Install Python-Pip, AWS cli
 sudo yum -y update
 sudo yum -y install epel-release
 sudo yum -y install python python-pip mc
