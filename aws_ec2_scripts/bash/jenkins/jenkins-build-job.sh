@@ -114,6 +114,7 @@ export DB_USER=`get_from_parameter_store "DB_USER"`
 export DB_PASS=`get_from_parameter_store "DB_PASS"`
 export LOGIN_HOST="localhost"
 TEST_DB_INSTANCE_ID="demo1-test"
+DB_INSTANCE_ID="demo1-test"
 
 APP_PROPERTIES="${WORKSPACE}/src/main/resources/application.properties"
 APP_PROPERTIES_TEMPLATE="${APP_PROPERTIES}.template"

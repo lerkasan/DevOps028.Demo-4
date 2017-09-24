@@ -13,7 +13,7 @@ export DB_USER=`get_from_parameter_store "DB_USER"`
 export DB_PASS=`get_from_parameter_store "DB_PASS"`
 export LOGIN_HOST="localhost"
 
-DB_INSTANCE_ID="vagrantdemo1"
+DB_INSTANCE_ID="demo1"
 DB_INSTANCE_CLASS="db.t2.micro"
 DB_ENGINE="postgres"
 
@@ -24,6 +24,7 @@ LIQUIBASE_PROPERTIES="${WORKSPACE}/liquibase/liquibase.properties"
 ARTIFACT_FILENAME="ROOT.war"
 TOMCAT_USER=`get_from_parameter_store "TOMCAT_USER"`
 TOMCAT_PASSWORD=`get_from_parameter_store "TOMCAT_PASSWORD"`
+TOMCAT_PORT=8080
 
 TOMCAT_INSTANCE_INFO=`aws ec2 describe-instances --filters "Name=tag:Name,Values=tomcat" \
 --query 'Reservations[*].Instances[*].[State.Name,InstanceId,PublicDnsName]' --output text | grep -v -e terminated -e shutting-down`
