@@ -113,11 +113,7 @@ export DB_NAME=`get_from_parameter_store "DB_NAME"`
 export DB_USER=`get_from_parameter_store "DB_USER"`
 export DB_PASS=`get_from_parameter_store "DB_PASS"`
 export LOGIN_HOST="localhost"
-
 TEST_DB_INSTANCE_ID="demo1-test"
-DB_INSTANCE_ID="demo1"
-DB_INSTANCE_CLASS="db.t2.micro"
-DB_ENGINE="postgres"
 
 APP_PROPERTIES="${WORKSPACE}/src/main/resources/application.properties"
 APP_PROPERTIES_TEMPLATE="${APP_PROPERTIES}.template"
@@ -129,16 +125,7 @@ aws rds stop-db-instance --db-instance-identifier ${TEST_DB_INSTANCE_ID}
 # aws rds delete-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --skip-final-snapshot
 # aws rds wait db-instance-deleted --db-instance-identifier ${DB_INSTANCE_ID}
 
-
-# Create prod database instance if needed
-EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' \
---output text | grep -v -e ${TEST_DB_INSTANCE_ID} -e teminated -e shutting-down | grep ${DB_INSTANCE_ID}`
-if [[ -z ${EXISTING_DB_INSTANCE_INFO} ]]; then
-    echo "Creating database"
-    aws rds create-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --db-instance-class ${DB_INSTANCE_CLASS} --engine ${DB_ENGINE} \
-    --backup-retention-period 0 --storage-type gp2 --allocated-storage 5 --db-name ${DB_NAME} --master-username ${DB_USER} --master-user-password ${DB_PASS}
-    aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
-fi
+# Get prod database parameters
 EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
 --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
 export DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
