@@ -19,9 +19,6 @@ job('demo2-test-and-build') {
             }
         }
     }
-    triggers {
-        githubPush()
-    }
     steps {
         shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-test-step.sh'))
         maven {
@@ -128,6 +125,27 @@ job('demo2-deploy') {
 }
 
 multiJob('demo2') {
+    properties {
+        githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
+    }
+    scm {
+        git {
+            remote {
+                url('https://github.com/lerkasan/DevOps028.git')
+                name('origin')
+            }
+            branch('master')
+            browser {
+                gitWeb('https://github.com/lerkasan/DevOps028.git')
+            }
+            extensions {
+                cleanBeforeCheckout()
+            }
+        }
+    }
+    triggers {
+        githubPush()
+    }
     steps {
         phase('Test and build') {
             continuationCondition('SUCCESSFUL')
