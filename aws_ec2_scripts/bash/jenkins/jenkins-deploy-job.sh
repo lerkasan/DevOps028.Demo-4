@@ -69,3 +69,4 @@ if [[ ${HTTP_CODE} > 399 ]]; then
 	echo "HTTP_RESPONSE_CODE = ${HTTP_CODE}"
 	exit 1
 fi
+echo "Tomcat Webapp HTTP_RESPONSE_CODE = ${HTTP_CODE}"
