@@ -19,7 +19,7 @@ APP_PROPERTIES="${WORKSPACE}/src/main/resources/application.properties"
 APP_PROPERTIES_TEMPLATE="${APP_PROPERTIES}.template"
 
 # Stop test DB instance
-aws rds stop-db-instance --db-instance-identifier ${TEST_DB_INSTANCE_ID}
+# aws rds stop-db-instance --db-instance-identifier ${TEST_DB_INSTANCE_ID}
 
 # Delete test DB instance
 # aws rds delete-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --skip-final-snapshot

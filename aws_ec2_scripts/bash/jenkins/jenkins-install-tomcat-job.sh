@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-#!/usr/bin/env bash
-
 function get_from_parameter_store {
     aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
 }

@@ -1,6 +1,57 @@
 #!groovy
 
-job('demo2-test-and-build') {
+//job('demo2-start-and-connect-slave-nodes') {
+//    scm {
+//        git {
+//            remote {
+//                url('https://github.com/lerkasan/DevOps028.git')
+//                name('origin')
+//            }
+//            branch('jenkins')
+//            browser {
+//                gitWeb('https://bitbucket.org/lerkasan/jenkins-jobdsl')
+//            }
+//            extensions {
+//                cleanBeforeCheckout()
+//            }
+//        }
+//    }
+//    steps {
+//        shell(readFileFromWorkspace('jenkins/job-dsl/start-slave-nodes.sh'))
+//        groovyScriptFile('connect_slave_nodes.groovy')
+//    }
+//    wrappers {
+//        colorizeOutput()
+//        timestamps()
+//    }
+//}
+//
+//job('demo2-stop-slave-nodes') {
+//    scm {
+//        git {
+//            remote {
+//                url('https://github.com/lerkasan/DevOps028.git')
+//                name('origin')
+//            }
+//            branch('jenkins')
+//            browser {
+//                gitWeb('https://bitbucket.org/lerkasan/jenkins-jobdsl')
+//            }
+//            extensions {
+//                cleanBeforeCheckout()
+//            }
+//        }
+//    }
+//    steps {
+//        shell(readFileFromWorkspace('jenkins/job-dsl/stop-slave-nodes.sh'))
+//    }
+//    wrappers {
+//        colorizeOutput()
+//        timestamps()
+//    }
+//}
+
+job('demo2-test') {
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
     }
@@ -20,12 +71,38 @@ job('demo2-test-and-build') {
         }
     }
     steps {
-        shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-test-step.sh'))
+        // shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-test-step.sh'))
         maven {
             goals('clean test')
             mavenInstallation('Maven 3.5.0')
         }
+    }
+    wrappers {
+        colorizeOutput()
+        timestamps()
+    }
+}
 
+job('demo2-build') {
+    properties {
+        githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
+    }
+    scm {
+        git {
+            remote {
+                url('https://github.com/lerkasan/DevOps028.git')
+                name('origin')
+            }
+            branch('master')
+            browser {
+                gitWeb('https://github.com/lerkasan/DevOps028.git')
+            }
+            extensions {
+                cleanBeforeCheckout()
+            }
+        }
+    }
+    steps {
         shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-build-step.sh'))
         maven {
             goals('clean package')
@@ -47,8 +124,20 @@ job('demo2-test-and-build') {
 }
 
 job('demo2-create-prod-rds') {
-    properties {
-        githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
+    scm {
+        git {
+            remote {
+                url('https://github.com/lerkasan/DevOps028.git')
+                name('origin')
+            }
+            branch('jenkins')
+            browser {
+                gitWeb('https://bitbucket.org/lerkasan/jenkins-jobdsl')
+            }
+            extensions {
+                cleanBeforeCheckout()
+            }
+        }
     }
     steps {
         shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-create-rds-step.sh'))
@@ -60,18 +149,15 @@ job('demo2-create-prod-rds') {
 }
 
 job('demo2-install-tomcat') {
-    properties {
-        githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
-    }
     scm {
         git {
             remote {
                 url('https://github.com/lerkasan/DevOps028.git')
                 name('origin')
             }
-            branch('master')
+            branch('jenkins')
             browser {
-                gitWeb('https://github.com/lerkasan/DevOps028.git')
+                gitWeb('https://bitbucket.org/lerkasan/jenkins-jobdsl')
             }
             extensions {
                 cleanBeforeCheckout()
@@ -147,17 +233,29 @@ multiJob('demo2') {
         githubPush()
     }
     steps {
-        phase('Test and build') {
+//        phase('Start and connect ec2 slave nodes') {
+//            continuationCondition('SUCCESSFUL')
+//            phaseJob('demo2-start-and-connect-slave-nodes')
+//        }
+        phase('Test') {
             continuationCondition('SUCCESSFUL')
-            phaseJob('demo2-test-and-build')
+            phaseJob('demo2-test')
         }
-        phase('Create RDS and install Tomcat') {
+        phase('Create RDS, install Tomcat and build war') {
             continuationCondition('SUCCESSFUL')
             phaseJob('demo2-create-prod-rds')
             phaseJob('demo2-install-tomcat')
+            phaseJob('demo2-build')
         }
         phase('Deploy') {
             phaseJob('demo2-deploy')
         }
+//        phase('Stop ec2 slave nodes') {
+//            phaseJob('demo2-stop-slave-nodes')
+//        }
+    }
+    wrappers {
+        colorizeOutput()
+        timestamps()
     }
 }
