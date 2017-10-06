@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -e
 
 function get_from_parameter_store {
     aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
@@ -31,6 +30,7 @@ while [[ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ]] && [ ${RET
     let "RETRIES++"
 done
 if [[ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ]]; then
+    echo "Failure - no RDS database with identifier ${DB_INSTANCE_ID} available."
     exit 1
 fi
 export DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
