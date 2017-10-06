@@ -26,10 +26,19 @@ APP_PROPERTIES_TEMPLATE="${APP_PROPERTIES}.template"
 # aws rds wait db-instance-deleted --db-instance-identifier ${DB_INSTANCE_ID}
 
 # Get prod database parameters
-EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
---query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
+EXISTING_DB_INSTANCE_INFO=""
+MAX_RETRIES_TO_GET_DBINFO=10
+RETRIES=0
+while [ -z "${EXISTING_DB_INSTANCE_INFO}" ] && [ ${RETRIES} -lt ${MAX_RETRIES_TO_GET_DBINFO} ]; do
+    sleep 15
+    EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
+    --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
+    let "RETRIES++"
+done
 export DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
 export DB_PORT=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $3}'`
+
+echo "RDS Endpoint: ${DB_HOST}:${DB_PORT}  Retries: ${RETRIES}"
 
 # Insert database parameters into SpringBoot application.properties
 sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" ${APP_PROPERTIES_TEMPLATE} |

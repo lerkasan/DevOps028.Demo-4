@@ -104,3 +104,4 @@ if [[ ${HTTP_CODE} > 399 ]]; then
 	exit 1
 fi
 echo "Tomcat Webapp HTTP_RESPONSE_CODE = ${HTTP_CODE}"
+echo "Tomcat endpoint: ${TOMCAT_HOST}:${TOMCAT_PORT}"
