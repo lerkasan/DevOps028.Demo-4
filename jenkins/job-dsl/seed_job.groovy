@@ -109,10 +109,11 @@ job('demo2-build') {
             properties(skipTests: true)
             mavenInstallation('Maven 3.5.0')
         }
+        shell('ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep war | grep -v original` && mv ${WORKSPACE}/target/${ARTIFACT_FILENAME} ${WORKSPACE}/target/ROOT.war')
     }
     publishers {
         archiveArtifacts {
-            pattern('target/*.war')
+            pattern('target/ROOT.war')
             pattern('target/*.jar')
             onlyIfSuccessful()
         }
@@ -193,7 +194,7 @@ job('demo2-deploy') {
         }
     }
     steps {
-        copyArtifacts('demo2-test-and-build') {
+        copyArtifacts('demo2-build') {
             includePatterns('*.war', '*.jar')
             targetDirectory('target')
             flatten()

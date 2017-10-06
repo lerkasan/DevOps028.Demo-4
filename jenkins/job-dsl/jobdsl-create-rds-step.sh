@@ -23,13 +23,13 @@ if [[ -z ${EXISTING_DB_INSTANCE_INFO} ]]; then
     aws rds create-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --db-instance-class ${DB_INSTANCE_CLASS} --engine ${DB_ENGINE} \
     --backup-retention-period 0 --storage-type gp2 --allocated-storage 5 --db-name ${DB_NAME} --master-username ${DB_USER} --master-user-password ${DB_PASS}
     aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
-fi
-
-# Start prod database instance if needed
-EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
---query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
-DB_STATUS=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $4}'`
-if [[ ${DB_STATUS} == "stopped" ]]; then
-    aws rds start-db-instance --db-instance-identifier ${DB_INSTANCE_ID}
-    aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
+else
+    # Start prod database instance if needed
+    EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
+    --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
+    DB_STATUS=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $4}'`
+    if [[ ${DB_STATUS} == "stopped" ]]; then
+        aws rds start-db-instance --db-instance-identifier ${DB_INSTANCE_ID}
+        aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
+    fi
 fi
