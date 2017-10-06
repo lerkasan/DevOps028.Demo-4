@@ -5,6 +5,19 @@ function get_from_parameter_store {
     aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
 }
 
+function download_from_s3 {
+    let RETRIES=$3
+    until [ ${RETRIES} -lt 0 ] || [ -e "$2" ]; do
+        aws s3 cp $1 $2
+        let "RETRIES--"
+        sleep 5
+    done
+    if [ ! -e "$2" ]; then
+        echo "An error occurred during downloading file by URL $1"
+        exit 1
+    fi
+}
+
 export AWS_DEFAULT_REGION="us-west-2"
 export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "SECRET_ACCESS_KEY"`
 export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
@@ -18,9 +31,17 @@ DB_INSTANCE_ID="demo1"
 DB_INSTANCE_CLASS="db.t2.micro"
 DB_ENGINE="postgres"
 
+BUCKET_NAME="ansible-demo1"
 LIQUIBASE_BIN_DIR="${WORKSPACE}/liquibase/bin"
+LIQUIBASE_FILENAME="liquibase-3.5.3-bin.tar.gz"
+LIQUIBASE_URL="s3://${BUCKET_NAME}/${LIQUIBASE_FILENAME}"
 LIQUIBASE_PROPERTIES_TEMPLATE="${WORKSPACE}/liquibase/liquibase.properties.template"
 LIQUIBASE_PROPERTIES="${WORKSPACE}/liquibase/liquibase.properties"
+
+POSTGRES_JDBC_DRIVER_FILENAME="postgresql-42.1.4.jar"
+POSTGRES_JDBC_DRIVER_URL="s3://${BUCKET_NAME}/${POSTGRES_JDBC_DRIVER_FILENAME}"
+
+DOWNLOAD_RETRIES=5
 
 ARTIFACT_FILENAME="ROOT.war"
 TOMCAT_USER=`get_from_parameter_store "TOMCAT_USER"`
@@ -44,6 +65,19 @@ if [[ ${DB_STATUS} == "stopped" ]]; then
 fi
 export DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
 export DB_PORT=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $3}'`
+
+# Download Liquibase binaries and PostgreSQL JDBC driver
+mkdir -p ${LIQUIBASE_BIN_DIR}
+if [ ! -e "${LIQUIBASE_BIN_DIR}/${LIQUIBASE_FILENAME}" ]; then
+    download_from_s3 "${LIQUIBASE_URL}" "${LIQUIBASE_BIN_DIR}/${LIQUIBASE_FILENAME}" ${DOWNLOAD_RETRIES}
+    if [ -e "${LIQUIBASE_BIN_DIR}/${LIQUIBASE_FILENAME}" ]; then
+        tar -xzf "${LIQUIBASE_BIN_DIR}/${LIQUIBASE_FILENAME}" -C "${LIQUIBASE_BIN_DIR}"
+    fi
+fi
+
+if [ ! -e "${LIQUIBASE_BIN_DIR}/lib/${POSTGRES_JDBC_DRIVER_FILENAME}" ]; then
+    download_from_s3 "${POSTGRES_JDBC_DRIVER_URL}" "${LIQUIBASE_BIN_DIR}/lib/${POSTGRES_JDBC_DRIVER_FILENAME}" ${DOWNLOAD_RETRIES}
+fi
 
 
 # Update database using Liquibase
