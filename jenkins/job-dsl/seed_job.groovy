@@ -204,6 +204,21 @@ job('demo2-deploy') {
         }
         shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-deploy-step.sh'))
     }
+    publishers {
+        extendedEmail {
+            recipientList('lerkasan@gmail.com')
+            contentType('text/html')
+            triggers {
+                success {
+                    subject('Web application was deployed to Tomcat')
+                    content('${BUILD_LOG_REGEX, regex="Tomcat endpoint", showTruncatedLines=false}')
+                    sendTo {
+                        recipientList()
+                    }
+                }
+            }
+        }
+    }
     wrappers {
         colorizeOutput()
         timestamps()
@@ -253,6 +268,21 @@ multiJob('demo2') {
 //        phase('Stop ec2 slave nodes') {
 //            phaseJob('demo2-stop-slave-nodes')
 //        }
+    }
+    publishers {
+        extendedEmail {
+            recipientList('lerkasan@gmail.com')
+            contentType('text/html')
+            triggers {
+                failure {
+                    subject('Web application was deployed to Tomcat')
+                    content('${BUILD_LOG, maxLines=1500}')
+                    sendTo {
+                        recipientList()
+                    }
+                }
+            }
+        }
     }
     wrappers {
         colorizeOutput()

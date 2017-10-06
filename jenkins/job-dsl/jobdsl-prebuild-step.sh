@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -e
 
 function get_from_parameter_store {
     aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
@@ -18,24 +19,20 @@ DB_INSTANCE_ID="demo2"
 APP_PROPERTIES="${WORKSPACE}/src/main/resources/application.properties"
 APP_PROPERTIES_TEMPLATE="${APP_PROPERTIES}.template"
 
-# Stop test DB instance
-# aws rds stop-db-instance --db-instance-identifier ${TEST_DB_INSTANCE_ID}
-
-# Delete test DB instance
-# aws rds delete-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --skip-final-snapshot
-# aws rds wait db-instance-deleted --db-instance-identifier ${DB_INSTANCE_ID}
-
 # Get prod database parameters
 EXISTING_DB_INSTANCE_INFO=""
-MAX_RETRIES_TO_GET_DBINFO=10
+MAX_RETRIES_TO_GET_DBINFO=20
 RETRIES=0
-while [ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ] && [ ${RETRIES} -lt ${MAX_RETRIES_TO_GET_DBINFO} ]; do
-    sleep 15
+while [[ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ]] && [ ${RETRIES} -lt ${MAX_RETRIES_TO_GET_DBINFO} ]; do
+    sleep 20
     EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
     --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
     echo "Try: ${RETRIES}    DBinfo: ${EXISTING_DB_INSTANCE_INFO}"
     let "RETRIES++"
 done
+if [[ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ]]; then
+    exit 1
+fi
 export DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
 export DB_PORT=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $3}'`
 
