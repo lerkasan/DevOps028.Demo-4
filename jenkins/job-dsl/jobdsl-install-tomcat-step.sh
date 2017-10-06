@@ -18,7 +18,7 @@ TOMCAT_AVAIL_ZONE="us-west-2a"
 TOMCAT_SSH_KEY_NAME="aws_ec2_2"
 TOMCAT_AMI="ami-aa5ebdd2"
 TOMCAT_SECURITY_GROUP="sg-7c3b9f1a"
-TOMCAT_USERDATA_FILE_PATH="${WORKSPACE}/aws_ec2_scripts/bash/infra/tomcat-aws-ami-init.sh"
+TOMCAT_USERDATA_FILE_PATH="${WORKSPACE}/jenkins/infra/tomcat-aws-ami-init.sh"
 TOMCAT_IAM="demo1"
 TOMCAT_INSTALL_DIR="/opt/tomcat"
 TOMCAT_VERSION="8.5.20"
@@ -31,17 +31,17 @@ if [[ -z ${TOMCAT_INSTANCE_INFO} ]]; then
     --security-group-ids ${TOMCAT_SECURITY_GROUP} --user-data "file://${TOMCAT_USERDATA_FILE_PATH}" \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=tomcat}]" --iam-instance-profile Name=${TOMCAT_IAM} \
     --disable-api-termination | grep INSTANCES | awk '{print $7}'`
-    sleep 180
-    # aws ec2 wait instance-running --instance-ids ${TOMCAT_INSTANCE_ID}
+    aws ec2 wait instance-running --instance-ids ${TOMCAT_INSTANCE_ID}
     # aws ec2 wait instance-status-ok --instance-ids ${TOMCAT_INSTANCE_ID} --filters "Name=instance-status.reachability,Values=passed"
+    sleep 30
 else
     # Start tomcat instance if needed
     TOMCAT_STATE=`echo ${TOMCAT_INSTANCE_INFO} | awk '{print $1}'`
     TOMCAT_INSTANCE_ID=`echo ${TOMCAT_INSTANCE_INFO} | awk '{print $2}'`
     if [[ ${TOMCAT_STATE} == "stopped" ]]; then
         aws ec2 start-instances --instance-ids ${TOMCAT_INSTANCE_ID}
-        sleep 180
-        # aws ec2 wait instance-running --instance-ids ${TOMCAT_INSTANCE_ID}
+        aws ec2 wait instance-running --instance-ids ${TOMCAT_INSTANCE_ID}
         # aws ec2 wait instance-status-ok --instance-ids ${TOMCAT_INSTANCE_ID} --filters "Name=instance-status.reachability,Values=passed"
+        sleep 30
     fi
 fi
