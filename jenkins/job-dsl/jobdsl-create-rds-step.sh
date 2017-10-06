@@ -8,7 +8,7 @@ export AWS_DEFAULT_REGION="us-west-2"
 export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "SECRET_ACCESS_KEY"`
 export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
 
-DB_INSTANCE_ID="demo1"
+DB_INSTANCE_ID="demo2"
 DB_INSTANCE_CLASS="db.t2.micro"
 DB_ENGINE="postgres"
 export DB_NAME=`get_from_parameter_store "DB_NAME"`

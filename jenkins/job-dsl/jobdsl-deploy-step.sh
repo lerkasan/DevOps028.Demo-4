@@ -27,7 +27,7 @@ export DB_USER=`get_from_parameter_store "DB_USER"`
 export DB_PASS=`get_from_parameter_store "DB_PASS"`
 export LOGIN_HOST="localhost"
 
-DB_INSTANCE_ID="demo1"
+DB_INSTANCE_ID="demo2"
 DB_INSTANCE_CLASS="db.t2.micro"
 DB_ENGINE="postgres"
 
