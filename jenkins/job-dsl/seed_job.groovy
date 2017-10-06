@@ -103,14 +103,15 @@ job('demo2-build') {
         }
     }
     steps {
-        shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-build-step.sh'))
+        shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-prebuild-step.sh'))
         maven {
             goals('clean package')
             properties(skipTests: true)
             mavenInstallation('Maven 3.5.0')
         }
-        shell('ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep war | grep -v original` && mv ${WORKSPACE}/target/${ARTIFACT_FILENAME} ${WORKSPACE}/target/ROOT.war')
+        shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-postbuild-step.sh'))
     }
+
     publishers {
         archiveArtifacts {
             pattern('target/ROOT.war')
@@ -195,10 +196,8 @@ job('demo2-deploy') {
     }
     steps {
         copyArtifacts('demo2-build') {
-            includePatterns('*.war', '*.jar')
             targetDirectory('target')
             flatten()
-            optional()
             buildSelector {
                 latestSuccessful(true)
             }
