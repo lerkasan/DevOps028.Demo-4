@@ -12,14 +12,14 @@ pipeline {
                 sh "mvn clean test"
             }
         }
-        stage("Prepare RDS and TOmcat") {
+        stage("Prepare RDS and Tomcat") {
             steps {
-                parallel(prepare_rds:
-                    {
+                parallel (
+                    prepare_rds: {
                         echo "Preparing RDS"
                         sh "jenkins/job-dsl/tomcat/jobdsl-prepare-rds-step.sh"
                     },
-                    {
+                    prepare_tomcat: {
                         echo "Preparing Tomcat"
                         sh "jenkins/job-dsl/tomcat/jobdsl-prepare-tomcat-step.sh"
                     }
