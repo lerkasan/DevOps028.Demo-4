@@ -8,6 +8,7 @@ export AWS_DEFAULT_REGION="us-west-2"
 export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "SECRET_ACCESS_KEY"`
 export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
 
+PWD=`pwd`
 ARTIFACT_FILENAME="ROOT.war"
 TOMCAT_USER=`get_from_parameter_store "TOMCAT_USER"`
 TOMCAT_PASSWORD=`get_from_parameter_store "TOMCAT_PASSWORD"`
@@ -18,7 +19,7 @@ TOMCAT_AVAIL_ZONE="us-west-2a"
 TOMCAT_SSH_KEY_NAME="aws_ec2_2"
 TOMCAT_AMI="ami-aa5ebdd2"
 TOMCAT_SECURITY_GROUP="sg-7c3b9f1a"
-TOMCAT_USERDATA_FILE_PATH="${WORKSPACE}/jenkins/infra/tomcat-aws-ami-init.sh"
+TOMCAT_USERDATA_FILE_PATH="${PWD}/jenkins/infra/tomcat-aws-ami-init.sh"
 TOMCAT_IAM="demo1"
 TOMCAT_INSTALL_DIR="/opt/tomcat"
 TOMCAT_VERSION="8.5.20"
