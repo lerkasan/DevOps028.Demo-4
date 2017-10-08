@@ -141,7 +141,7 @@ job('demo2-deploy') {
     }
 }
 
-multiJob('demo2') {
+multiJob('demo2-multijob') {
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
     }
@@ -174,7 +174,7 @@ multiJob('demo2') {
 //        }
         phase('Prepare RDS, Tomcat and package war') {
             continuationCondition('SUCCESSFUL')
-            phaseJob('demo2-prepare-prod-rds')
+            phaseJob('demo2-prepare-rds')
             phaseJob('demo2-prepare-tomcat')
             phaseJob('demo2-build')
         }

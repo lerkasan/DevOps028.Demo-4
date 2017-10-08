@@ -3,7 +3,7 @@
 pipeline {
     agent any
     tools {
-        maven "Maven 3.5.0"
+        maven "maven-3.5.0"
     }
     stages {
         stage("Test") {
@@ -12,15 +12,15 @@ pipeline {
                 sh "mvn clean test"
             }
         }
-        parallel {
+        parallel (
             stage("Prepare RDS") {
                 echo "Preparing RDS"
                 sh "jenkins/job-dsl/tomcat/jobdsl-prepare-rds-step.sh"
-            }
+            },
             stage("Prepare Tomcat") {
                 echo "Preparing Tomcat"
                 sh "jenkins/job-dsl/tomcat/jobdsl-prepare-tomcat-step.sh"
-            }
+            },
             stage("Package war") {
                 steps {
                     echo "Packaging project"
@@ -30,7 +30,7 @@ pipeline {
                     archive "target/ROOT.war"
                 }
             }
-        }
+        )
         stage("Deploy") {
             steps {
                 unarchive "target/ROOT.war"
