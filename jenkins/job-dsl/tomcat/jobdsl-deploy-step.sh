@@ -57,12 +57,6 @@ export TOMCAT_HOST=`aws ec2 describe-instances --instance-ids ${TOMCAT_INSTANCE_
 EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
 --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
 
-# Start database instance if needed
-DB_STATUS=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $4}'`
-if [[ ${DB_STATUS} == "stopped" ]]; then
-    aws rds start-db-instance --db-instance-identifier ${DB_INSTANCE_ID}
-    aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
-fi
 export DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
 export DB_PORT=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $3}'`
 

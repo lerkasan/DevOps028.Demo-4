@@ -1,0 +1,41 @@
+#!groovy
+
+pipeline {
+    agent any
+    tools {
+        maven "Maven 3.5.0"
+    }
+    stages {
+        stage("Test") {
+            steps {
+                echo "Testing project"
+                sh "mvn clean test"
+            }
+        }
+        parallel {
+            stage("Prepare RDS") {
+                echo "Preparing RDS"
+                sh "jenkins/job-dsl/tomcat/jobdsl-prepare-rds-step.sh"
+            }
+            stage("Prepare Tomcat") {
+                echo "Preparing Tomcat"
+                sh "jenkins/job-dsl/tomcat/jobdsl-prepare-tomcat-step.sh"
+            }
+            stage("Package war") {
+                steps {
+                    echo "Packaging project"
+                    sh "jenkins/job-dsl/tomcat/jobdsl-prebuild-step.sh"
+                    sh "mvn clean package"
+                    sh "jenkins/job-dsl/tomcat/jobdsl-postbuild-step.sh"
+                    archive "target/ROOT.war"
+                }
+            }
+        }
+        stage("Deploy") {
+            steps {
+                unarchive "target/ROOT.war"
+                sh "jenkins/job-dsl/tomcat/jobdsl-deploy-step.sh"
+            }
+        }
+    }
+}

@@ -1,2 +1,0 @@
-ALTER TABLE "user"
-  ALTER COLUMN password TYPE VARCHAR(60);

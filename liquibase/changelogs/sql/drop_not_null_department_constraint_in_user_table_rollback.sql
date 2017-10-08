@@ -1,2 +1,0 @@
-ALTER TABLE "user"
-  ALTER COLUMN department_id SET NOT NULL;

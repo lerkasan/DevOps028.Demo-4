@@ -1,6 +1,0 @@
-ALTER TABLE address
-  ALTER COLUMN contacts_id DROP NOT NULL;
-ALTER TABLE phone
-  ALTER COLUMN contacts_id DROP NOT NULL;
-ALTER TABLE email
-  ALTER COLUMN contacts_id DROP NOT NULL;

@@ -1,88 +1,5 @@
 #!groovy
 
-//job('demo2-start-and-connect-slave-nodes') {
-//    scm {
-//        git {
-//            remote {
-//                url('https://github.com/lerkasan/DevOps028.git')
-//                name('origin')
-//            }
-//            branch('jenkins')
-//            browser {
-//                gitWeb('https://bitbucket.org/lerkasan/jenkins-jobdsl')
-//            }
-//            extensions {
-//                cleanBeforeCheckout()
-//            }
-//        }
-//    }
-//    steps {
-//        shell(readFileFromWorkspace('jenkins/job-dsl/start-slave-nodes.sh'))
-//        groovyScriptFile('connect_slave_nodes.groovy')
-//    }
-//    wrappers {
-//        colorizeOutput()
-//        timestamps()
-//    }
-//}
-//
-//job('demo2-stop-slave-nodes') {
-//    scm {
-//        git {
-//            remote {
-//                url('https://github.com/lerkasan/DevOps028.git')
-//                name('origin')
-//            }
-//            branch('jenkins')
-//            browser {
-//                gitWeb('https://bitbucket.org/lerkasan/jenkins-jobdsl')
-//            }
-//            extensions {
-//                cleanBeforeCheckout()
-//            }
-//        }
-//    }
-//    steps {
-//        shell(readFileFromWorkspace('jenkins/job-dsl/stop-slave-nodes.sh'))
-//    }
-//    wrappers {
-//        colorizeOutput()
-//        timestamps()
-//    }
-//}
-
-job('demo2-test') {
-    properties {
-        githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
-    }
-    scm {
-        git {
-            remote {
-                url('https://github.com/lerkasan/DevOps028.git')
-                name('origin')
-            }
-            branch('master')
-            browser {
-                gitWeb('https://github.com/lerkasan/DevOps028.git')
-            }
-            extensions {
-                cleanBeforeCheckout()
-            }
-        }
-    }
-    steps {
-        // shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-test-step.sh'))
-        maven {
-            goals('clean test')
-            mavenInstallation('Maven 3.5.0')
-        }
-    }
-    wrappers {
-        colorizeOutput()
-        timestamps()
-    }
-}
-
 job('demo2-build') {
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
@@ -103,15 +20,14 @@ job('demo2-build') {
         }
     }
     steps {
-        shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-prebuild-step.sh'))
+        shell(readFileFromWorkspace('jenkins/job-dsl/tomcat/jobdsl-prebuild-step.sh'))
         maven {
             goals('clean package')
             properties(skipTests: true)
             mavenInstallation('Maven 3.5.0')
         }
-        shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-postbuild-step.sh'))
+        shell(readFileFromWorkspace('jenkins/job-dsl/tomcat/jobdsl-postbuild-step.sh'))
     }
-
     publishers {
         archiveArtifacts {
             pattern('target/ROOT.war')
@@ -125,7 +41,7 @@ job('demo2-build') {
     }
 }
 
-job('demo2-create-prod-rds') {
+job('demo2-prepare-rds') {
     scm {
         git {
             remote {
@@ -134,7 +50,7 @@ job('demo2-create-prod-rds') {
             }
             branch('jenkins')
             browser {
-                gitWeb('https://bitbucket.org/lerkasan/jenkins-jobdsl')
+                gitWeb('https://github.com/lerkasan/DevOps028.git')
             }
             extensions {
                 cleanBeforeCheckout()
@@ -142,7 +58,7 @@ job('demo2-create-prod-rds') {
         }
     }
     steps {
-        shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-create-rds-step.sh'))
+        shell(readFileFromWorkspace('jenkins/job-dsl/tomcat/jobdsl-prepare-rds-step.sh'))
     }
     wrappers {
         colorizeOutput()
@@ -150,7 +66,7 @@ job('demo2-create-prod-rds') {
     }
 }
 
-job('demo2-install-tomcat') {
+job('demo2-prepare-tomcat') {
     scm {
         git {
             remote {
@@ -159,7 +75,7 @@ job('demo2-install-tomcat') {
             }
             branch('jenkins')
             browser {
-                gitWeb('https://bitbucket.org/lerkasan/jenkins-jobdsl')
+                gitWeb('https://github.com/lerkasan/DevOps028.git')
             }
             extensions {
                 cleanBeforeCheckout()
@@ -167,7 +83,7 @@ job('demo2-install-tomcat') {
         }
     }
     steps {
-        shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-install-tomcat-step.sh'))
+        shell(readFileFromWorkspace('jenkins/job-dsl/tomcat/jobdsl-prepare-tomcat-step.sh'))
     }
     wrappers {
         colorizeOutput()
@@ -202,7 +118,7 @@ job('demo2-deploy') {
                 latestSuccessful(true)
             }
         }
-        shell(readFileFromWorkspace('jenkins/job-dsl/jobdsl-deploy-step.sh'))
+        shell(readFileFromWorkspace('jenkins/job-dsl/tomcat/jobdsl-deploy-step.sh'))
     }
     publishers {
         extendedEmail {
@@ -248,26 +164,23 @@ multiJob('demo2') {
         githubPush()
     }
     steps {
-//        phase('Start and connect ec2 slave nodes') {
-//            continuationCondition('SUCCESSFUL')
-//            phaseJob('demo2-start-and-connect-slave-nodes')
-//        }
-        phase('Test') {
-            continuationCondition('SUCCESSFUL')
-            phaseJob('demo2-test')
+        maven {
+            goals('clean test')
+            mavenInstallation('Maven 3.5.0')
         }
-        phase('Create RDS, install Tomcat and build war') {
+//        phase('Test') {
+//            continuationCondition('SUCCESSFUL')
+//            phaseJob('demo2-test')
+//        }
+        phase('Prepare RDS, Tomcat and package war') {
             continuationCondition('SUCCESSFUL')
-            phaseJob('demo2-create-prod-rds')
-            phaseJob('demo2-install-tomcat')
+            phaseJob('demo2-prepare-prod-rds')
+            phaseJob('demo2-prepare-tomcat')
             phaseJob('demo2-build')
         }
         phase('Deploy') {
             phaseJob('demo2-deploy')
         }
-//        phase('Stop ec2 slave nodes') {
-//            phaseJob('demo2-stop-slave-nodes')
-//        }
     }
     publishers {
         extendedEmail {
