@@ -168,14 +168,13 @@ multiJob('demo2-multijob') {
             goals('clean test')
             mavenInstallation('Maven 3.5.0')
         }
-//        phase('Test') {
-//            continuationCondition('SUCCESSFUL')
-//            phaseJob('demo2-test')
-//        }
-        phase('Prepare RDS, Tomcat and package war') {
+        phase('Prepare RDS, Tomcat') {
             continuationCondition('SUCCESSFUL')
             phaseJob('demo2-prepare-rds')
             phaseJob('demo2-prepare-tomcat')
+        }
+        phase('Package war') {
+            continuationCondition('SUCCESSFUL')
             phaseJob('demo2-build')
         }
         phase('Deploy') {

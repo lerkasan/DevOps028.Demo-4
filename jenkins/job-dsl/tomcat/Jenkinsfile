@@ -38,7 +38,8 @@ pipeline {
         }
         stage("Deploy") {
             steps {
-                unarchive "target/ROOT.war"
+                echo "Deploying to TOmcat"
+                unarchive
                 sh "jenkins/job-dsl/tomcat/jobdsl-deploy-step.sh"
             }
         }
