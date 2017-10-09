@@ -2,6 +2,9 @@
 
 pipeline {
     agent any
+    tools {
+        maven "maven-3.5.0"
+    }
     stages {
         stage('Checkout') {
             steps {
@@ -34,7 +37,7 @@ pipeline {
                         },
                         prepare_tomcat: {
                             echo "Preparing Tomcat"
-                            sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-prepare-tomcat-step.sh"
+                            sh "cd jenkins && jenkins/job-dsl/tomcat/jobdsl-prepare-tomcat-step.sh"
                         }
 
                 )

@@ -2,7 +2,7 @@ pipelineJob('demo2-pipeline') {
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
     }
-    multiscm {
+    scm {
         git {
             remote {
                 url('https://github.com/lerkasan/DevOps028.git')
@@ -16,24 +16,32 @@ pipelineJob('demo2-pipeline') {
                 cleanBeforeCheckout()
             }
         }
-        git {
-            remote {
-                url('https://github.com/lerkasan/DevOps028.git')
-                name('origin')
-            }
-            branch('jenkins')
-            browser {
-                gitWeb('https://github.com/lerkasan/DevOps028.git')
-            }
-        }
     }
     triggers {
         githubPush()
     }
     definition {
-        cps {
-            script(readFileFromWorkspace('jenkins/job-dsl/tomcat/Jenkinsfile'))
-            sandbox()
+//      cps {
+//          script(readFileFromWorkspace('jenkins/job-dsl/tomcat/Jenkinsfile'))
+//          sandbox()
+//      }
+        cpsScm {
+            scm {
+                git {
+                    remote {
+                        url('https://github.com/lerkasan/DevOps028.git')
+                        name('origin')
+                    }
+                    branch('jenkins')
+                    browser {
+                        gitWeb('https://github.com/lerkasan/DevOps028.git')
+                    }
+                    extensions {
+                        cleanBeforeCheckout()
+                    }
+                }
+            }
+            scriptPath('jenkins/job-dsl/tomcat/Jenkinsfile')
         }
     }
     publishers {
