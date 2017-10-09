@@ -32,7 +32,7 @@ ALLOWED_LAN=`echo ${DB_HOST}/24`
 
 BUCKET_NAME="ansible-demo1"
 OS_USERNAME=`whoami`
-DEMO_DIR="demo1"
+DEMO_DIR="demo2"
 PROJECT_SRC_DIR="/home/${OS_USERNAME}/${DEMO_DIR}/DevOps028"
 
 JDK_FILENAME="jdk-8u144-linux-x64.tar.gz"

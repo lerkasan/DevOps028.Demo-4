@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# set -e
 
 function get_from_parameter_store {
     aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
@@ -24,22 +23,26 @@ export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
 
 BUCKET_NAME="ansible-demo1"
 OS_USERNAME=`whoami`
-DEMO_DIR="demo1"
+DEMO_DIR="demo2"
 
 JDK_FILENAME="jdk-8u144-linux-x64.tar.gz"
 JDK_URL="s3://${BUCKET_NAME}/${JDK_FILENAME}"
 JDK_INSTALL_DIR="/usr/lib/jvm"
-TEMP_DIR="/home/${OS_USERNAME}/tmp"
 
 DOWNLOAD_DIR="/home/${OS_USERNAME}/${DEMO_DIR}/download"
 DOWNLOAD_RETRIES=5
 
-# Install Python-Pip, AWS cli, Ansible
+# Install Python-Pip, AWS cli
 sudo yum -y update
 sudo yum -y install epel-release
 sudo yum -y install python python-pip mc
 sudo `which pip` install --upgrade pip
-sudo `which pip` install awscli boto boto3 ansible
+sudo `which pip` install awscli
+
+# Add Jenkins master EC2 instance ssh public key to authorized_keys file at Jenkins slave node EC2 instance
+echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDX/CR9uiBypDzKE2MTWfUlF6ZUchBn+M0bsh6ayNh/x/4uaI6y38VX+g++sUoZjsyzsIx+tDAUKnOBkKnyEYRndlnb5n6YFHiCVmOtgG4DtGtYDmS1SgU3z9hW0zKFy6KA6ATMiTPZAdBMyYf1lu+oGaG/RtWybUuD/x0oJTDSR7gf8Q1lXbdycb4pQoDyv+CEWDOxOyv8GFULjB4y1VS44g+N2WNvZWx2iaI1011R3HV5rIG6YjEFrqSsCRKTDB5QssCozKRa8wSWuxGBAVoAmSnPBUijWjvdjt/C0hyVZUDONfhGaIMG4ldOE7hyJDuLTlgngJMhhcl4NmQ9J4bz ec2-user@ip-172-31-17-210" >> /home/ec2-user/.ssh/authorized_keys
+echo "PubkeyAuthentication yes" | sudo tee --append /etc/ssh/sshd_config
+sudo service sshd restart
 
 # Download and install JDK
 mkdir -p ${DOWNLOAD_DIR}
@@ -59,5 +62,3 @@ sudo alternatives --install /usr/bin/javac javac "${JAVA_HOME}/bin/javac" 2
 sudo alternatives --set java "${JAVA_HOME}/bin/java"
 sudo alternatives --set javac "${JAVA_HOME}/bin/javac"
 
-# Create user, group and change permissions
-sudo useradd -m -d /home/jenkins -s /bin/sh jenkins && echo "jenkins:jenkins" | chpasswd

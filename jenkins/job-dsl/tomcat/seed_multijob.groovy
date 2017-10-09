@@ -1,7 +1,7 @@
 #!groovy
 
 job('demo2-build') {
-    jdk('jdk-8u144-linux-x64')
+    jdk('oracle-jdk8u144-linux-x64')
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
     }
@@ -143,7 +143,7 @@ job('demo2-deploy') {
 }
 
 multiJob('demo2-multijob') {
-    jdk('jdk-8u144-linux-x64')
+    jdk('oracle-jdk8u144-linux-x64')
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
     }

@@ -24,7 +24,7 @@ export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
 
 BUCKET_NAME="ansible-demo1"
 OS_USERNAME=`whoami`
-DEMO_DIR="demo1"
+DEMO_DIR="demo2"
 
 JDK_FILENAME="jdk-8u144-linux-x64.tar.gz"
 JDK_URL="s3://${BUCKET_NAME}/${JDK_FILENAME}"

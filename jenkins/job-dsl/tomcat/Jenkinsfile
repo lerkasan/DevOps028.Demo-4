@@ -3,7 +3,7 @@
 pipeline {
     agent any
     tools {
-        jdk 'jdk-8u144-linux-x64'
+        jdk 'oracle-jdk8u144-linux-x64'
         maven "maven-3.5.0"
     }
     options {

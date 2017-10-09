@@ -17,7 +17,7 @@ SECURITY_GROUP="sg-7c3b9f1a"
 USERDATA_FILE_PATH="${WORKSPACE}/aws_ec2_scripts/bash/infra/tomcat-aws-ami-init.sh"
 IAM="demo1"
 
-INSTANCES_INFO=`aws ec2 describe-instances --filters "Name=tag:Name,Values=slave-jenk" \
+INSTANCES_INFO=`aws ec2 describe-instances --filters "Name=tag:Name,Values=jenkins-slave" \
 --query 'Reservations[*].Instances[*].[State.Name,InstanceId,PublicDnsName]' --output text | grep -v -e terminated -e shutting-down`
 
 # Stop each slave node instance if needed

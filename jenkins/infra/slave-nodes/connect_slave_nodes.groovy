@@ -6,7 +6,8 @@ import hudson.plugins.sshslaves.SSHLauncher
 import hudson.plugins.sshslaves.verifiers.*
 
 // Pick one of the strategies from the comments below this line
-SshHostKeyVerificationStrategy hostKeyVerificationStrategy = new NonVerifyingKeyVerificationStrategy()
+ManuallyTrustedKeyVerificationStrategy manuallyTrustedKeyVerificationStrategy = new ManuallyTrustedKeyVerificationStrategy(false)
+//SshHostKeyVerificationStrategy hostKeyVerificationStrategy = new NonVerifyingKeyVerificationStrategy()
 //= new KnownHostsFileKeyVerificationStrategy() // Known hosts file Verification Strategy
 //= new ManuallyProvidedKeyVerificationStrategy("<your-key-here>") // Manually provided key Verification Strategy
 //= new ManuallyTrustedKeyVerificationStrategy(false /*requires initial manual trust*/) // Manually trusted key Verification Strategy
@@ -14,9 +15,9 @@ SshHostKeyVerificationStrategy hostKeyVerificationStrategy = new NonVerifyingKey
 
 // Define a "Launch method": "Launch slave agents via SSH"
 ComputerLauncher launcher = new SSHLauncher(
-        "worker", // Host
+        "172.31.27.202", // Host
         22, // Port
-        "1", // Credentials ID
+        "18ce16e0-2700-42d5-b9b0-8d7d8ec5f143", // Credentials ID
         (String)null, // JVM Options
         (String)null, // JavaPath
         (String)null, // Prefix Start Slave Command
@@ -24,26 +25,26 @@ ComputerLauncher launcher = new SSHLauncher(
         (Integer)null, // Connection Timeout in Seconds
         (Integer)null, // Maximum Number of Retries
         (Integer)null, // The number of seconds to wait between retries
-        hostKeyVerificationStrategy // Host Key Verification Strategy
+        manuallyTrustedKeyVerificationStrategy // Manually trusted Key Verification Strategy
 )
 
 // Define a "Permanent Agent"
 Slave agent = new DumbSlave(
-        "ssh-node",
-        "/home/jenkins",
+        "node3",
+        "/home/ec2-user",
         launcher)
-agent.nodeDescription = "Agent node description"
-agent.numExecutors = 2
-agent.labelString = "agent-node-label"
+agent.nodeDescription = "node3"
+agent.numExecutors = 3
+agent.labelString = "slave-node"
 agent.mode = Node.Mode.NORMAL
 agent.retentionStrategy = new RetentionStrategy.Always()
 
-List<Entry> env = new ArrayList<Entry>();
-env.add(new Entry("key1","value1"))
-env.add(new Entry("key2","value2"))
-EnvironmentVariablesNodeProperty envPro = new EnvironmentVariablesNodeProperty(env);
+//List<Entry> env = new ArrayList<Entry>();
+//env.add(new Entry("key1","value1"))
+//env.add(new Entry("key2","value2"))
+//EnvironmentVariablesNodeProperty envPro = new EnvironmentVariablesNodeProperty(env)
 
-agent.getNodeProperties().add(envPro)
+//agent.getNodeProperties().add(envPro)
 
 // Create a "Permanent Agent"
 Jenkins.instance.addNode(agent)

@@ -14,16 +14,16 @@ AVAIL_ZONE="us-west-2a"
 SSH_KEY_NAME="aws_ec2_2"
 AMI="ami-aa5ebdd2"
 SECURITY_GROUP="sg-7c3b9f1a"
-USERDATA_FILE_PATH="${WORKSPACE}/jenkins/job-dsl/slave-node-init.sh"
+USERDATA_FILE_PATH="${WORKSPACE}/jenkins/job-dsl/slave-node-userdata.sh"
 IAM="demo1"
 
 # Create slave node instance if needed
-INSTANCES_INFO=`aws ec2 describe-instances --filters "Name=tag:Name,Values=slave-jenk" \
+INSTANCES_INFO=`aws ec2 describe-instances --filters "Name=tag:Name,Values=jenkins-slave" \
 --query 'Reservations[*].Instances[*].[State.Name,InstanceId,PublicDnsName]' --output text | grep -v -e terminated -e shutting-down`
 if [[ -z ${INSTANCES_INFO} ]]; then
     INSTANCE_IDS=`aws ec2 run-instances --count 2 --instance-type ${INSTANCE_TYPE} --image-id ${AMI} --key-name ${SSH_KEY_NAME} \
     --security-group-ids ${SECURITY_GROUP} --user-data "file://${USERDATA_FILE_PATH}" \
-    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=slave-jenk}]" --iam-instance-profile Name=${IAM} \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=jenkins-slave}]" --iam-instance-profile Name=${IAM} \
     --disable-api-termination | grep INSTANCES | awk '{print $7}' | tr '\n' ' '`
     sleep 100
     aws ec2 wait instance-running --instance-ids ${INSTANCE_IDS}
