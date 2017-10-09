@@ -12,12 +12,15 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                sh "ls -alh"
+                sh "cd jenkins && ls -alh"
+                step([$class: 'WsCleanup'])
                 checkout(
                         [$class: 'GitSCM',
                          branches: [[name: '*/jenkins'], [name: '*/master']],
                          browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/lerkasan/DevOps028.git'],
                          doGenerateSubmoduleConfigurations: false,
-                         extensions: [[$class: 'CleanBeforeCheckout']],
+                      // extensions: [[$class: 'CleanBeforeCheckout']],
                          gitTool: 'git-slave',
                          submoduleCfg: [],
                          userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]
