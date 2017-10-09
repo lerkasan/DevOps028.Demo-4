@@ -47,12 +47,14 @@ pipeline {
                 sh "mvn clean package"
                 sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-postbuild-step.sh"
                 archive "target/ROOT.war"
+                stash includes: 'target/ROOT.war', name: 'artifact'
             }
         }
         stage("Deploy") {
             steps {
                 echo "Deploying to Tomcat"
-                unarchive mapping: ["ROOT.war" : "ROOT.war"]
+                unstash 'artifact'
+//              unarchive mapping: ["ROOT.war" : "ROOT.war"]
                 sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-deploy-step.sh"
             }
         }
