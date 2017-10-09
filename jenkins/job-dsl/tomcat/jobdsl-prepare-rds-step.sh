@@ -16,15 +16,17 @@ export DB_USER=`get_from_parameter_store "DB_USER"`
 export DB_PASS=`get_from_parameter_store "DB_PASS"`
 export LOGIN_HOST="localhost"
 
-# Create prod database instance if needed
+# Create RDS database instance if needed
 EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' \
 --output text | grep ${DB_INSTANCE_ID} | grep -v -e terminated -e shutting-down`
 if [[ -z ${EXISTING_DB_INSTANCE_INFO} ]]; then
+    echo "Creating RDS database instance ..."
     aws rds create-db-instance --db-instance-identifier ${DB_INSTANCE_ID} --db-instance-class ${DB_INSTANCE_CLASS} --engine ${DB_ENGINE} \
     --backup-retention-period 0 --storage-type gp2 --allocated-storage 5 --db-name ${DB_NAME} --master-username ${DB_USER} --master-user-password ${DB_PASS}
     aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
 else
-    # Start prod database instance if needed
+    # Start RDS database instance if needed
+    echo "Starting RDS database instance if needed ..."
     EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
     --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
     DB_STATUS=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $4}'`

@@ -12,36 +12,37 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                sh "ls -alh"
-                sh "cd jenkins && ls -alh"
-            //  step([$class: 'WsCleanup'])
+//            step([$class: 'WsCleanup'])
+//            checkout(
+//                    [$class: 'GitSCM',
+//                     branches: [[name: '*/jenkins'], [name: '*/master']],
+//                     browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/lerkasan/DevOps028.git'],
+//                     doGenerateSubmoduleConfigurations: false,
+//                     extensions: [[$class: 'CleanBeforeCheckout']],
+//                     gitTool: 'git-slave',
+//                     submoduleCfg: [],
+//                     userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]
+//                    ])
+                echo "Checkout master branch to workspace folder and checkout jenkins branch to subfolder 'jenkins'"
                 checkout(
                         [$class: 'GitSCM',
-                         branches: [[name: '*/jenkins'], [name: '*/master']],
+                         branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false,
                          browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/lerkasan/DevOps028.git'],
-                         doGenerateSubmoduleConfigurations: false,
-                      // extensions: [[$class: 'CleanBeforeCheckout']],
+                         extensions: [[$class: 'CleanBeforeCheckout']],
                          gitTool: 'git-slave',
                          submoduleCfg: [],
-                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]
-                        ])
-
-//                checkout(
-//                        [$class: 'GitSCM',
-//                         branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false,
-//                         extensions: [[$class: 'CleanBeforeCheckout']],
-//                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]])
-//                checkout(
-//                        [$class: 'GitSCM',
-//                         branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
-//                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins']],
-//                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]])
+                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]])
+                checkout(
+                        [$class: 'GitSCM',
+                         branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
+                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins']],
+                         gitTool: 'git-slave',
+                         submoduleCfg: [],
+                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]])
             }
         }
         stage("Test") {
             steps {
-                sh "ls -alh"
-                sh "cd jenkins && ls -alh"
                 echo "Testing project"
                 sh "mvn clean test"
             }
@@ -69,7 +70,8 @@ pipeline {
                 sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-prebuild-step.sh"
                 sh "mvn clean package"
                 sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-postbuild-step.sh"
-                archive "target/ROOT.war"
+                archiveArtifacts artifacts: 'target/ROOT.war', onlyIfSuccessful: true
+            //  archive "target/ROOT.war"
                 stash includes: 'target/ROOT.war', name: 'artifact'
             }
         }
@@ -77,7 +79,7 @@ pipeline {
             steps {
                 echo "Deploying to Tomcat"
                 unstash 'artifact'
-             // unarchive()
+            //  unarchive()
                 sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-deploy-step.sh"
                 emailext body: '${BUILD_LOG_REGEX, regex="Tomcat endpoint", showTruncatedLines=false}', subject: 'Web application Samsara was deployed to Tomcat', to: 'lerkasan@gmail.com'
             }

@@ -11,5 +11,7 @@ export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
 BUCKET_NAME="ansible-demo1"
 ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep war | grep -v original`
 
+# Copy artifact to S3 bucket
+echo "Copying artifact to S3 bucket ..."
 aws s3 cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} s3://${BUCKET_NAME}/${ARTIFACT_FILENAME}
 mv ${WORKSPACE}/target/${ARTIFACT_FILENAME} ${WORKSPACE}/target/ROOT.war
