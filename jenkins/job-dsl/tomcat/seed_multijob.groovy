@@ -21,6 +21,7 @@ job('demo2-build') {
         }
     }
     steps {
+        shell('javac -version')
         shell(readFileFromWorkspace('jenkins/job-dsl/tomcat/jobdsl-prebuild-step.sh'))
         maven {
             goals('clean package')

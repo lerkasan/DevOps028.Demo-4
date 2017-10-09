@@ -32,9 +32,9 @@ JDK_INSTALL_DIR="/usr/lib/jvm"
 DOWNLOAD_DIR="/home/${OS_USERNAME}/${DEMO_DIR}/download"
 DOWNLOAD_RETRIES=5
 
-# Install Python-Pip, AWS cli
+# Install Python-Pip, AWS cli, Git
 sudo yum -y update
-sudo yum -y install epel-release
+sudo yum -y install epel-release git
 sudo yum -y install python python-pip mc
 sudo `which pip` install --upgrade pip
 sudo `which pip` install awscli

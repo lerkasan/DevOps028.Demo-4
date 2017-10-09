@@ -12,17 +12,6 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-//            step([$class: 'WsCleanup'])
-//            checkout(
-//                    [$class: 'GitSCM',
-//                     branches: [[name: '*/jenkins'], [name: '*/master']],
-//                     browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/lerkasan/DevOps028.git'],
-//                     doGenerateSubmoduleConfigurations: false,
-//                     extensions: [[$class: 'CleanBeforeCheckout']],
-//                     gitTool: 'git-slave',
-//                     submoduleCfg: [],
-//                     userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]
-//                    ])
                 echo "Checkout master branch to workspace folder and checkout jenkins branch to subfolder 'jenkins'"
                 checkout(
                         [$class: 'GitSCM',
@@ -44,6 +33,7 @@ pipeline {
         stage("Test") {
             steps {
                 echo "Testing project"
+                sh "javac -version"
                 sh "mvn clean test"
             }
         }
