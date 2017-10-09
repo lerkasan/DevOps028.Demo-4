@@ -94,6 +94,7 @@ job('demo2-prepare-tomcat') {
 }
 
 job('demo2-deploy') {
+    jdk('oracle-jdk8u144-linux-x64')
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
     }

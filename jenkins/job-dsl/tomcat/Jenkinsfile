@@ -32,8 +32,8 @@ pipeline {
         }
         stage("Test") {
             steps {
-                echo "Testing project"
                 sh "javac -version"
+                echo "Testing project"
                 sh "mvn clean test"
             }
         }
