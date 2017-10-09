@@ -3,7 +3,11 @@
 pipeline {
     agent any
     tools {
+        jdk 'jdk-8u144-linux-x64'
         maven "maven-3.5.0"
+    }
+    options {
+        timestamps()
     }
     stages {
         stage('Checkout') {
@@ -57,7 +61,7 @@ pipeline {
             steps {
                 echo "Deploying to Tomcat"
                 unstash 'artifact'
-//              unarchive mapping: ["ROOT.war" : "ROOT.war"]
+             // unarchive mapping: ["ROOT.war" : "ROOT.war"]
                 sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-deploy-step.sh"
             }
         }

@@ -1,6 +1,7 @@
 #!groovy
 
 job('demo2-build') {
+    jdk('jdk-8u144-linux-x64')
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
     }
@@ -24,7 +25,7 @@ job('demo2-build') {
         maven {
             goals('clean package')
             properties(skipTests: true)
-            mavenInstallation('Maven 3.5.0')
+            mavenInstallation('maven-3.5.0')
         }
         shell(readFileFromWorkspace('jenkins/job-dsl/tomcat/jobdsl-postbuild-step.sh'))
     }
@@ -142,6 +143,7 @@ job('demo2-deploy') {
 }
 
 multiJob('demo2-multijob') {
+    jdk('jdk-8u144-linux-x64')
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
     }
@@ -166,7 +168,7 @@ multiJob('demo2-multijob') {
     steps {
         maven {
             goals('clean test')
-            mavenInstallation('Maven 3.5.0')
+            mavenInstallation('maven-3.5.0')
         }
         phase('Prepare RDS, Tomcat') {
             continuationCondition('SUCCESSFUL')

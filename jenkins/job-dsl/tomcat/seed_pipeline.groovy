@@ -44,30 +44,4 @@ pipelineJob('demo2-pipeline') {
             scriptPath('jenkins/job-dsl/tomcat/Jenkinsfile')
         }
     }
-    publishers {
-        extendedEmail {
-            recipientList('lerkasan@gmail.com')
-            contentType('text/html')
-            triggers {
-                success {
-                    subject('Web application Samsara was deployed to Tomcat')
-                    content('${BUILD_LOG_REGEX, regex="Tomcat endpoint", showTruncatedLines=false}')
-                    sendTo {
-                        recipientList()
-                    }
-                }
-                failure {
-                    subject('Failure during building web application Samsara')
-                    content('${BUILD_LOG, maxLines=1500}')
-                    sendTo {
-                        recipientList()
-                    }
-                }
-            }
-        }
-    }
-    wrappers {
-        colorizeOutput()
-        timestamps()
-    }
 }
