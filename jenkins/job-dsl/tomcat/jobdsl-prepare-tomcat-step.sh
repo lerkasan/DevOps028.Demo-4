@@ -33,8 +33,9 @@ if [[ -z ${TOMCAT_INSTANCE_INFO} ]]; then
     --security-group-ids ${TOMCAT_SECURITY_GROUP} --user-data "file://${TOMCAT_USERDATA_FILE_PATH}" \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=tomcat}]" --iam-instance-profile Name=${TOMCAT_IAM} \
     --disable-api-termination | grep INSTANCES | awk '{print $7}'`
-    sleep 30
+    echo "${TOMCAT_INSTANCE_ID}"
     aws ec2 wait instance-running --instance-ids ${TOMCAT_INSTANCE_ID}
+    sleep 30
     # aws ec2 wait instance-status-ok --instance-ids ${TOMCAT_INSTANCE_ID} --filters "Name=instance-status.reachability,Values=passed"
 else
     # Start Tomcat EC2 instance if needed
@@ -43,8 +44,8 @@ else
     TOMCAT_INSTANCE_ID=`echo ${TOMCAT_INSTANCE_INFO} | awk '{print $2}'`
     if [[ ${TOMCAT_STATE} == "stopped" ]]; then
         aws ec2 start-instances --instance-ids ${TOMCAT_INSTANCE_ID}
-        sleep 30
         aws ec2 wait instance-running --instance-ids ${TOMCAT_INSTANCE_ID}
+        sleep 30
         # aws ec2 wait instance-status-ok --instance-ids ${TOMCAT_INSTANCE_ID} --filters "Name=instance-status.reachability,Values=passed"
     fi
 fi
