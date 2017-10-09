@@ -14,7 +14,7 @@ pipeline {
             steps {
                 sh "ls -alh"
                 sh "cd jenkins && ls -alh"
-                step([$class: 'WsCleanup'])
+            //  step([$class: 'WsCleanup'])
                 checkout(
                         [$class: 'GitSCM',
                          branches: [[name: '*/jenkins'], [name: '*/master']],
