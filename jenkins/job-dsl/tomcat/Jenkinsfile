@@ -14,18 +14,31 @@ pipeline {
             steps {
                 checkout(
                         [$class: 'GitSCM',
-                         branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false,
+                         branches: [[name: '*/jenkins'], [name: '*/master']],
+                         browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/lerkasan/DevOps028.git'],
+                         doGenerateSubmoduleConfigurations: false,
                          extensions: [[$class: 'CleanBeforeCheckout']],
-                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]])
-                checkout(
-                        [$class: 'GitSCM',
-                         branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
-                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins']],
-                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]])
+                         gitTool: 'git-slave',
+                         submoduleCfg: [],
+                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]
+                        ])
+
+//                checkout(
+//                        [$class: 'GitSCM',
+//                         branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false,
+//                         extensions: [[$class: 'CleanBeforeCheckout']],
+//                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]])
+//                checkout(
+//                        [$class: 'GitSCM',
+//                         branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
+//                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins']],
+//                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]])
             }
         }
         stage("Test") {
             steps {
+                sh "ls -alh"
+                sh "cd jenkins && ls -alh"
                 echo "Testing project"
                 sh "mvn clean test"
             }
@@ -61,8 +74,9 @@ pipeline {
             steps {
                 echo "Deploying to Tomcat"
                 unstash 'artifact'
-             // unarchive mapping: ["ROOT.war" : "ROOT.war"]
+             // unarchive()
                 sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-deploy-step.sh"
+                emailext body: '${BUILD_LOG_REGEX, regex="Tomcat endpoint", showTruncatedLines=false}', subject: 'Web application Samsara was deployed to Tomcat', to: 'lerkasan@gmail.com'
             }
         }
     }
