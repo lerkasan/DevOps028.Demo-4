@@ -119,7 +119,7 @@ job('demo2-deploy') {
     }
 }
 
-multiJob('demo2-multijob') {
+multiJob('demo2-MULTIJOB') {
     jdk('oracle-jdk8u144-linux-x64')
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')

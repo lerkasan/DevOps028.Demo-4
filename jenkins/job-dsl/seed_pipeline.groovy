@@ -1,4 +1,4 @@
-pipelineJob('demo2-pipeline') {
+pipelineJob('demo2-PIPELINE') {
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
     }
@@ -22,7 +22,7 @@ pipelineJob('demo2-pipeline') {
     }
     definition {
 //      cps {
-//          script(readFileFromWorkspace('jenkins/job-dsl/tomcat/Jenkinsfile'))
+//          script(readFileFromWorkspace('jenkins/job-dsl/Jenkinsfile'))
 //          sandbox()
 //      }
         cpsScm {
@@ -41,7 +41,7 @@ pipelineJob('demo2-pipeline') {
                     }
                 }
             }
-            scriptPath('jenkins/job-dsl/tomcat/Jenkinsfile')
+            scriptPath('jenkins/job-dsl/Jenkinsfile')
         }
     }
 }
