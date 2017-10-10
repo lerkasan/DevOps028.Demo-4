@@ -8,10 +8,10 @@ export AWS_DEFAULT_REGION="us-west-2"
 export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "SECRET_ACCESS_KEY"`
 export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
 
-export DB_NAME=`get_from_parameter_store "DB_NAME"`
-export DB_USER=`get_from_parameter_store "DB_USER"`
-export DB_PASS=`get_from_parameter_store "DB_PASS"`
-export LOGIN_HOST="localhost"
+DB_NAME=`get_from_parameter_store "DB_NAME"`
+DB_USER=`get_from_parameter_store "DB_USER"`
+DB_PASS=`get_from_parameter_store "DB_PASS"`
+LOGIN_HOST="localhost"
 TEST_DB_INSTANCE_ID="demo1-test"
 DB_INSTANCE_ID="demo2"
 
@@ -34,8 +34,8 @@ if [[ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ]]; then
     echo "Failure - no RDS database with identifier ${DB_INSTANCE_ID} available."
     exit 1
 fi
-export DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
-export DB_PORT=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $3}'`
+DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
+DB_PORT=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $3}'`
 echo "RDS endpoint: ${DB_HOST}:${DB_PORT}  Retries: ${RETRIES}"
 
 # Insert database parameters into SpringBoot application.properties

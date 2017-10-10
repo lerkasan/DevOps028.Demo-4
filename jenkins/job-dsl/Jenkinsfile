@@ -6,6 +6,9 @@ pipeline {
         jdk 'oracle-jdk8u144-linux-x64'
         maven "maven-3.5.0"
     }
+//    environment {
+//        REPO_URL = 'www.my.repo'
+//    }
     options {
         timestamps()
     }
@@ -37,43 +40,35 @@ pipeline {
                 sh "mvn clean test"
             }
         }
-        stage("Prepare RDS and Tomcat") {
+        stage("Build artifact and prepare AWS infrastructure") {
             steps {
                 parallel (
-                        prepare_rds: {
-                            echo "Preparing RDS"
-                            sh "chmod +x jenkins/jenkins/job-dsl/tomcat/*.sh"
-                            sh "chmod +x jenkins/jenkins/infra/tomcat-userdata.sh"
-                            sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-prepare-rds-step.sh"
+                        prepare_infra: {
+                            echo "Preparing AWS infrastructure ..."
+                            sh "chmod +x jenkins/jenkins/job-dsl/*.sh"
+                            sh "jenkins/jenkins/job-dsl/prepare-infra.sh"
                         },
-                        prepare_tomcat: {
-                            echo "Preparing Tomcat"
-                            sh "cd jenkins && jenkins/job-dsl/tomcat/jobdsl-prepare-tomcat-step.sh"
+                        build_jar: {
+                            echo "Building jar ..."
+                            sh "mvn clean package"
+                            sh "jenkins/jenkins/job-dsl/postbuild-step.sh"
+                            archiveArtifacts artifacts: 'target/ROOT.war', onlyIfSuccessful: true
+                            //  archive "target/ROOT.war"
+                            stash includes: 'target/ROOT.war', name: 'artifact'
                         }
 
                 )
             }
         }
-        stage("Package war") {
-            steps {
-                echo "Packaging project"
-                sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-prebuild-step.sh"
-                sh "mvn clean package"
-                sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-postbuild-step.sh"
-                archiveArtifacts artifacts: 'target/ROOT.war', onlyIfSuccessful: true
-            //  archive "target/ROOT.war"
-                stash includes: 'target/ROOT.war', name: 'artifact'
-            }
-        }
         stage("Deploy") {
             steps {
-                echo "Deploying to Tomcat"
+                echo "Deploying project"
                 unstash 'artifact'
             //  unarchive()
-                sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-deploy-step.sh"
-            //  emailext body: '${BUILD_LOG_REGEX, regex="Tomcat endpoint", showTruncatedLines=false}',
-                emailext body: 'Tomcat endpoint: ${env.TOMCAT_HOST}:${env.TOMCAT_PORT}',
-                         subject: 'Web application Samsara was deployed to Tomcat',
+                sh "jenkins/jenkins/job-dsl/tomcat/deploy-step.sh"
+            //  emailext body: '${BUILD_LOG_REGEX, regex="Webapp endpoint", showTruncatedLines=false}',
+                emailext body: 'Webapp endpoint: ${env.ELB_HOST}:${env.ELB_PORT}',
+                         subject: 'Web application Samsara was deployed',
                          to: 'lerkasan@gmail.com'
             }
         }

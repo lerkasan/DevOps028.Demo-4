@@ -22,13 +22,12 @@ job('demo2-build') {
     }
     steps {
         shell('javac -version')
-        shell(readFileFromWorkspace('jenkins/job-dsl/tomcat/jobdsl-prebuild-step.sh'))
         maven {
             goals('clean package')
             properties(skipTests: true)
             mavenInstallation('maven-3.5.0')
         }
-        shell(readFileFromWorkspace('jenkins/job-dsl/tomcat/jobdsl-postbuild-step.sh'))
+        shell(readFileFromWorkspace('jenkins/job-dsl/postbuild-step.sh'))
     }
     publishers {
         archiveArtifacts {
@@ -43,7 +42,7 @@ job('demo2-build') {
     }
 }
 
-job('demo2-prepare-rds') {
+job('demo2-prepare-infra') {
     scm {
         git {
             remote {
@@ -60,32 +59,7 @@ job('demo2-prepare-rds') {
         }
     }
     steps {
-        shell(readFileFromWorkspace('jenkins/job-dsl/tomcat/jobdsl-prepare-rds-step.sh'))
-    }
-    wrappers {
-        colorizeOutput()
-        timestamps()
-    }
-}
-
-job('demo2-prepare-tomcat') {
-    scm {
-        git {
-            remote {
-                url('https://github.com/lerkasan/DevOps028.git')
-                name('origin')
-            }
-            branch('jenkins')
-            browser {
-                gitWeb('https://github.com/lerkasan/DevOps028.git')
-            }
-            extensions {
-                cleanBeforeCheckout()
-            }
-        }
-    }
-    steps {
-        shell(readFileFromWorkspace('jenkins/job-dsl/tomcat/jobdsl-prepare-tomcat-step.sh'))
+        shell(readFileFromWorkspace('jenkins/job-dsl/prepare-infra.sh'))
     }
     wrappers {
         colorizeOutput()
@@ -121,7 +95,7 @@ job('demo2-deploy') {
                 latestSuccessful(true)
             }
         }
-        shell(readFileFromWorkspace('jenkins/job-dsl/tomcat/jobdsl-deploy-step.sh'))
+        shell(readFileFromWorkspace('jenkins/job-dsl/deploy-step.sh'))
     }
     publishers {
         extendedEmail {
@@ -129,9 +103,9 @@ job('demo2-deploy') {
             contentType('text/html')
             triggers {
                 success {
-                    subject('Web application Samsara was deployed to Tomcat')
-                //  content('${BUILD_LOG_REGEX, regex="Tomcat endpoint", showTruncatedLines=false}')
-                    content('Tomcat endpoint: ${env.TOMCAT_HOST}:${env.TOMCAT_PORT}')
+                    subject('Web application Samsara was deployed')
+                //  content('${BUILD_LOG_REGEX, regex="Webapp endpoint", showTruncatedLines=false}')
+                    content('Webapp endpoint: ${env.ELB_HOST}:${env.ELB_PORT}')
                     sendTo {
                         recipientList()
                     }
@@ -173,12 +147,11 @@ multiJob('demo2-multijob') {
             goals('clean test')
             mavenInstallation('maven-3.5.0')
         }
-        phase('Prepare RDS, Tomcat') {
+        phase('Prepare infra') {
             continuationCondition('SUCCESSFUL')
-            phaseJob('demo2-prepare-rds')
-            phaseJob('demo2-prepare-tomcat')
+            phaseJob('demo2-prepare-infra')
         }
-        phase('Package war') {
+        phase('Build') {
             continuationCondition('SUCCESSFUL')
             phaseJob('demo2-build')
         }
@@ -192,7 +165,7 @@ multiJob('demo2-multijob') {
             contentType('text/html')
             triggers {
                 failure {
-                    subject('Failure during building web application Samsara')
+                    subject('Failure during building Web application Samsara')
                     content('${BUILD_LOG, maxLines=1500}')
                     sendTo {
                         recipientList()

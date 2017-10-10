@@ -27,10 +27,11 @@ export DB_USER=`get_from_parameter_store "DB_USER"`
 export DB_PASS=`get_from_parameter_store "DB_PASS"`
 export LOGIN_HOST="localhost"
 
-DB_INSTANCE_ID="demo2"
+DB_INSTANCE_ID="demo2-rds"
 DB_INSTANCE_CLASS="db.t2.micro"
 DB_ENGINE="postgres"
 
+ELB_NAME="demo2-elb"
 BUCKET_NAME="ansible-demo1"
 LIQUIBASE_BIN_DIR="${WORKSPACE}/liquibase/bin"
 LIQUIBASE_FILENAME="liquibase-3.5.3-bin.tar.gz"
@@ -43,20 +44,8 @@ POSTGRES_JDBC_DRIVER_URL="s3://${BUCKET_NAME}/${POSTGRES_JDBC_DRIVER_FILENAME}"
 
 DOWNLOAD_RETRIES=5
 
-ARTIFACT_FILENAME="ROOT.war"
-TOMCAT_USER=`get_from_parameter_store "TOMCAT_USER"`
-TOMCAT_PASSWORD=`get_from_parameter_store "TOMCAT_PASSWORD"`
-export TOMCAT_PORT=8080
-
-# Obtain Tomcat and RDS endpoints
-echo "Obtaining Tomcat and RDS endpoints ..."
-TOMCAT_INSTANCE_INFO=`aws ec2 describe-instances --filters "Name=tag:Name,Values=tomcat" \
---query 'Reservations[*].Instances[*].[State.Name,InstanceId,PublicDnsName]' --output text | grep -v -e terminated -e shutting-down`
-TOMCAT_INSTANCE_ID=`echo ${TOMCAT_INSTANCE_INFO} | awk '{print $2}'`
-export TOMCAT_HOST=`aws ec2 describe-instances --instance-ids ${TOMCAT_INSTANCE_ID} --filters "Name=tag:Name,Values=tomcat" \
---query 'Reservations[*].Instances[*].[State.Name,InstanceId,PublicDnsName]'  --output text | awk '{print $3}' | grep -v -e terminated -e shutting-down | grep amazon`
-echo "Tomcat URL ${TOMCAT_HOST}:${TOMCAT_PORT}"
-
+# Obtain RDS endpoint
+echo "Obtaining RDS endpoint ..."
 EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
 --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
 
@@ -91,15 +80,20 @@ sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" ${LIQUIBASE_PROPERTIES_TEMPLATE} |
 cd ${LIQUIBASE_BIN_DIR}
 ./liquibase --changeLogFile=../changelogs/changelog-main.xml --defaultsFile=../liquibase.properties update
 
-# Deploy Java application to remote Tomcat
-echo "Deploying Java application to remote Tomcat ..."
-curl "http://${TOMCAT_USER}:${TOMCAT_PASSWORD}@${TOMCAT_HOST}:${TOMCAT_PORT}/manager/text/undeploy?path=/"
-curl --upload-file ${WORKSPACE}/target/${ARTIFACT_FILENAME} "http://${TOMCAT_USER}:${TOMCAT_PASSWORD}@${TOMCAT_HOST}:${TOMCAT_PORT}/manager/text/deploy?path=/&war=file:/home/ec2-user/ROOT.war"
+# Obtain public DNS address of load balancer
+echo "Obtaining public DNS address of load balancer ..."
+ELB_INFO=`aws elb describe-load-balancers --load-balancer-name ${ELB_NAME} --output text \
+          --query 'LoadBalancerDescriptions[*].{Name:DNSName,Listeners:ListenerDescriptions[*].Listener.LoadBalancerPort}'`
+export ELB_HOST=`echo ${ELB_INFO} | grep amazonaws`
+export ELB_PORT=`echo ${ELB_INFO} | grep LISTENERS | awk '{print $2}'`
+echo "ELB endpoint: ${ELB_HOST}:${ELB_PORT}"
 
-HTTP_CODE=`curl -s -o /dev/null -w "%{http_code}" "http://${TOMCAT_HOST}:${TOMCAT_PORT}"`
+# Check connectivity to webapp loadbalancer
+echo "Checking connectivity to webapp loadbalancer ..."
+HTTP_CODE=`curl -s -o /dev/null -w "%{http_code}" "http://${ELB_HOST}:${ELB_PORT}"`
 if [[ ${HTTP_CODE} > 399 ]]; then
 	echo "HTTP_RESPONSE_CODE = ${HTTP_CODE}"
 	exit 1
 fi
-echo "Tomcat Webapp HTTP_RESPONSE_CODE = ${HTTP_CODE}"
-echo "Tomcat endpoint: ${TOMCAT_HOST}:${TOMCAT_PORT}"
+echo "Webapp HTTP_RESPONSE_CODE = ${HTTP_CODE}"
+echo "Webapp endpoint: ${ELB_HOST}:${ELB_PORT}"

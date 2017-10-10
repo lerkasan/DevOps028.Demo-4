@@ -11,10 +11,9 @@ export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
 DB_INSTANCE_ID="demo2"
 DB_INSTANCE_CLASS="db.t2.micro"
 DB_ENGINE="postgres"
-export DB_NAME=`get_from_parameter_store "DB_NAME"`
-export DB_USER=`get_from_parameter_store "DB_USER"`
-export DB_PASS=`get_from_parameter_store "DB_PASS"`
-export LOGIN_HOST="localhost"
+DB_NAME=`get_from_parameter_store "DB_NAME"`
+DB_USER=`get_from_parameter_store "DB_USER"`
+DB_PASS=`get_from_parameter_store "DB_PASS"`
 
 # Create RDS database instance if needed
 EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' \

@@ -91,3 +91,5 @@ vault.yml
 credentials
 /vagrant/python_centos/.aws/credentials
 tmp
+/jenkins/infra/terraform/terraform.tfstate
+/jenkins/infra/terraform/terraform.tfstate.backup

@@ -45,20 +45,20 @@ echo "PubkeyAuthentication yes" | sudo tee --append /etc/ssh/sshd_config
 sudo service sshd restart
 
 # Download and install JDK
-mkdir -p ${DOWNLOAD_DIR}
-sudo mkdir -p ${JDK_INSTALL_DIR}
-if [ ! -e "${DOWNLOAD_DIR}/${JDK_FILENAME}" ]; then
-    download_from_s3 "${JDK_URL}" "${DOWNLOAD_DIR}/${JDK_FILENAME}" ${DOWNLOAD_RETRIES}
-fi
-if [ -e "${DOWNLOAD_DIR}/${JDK_FILENAME}" ]; then
-    sudo tar -xzf "${DOWNLOAD_DIR}/${JDK_FILENAME}" -C "${JDK_INSTALL_DIR}"
-fi
-
-export JAVA_HOME=`find ${JDK_INSTALL_DIR} -name java | grep -v -e "openjdk" -e "jre" | head -n 1 | rev | cut -c 10- | rev`
-export PATH=${JAVA_HOME}/bin:${PATH}
-
-sudo alternatives --install /usr/bin/java java "${JAVA_HOME}/bin/java" 2
-sudo alternatives --install /usr/bin/javac javac "${JAVA_HOME}/bin/javac" 2
-sudo alternatives --set java "${JAVA_HOME}/bin/java"
-sudo alternatives --set javac "${JAVA_HOME}/bin/javac"
+#mkdir -p ${DOWNLOAD_DIR}
+#sudo mkdir -p ${JDK_INSTALL_DIR}
+#if [ ! -e "${DOWNLOAD_DIR}/${JDK_FILENAME}" ]; then
+#    download_from_s3 "${JDK_URL}" "${DOWNLOAD_DIR}/${JDK_FILENAME}" ${DOWNLOAD_RETRIES}
+#fi
+#if [ -e "${DOWNLOAD_DIR}/${JDK_FILENAME}" ]; then
+#    sudo tar -xzf "${DOWNLOAD_DIR}/${JDK_FILENAME}" -C "${JDK_INSTALL_DIR}"
+#fi
+#
+#export JAVA_HOME=`find ${JDK_INSTALL_DIR} -name java | grep -v -e "openjdk" -e "jre" | head -n 1 | rev | cut -c 10- | rev`
+#export PATH=${JAVA_HOME}/bin:${PATH}
+#
+#sudo alternatives --install /usr/bin/java java "${JAVA_HOME}/bin/java" 2
+#sudo alternatives --install /usr/bin/javac javac "${JAVA_HOME}/bin/javac" 2
+#sudo alternatives --set java "${JAVA_HOME}/bin/java"
+#sudo alternatives --set javac "${JAVA_HOME}/bin/javac"
 
