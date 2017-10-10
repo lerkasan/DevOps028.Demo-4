@@ -42,7 +42,7 @@ job('demo2-build') {
     }
 }
 
-job('demo2-prepare-infra') {
+job('demo2-infra-preparation') {
     scm {
         git {
             remote {
@@ -147,12 +147,9 @@ multiJob('demo2-MULTIJOB') {
             goals('clean test')
             mavenInstallation('maven-3.5.0')
         }
-        phase('Prepare infra') {
+        phase('Prepare infra and build') {
             continuationCondition('SUCCESSFUL')
-            phaseJob('demo2-prepare-infra')
-        }
-        phase('Build') {
-            continuationCondition('SUCCESSFUL')
+            phaseJob('demo2-infra-preparation')
             phaseJob('demo2-build')
         }
         phase('Deploy') {
