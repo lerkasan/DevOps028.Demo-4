@@ -2,11 +2,11 @@ provider "aws" {
   region = "${var.aws_region}"
 }
 
-data "terraform_remote_state" "network" {
+data "terraform_remote_state" "remote_state" {
   backend = "s3"
   config {
     bucket = "${var.bucket_name}"
-    key    = "terraform/terraform.tfstate"
+    key    = "terraform.tfstate"
     region = "${var.aws_region}"
   }
 }
@@ -46,10 +46,10 @@ resource "aws_lb_cookie_stickiness_policy" "default" {
   cookie_expiration_period = 600
 }
 
-resource "aws_autoscaling_group" "demo2_autoscale_group" {
+resource "aws_autoscaling_group" "demo2_autoscalegroup" {
 # availability_zones should be used only if no vpc_zone_identifier parameter is specified
   availability_zones   = ["${split(",", var.availability_zones)}"]
-  name                 = "demo2_autoscale_group"
+  name                 = "demo2_autoscalegroup"
   depends_on           = ["aws_launch_configuration.demo2_launch_configuration", "aws_elb.demo2_elb", "aws_subnet.demo2_subnet"]
   max_size             = "${var.max_servers_in_autoscaling_group}"
   min_size             = "${var.min_servers_in_autoscaling_group}"
