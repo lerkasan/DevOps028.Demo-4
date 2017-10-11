@@ -85,11 +85,14 @@ resource "aws_db_instance" "demo2_rds" {
 # Commented due to glitch in terraform
 # aws_autoscaling_group.demo2_autoscalegroup: diffs didn't match during apply. This is a bug with Terraform and should be reported as a GitHub Issue.
 # Mismatch reason: attribute mismatch: availability_zones.2050015877.  "availability_zones.2050015877":*terraform.ResourceAttrDiff{Old:"", New:"us-west-2c"
+# Glitch may be cause by using both alternative options: availability_zones and vpc_zone_identifier
 resource "aws_autoscaling_group" "demo2_autoscalegroup" {
 ## availability_zones should be used only if no vpc_zone_identifier parameter is specified
 ## availability_zones   = ["${var.availability_zone1}", "${var.availability_zone2}", "${var.availability_zone3}"]
   name                 = "demo2_autoscalegroup"
-  depends_on           = ["aws_launch_configuration.demo2_launch_configuration", "aws_elb.demo2_elb", "aws_subnet.demo2_subnet"]
+# Added dependency on aws_db_instance.demo2_rds to wait for RDS database creation and population before creating
+# autoscaling group with ec2 instances, because their userdata scripts tries to retrieve data from RDS database
+  depends_on           = ["aws_db_instance.demo2_rds", "aws_launch_configuration.demo2_launch_configuration", "aws_elb.demo2_elb", "aws_subnet.demo2_subnet"]
   max_size             = "${var.max_servers_in_autoscaling_group}"
   min_size             = "${var.min_servers_in_autoscaling_group}"
   desired_capacity     = "${var.desired_servers_in_autoscaling_group}"

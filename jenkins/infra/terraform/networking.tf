@@ -71,9 +71,14 @@ resource "aws_route_table" "demo2_route_table" {
   }
 }
 
-resource "aws_route_table_association" "demo2_route_table_association" {
-  subnet_id      = "${aws_subnet.demo2_subnet.id}"
-  route_table_id = "${aws_route_table.demo2_route_table.id}"
+//resource "aws_route_table_association" "demo2_route_table_association" {
+//  subnet_id      = "${aws_subnet.demo2_subnet.id}"
+//  route_table_id = "${aws_route_table.demo2_route_table.id}"
+//}
+
+resource "aws_main_route_table_association" "demo2_main_route_table_association" {
+  vpc_id          = "${aws_vpc.demo2_vpc.id}"
+  route_table_id  = "${aws_route_table.demo2_route_table.id}"
 }
 
 # Security group to access RDS instances over Postgres port
