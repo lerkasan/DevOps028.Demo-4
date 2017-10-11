@@ -19,8 +19,12 @@ export ELB_HOST=`echo ${ELB_INFO} | grep amazonaws | awk '{print $1}'`
 export ELB_PORT=`echo ${ELB_INFO} | grep LISTENERS | awk '{print $3}'`
 echo "ELB endpoint: ${ELB_HOST}:${ELB_PORT}"
 
+# Wait for Spring Boot application to launch properly
+echo "Waiting 30 seconds for Spring Boot application to launch properly before checking connectivity to webapp load balancer ..."
+sleep 30
+
 # Check connectivity to webapp loadbalancer
-echo "Checking connectivity to webapp loadbalancer ..."
+echo "Checking connectivity to webapp load balancer ..."
 HTTP_CODE=`curl -s -o /dev/null -w "%{http_code}" "http://${ELB_HOST}:${ELB_PORT}"`
 if [[ ${HTTP_CODE} > 399 ]]; then
 	echo "HTTP_RESPONSE_CODE = ${HTTP_CODE}"

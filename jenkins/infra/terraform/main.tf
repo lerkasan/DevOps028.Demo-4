@@ -39,15 +39,15 @@ resource "aws_elb" "demo2_elb" {
     lb_protocol       = "http"
   }
   health_check {
-    healthy_threshold   = 3
-    unhealthy_threshold = 4
+    healthy_threshold   = 2
+    unhealthy_threshold = 5
     timeout             = 15
-    target              = "HTTP:${var.webapp_port}/"
-    interval            = 180
+    target              = "HTTP:${var.webapp_port}/login"
+    interval            = 20
   }
 # instances                   = ["${aws_instance.demo2_tomcat.id}"]
   cross_zone_load_balancing   = true
-  idle_timeout                = 600
+  idle_timeout                = 400
   connection_draining         = true
   connection_draining_timeout = 600
 }
@@ -91,7 +91,7 @@ resource "aws_autoscaling_group" "demo2_autoscalegroup" {
   launch_configuration = "${aws_launch_configuration.demo2_launch_configuration.name}"
   health_check_type    = "EC2"
 ## Attaching load balancers here results in load balancer with all instances being out of service. I'll try resource "aws_autoscaling_attachment" instead
-## load_balancers       = ["${aws_elb.demo2_elb.name}"]
+  load_balancers       = ["${aws_elb.demo2_elb.name}"]
 ## vpc_zone_identifier should be used only if no availability_zones parameter is specified.
 ## Must provide at least one classic link security group if a classic link VPC is provided
   vpc_zone_identifier  = ["${aws_subnet.demo2_subnet.id}"]
@@ -103,12 +103,12 @@ resource "aws_autoscaling_group" "demo2_autoscalegroup" {
   }
 }
 
-# Attach classic load balancer to autoscaling group here instead of using parameter load_balancers at resource "aws_autoscaling_group"
-resource "aws_autoscaling_attachment" "asg_attachment_bar" {
-  depends_on             = ["aws_autoscaling_group.demo2_autoscalegroup"]
-  autoscaling_group_name = "${aws_autoscaling_group.demo2_autoscalegroup.id}"
-  elb                    = "${aws_elb.demo2_elb.id}"
-}
+//# Attach classic load balancer to autoscaling group here instead of using parameter load_balancers at resource "aws_autoscaling_group"
+//resource "aws_autoscaling_attachment" "asg_attachment_bar" {
+//  depends_on             = ["aws_autoscaling_group.demo2_autoscalegroup"]
+//  autoscaling_group_name = "${aws_autoscaling_group.demo2_autoscalegroup.id}"
+//  elb                    = "${aws_elb.demo2_elb.id}"
+//}
 
 
 //resource "aws_instance" "demo2_tomcat" {
