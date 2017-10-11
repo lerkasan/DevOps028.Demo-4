@@ -25,6 +25,10 @@ variable "availability_zone3" {
   default     = "us-west-2c"
 }
 
+variable "bucket_name" {
+  default     = "ansible-demo1"
+}
+
 # --------- Default VPC parameters -----------
 
 variable "default_vpc_id" {

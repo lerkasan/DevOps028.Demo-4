@@ -2,6 +2,15 @@ provider "aws" {
   region = "${var.aws_region}"
 }
 
+data "terraform_remote_state" "network" {
+  backend = "s3"
+  config {
+    bucket = "${var.bucket_name}"
+    key    = "terraform/terraform.tfstate"
+    region = "${var.aws_region}"
+  }
+}
+
 resource "aws_elb" "demo2_elb" {
   name                = "demo2-elb"
   depends_on          = ["aws_security_group.demo2_elb_secgroup", "aws_subnet.demo2_subnet"]
