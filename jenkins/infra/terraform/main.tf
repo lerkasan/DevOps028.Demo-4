@@ -83,7 +83,9 @@ resource "aws_launch_configuration" "demo2_launch_configuration" {
 
 resource "aws_db_instance" "demo2_rds" {
   name = "demo2_rds"
-  depends_on              = ["aws_security_group.demo2_rds_secgroup"]
+# Added aws_autoscaling_group.demo2_autoscalegroup to dependencies as it's too long to wait for RDS creation, deletion,
+# recreation in case of failure(glitch) with aws_autoscaling_group.demo2_autoscalegroup"
+  depends_on              = ["aws_security_group.demo2_rds_secgroup", "aws_autoscaling_group.demo2_autoscalegroup"]
   identifier              = "${var.db_identifier}"
   allocated_storage       = "${var.db_storage_size}"
   storage_type            = "gp2"
