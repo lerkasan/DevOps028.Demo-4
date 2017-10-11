@@ -42,33 +42,18 @@ pipeline {
                 sh "mvn clean test"
             }
         }
-        stage("Build artifact and prepare AWS infrastructure") {
-            steps {
-                parallel (
-                        prepare_infra: {
-                            echo "Preparing AWS infrastructure ..."
-                            sh "chmod +x jenkins/jenkins/job-dsl/*.sh"
-                            sh "jenkins/jenkins/job-dsl/prepare-infra.sh"
-                        },
-                        build_jar: {
-                            echo "Building jar ..."
-                            sh "mvn clean package"
-                            sh "jenkins/jenkins/job-dsl/postbuild-step.sh"
-                            archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
-                            //  archive "target/ROOT.war"
-                            stash includes: 'target/*.jar', name: 'artifact'
-                        }
-
-                )
-            }
+        stage("Build artifact") {
+            echo "Building jar ..."
+            sh "mvn clean package"
+            sh "chmod +x jenkins/jenkins/job-dsl/*.sh"
+            sh "jenkins/jenkins/job-dsl/postbuild-step.sh"
+            archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
         }
-        stage("Deploy") {
+        stage("Prepare AWS infrastructure and deploy") {
             steps {
-                echo "Deploying project"
-                unstash 'artifact'
-            //  unarchive()
-                sh "jenkins/jenkins/job-dsl/deploy-step.sh"
-            //  emailext body: '${BUILD_LOG_REGEX, regex="Webapp endpoint", showTruncatedLines=false}',
+                echo "Preparing AWS infrastructure ..."
+                sh "jenkins/jenkins/job-dsl/prepare-infra.sh"
+                sh "jenkins/jenkins/job-dsl/check-webapp-response.sh"
                 emailext body: 'Webapp endpoint: ${env.ELB_HOST}:${env.ELB_PORT}',
                          subject: 'Web application Samsara was deployed',
                          to: 'lerkasan@gmail.com'

@@ -8,11 +8,6 @@ variable "aws_region" {
   description = "AWS region to launch servers."
 }
 
-variable "availability_zones" {
-  default     = "us-west-2a,us-west-2b,us-west-2c"
-  description = "List of availability zones in us-west-2 AWS region "
-}
-
 variable "availability_zone1" {
   default     = "us-west-2c"
 }

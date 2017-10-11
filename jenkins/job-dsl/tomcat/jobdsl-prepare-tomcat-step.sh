@@ -19,7 +19,7 @@ TOMCAT_AVAIL_ZONE="us-west-2a"
 TOMCAT_SSH_KEY_NAME="aws_ec2_2"
 TOMCAT_AMI="ami-e689729e"
 TOMCAT_SECURITY_GROUP="sg-7c3b9f1a"
-TOMCAT_USERDATA_FILE_PATH="${PWD}/jenkins/infra/tomcat-userdata.sh"
+TOMCAT_USERDATA_FILE_PATH="${PWD}/jenkins/job-dsl/tomcat-userdata.sh"
 TOMCAT_IAM="demo1" # for --iam-instance-profile Name=${TOMCAT_IAM} option at aws ec2 run-instances
 TOMCAT_INSTALL_DIR="/opt/tomcat"
 TOMCAT_VERSION="8.5.20"

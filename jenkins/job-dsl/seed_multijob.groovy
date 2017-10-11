@@ -31,7 +31,6 @@ job('demo2-build') {
     }
     publishers {
         archiveArtifacts {
-            pattern('target/ROOT.war')
             pattern('target/*.jar')
             onlyIfSuccessful()
         }
@@ -60,42 +59,7 @@ job('demo2-infra-preparation') {
     }
     steps {
         shell(readFileFromWorkspace('jenkins/job-dsl/prepare-infra.sh'))
-    }
-    wrappers {
-        colorizeOutput()
-        timestamps()
-    }
-}
-
-job('demo2-deploy') {
-    jdk('oracle-jdk8u144-linux-x64')
-    properties {
-        githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
-    }
-    scm {
-        git {
-            remote {
-                url('https://github.com/lerkasan/DevOps028.git')
-                name('origin')
-            }
-            branch('master')
-            browser {
-                gitWeb('https://github.com/lerkasan/DevOps028.git')
-            }
-            extensions {
-                cleanBeforeCheckout()
-            }
-        }
-    }
-    steps {
-        copyArtifacts('demo2-build') {
-            targetDirectory('target')
-            flatten()
-            buildSelector {
-                latestSuccessful(true)
-            }
-        }
-        shell(readFileFromWorkspace('jenkins/job-dsl/deploy-step.sh'))
+        shell(readFileFromWorkspace('jenkins/job-dsl/check-webapp-response.sh'))
     }
     publishers {
         extendedEmail {
@@ -147,13 +111,13 @@ multiJob('demo2-MULTIJOB') {
             goals('clean test')
             mavenInstallation('maven-3.5.0')
         }
-        phase('Prepare infra and build') {
+        phase('Build') {
             continuationCondition('SUCCESSFUL')
-            phaseJob('demo2-infra-preparation')
             phaseJob('demo2-build')
         }
-        phase('Deploy') {
-            phaseJob('demo2-deploy')
+        phase('Prepare infrastructure and deploy') {
+            continuationCondition('SUCCESSFUL')
+            phaseJob('demo2-infra-preparation')
         }
     }
     publishers {

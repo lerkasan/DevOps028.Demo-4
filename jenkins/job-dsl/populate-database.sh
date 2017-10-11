@@ -31,7 +31,6 @@ DB_INSTANCE_ID="demo2-rds"
 DB_INSTANCE_CLASS="db.t2.micro"
 DB_ENGINE="postgres"
 
-ELB_NAME="demo2-elb"
 BUCKET_NAME="ansible-demo1"
 LIQUIBASE_BIN_DIR="${WORKSPACE}/liquibase/bin"
 LIQUIBASE_FILENAME="liquibase-3.5.3-bin.tar.gz"
@@ -79,21 +78,3 @@ sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" ${LIQUIBASE_PROPERTIES_TEMPLATE} |
 
 cd ${LIQUIBASE_BIN_DIR}
 ./liquibase --changeLogFile=../changelogs/changelog-main.xml --defaultsFile=../liquibase.properties update
-
-# Obtain public DNS address of load balancer
-echo "Obtaining public DNS address of load balancer ..."
-ELB_INFO=`aws elb describe-load-balancers --load-balancer-name ${ELB_NAME} --output text \
-          --query 'LoadBalancerDescriptions[*].{Name:DNSName,Listeners:ListenerDescriptions[*].Listener.LoadBalancerPort}'`
-export ELB_HOST=`echo ${ELB_INFO} | grep amazonaws`
-export ELB_PORT=`echo ${ELB_INFO} | grep LISTENERS | awk '{print $2}'`
-echo "ELB endpoint: ${ELB_HOST}:${ELB_PORT}"
-
-# Check connectivity to webapp loadbalancer
-echo "Checking connectivity to webapp loadbalancer ..."
-HTTP_CODE=`curl -s -o /dev/null -w "%{http_code}" "http://${ELB_HOST}:${ELB_PORT}"`
-if [[ ${HTTP_CODE} > 399 ]]; then
-	echo "HTTP_RESPONSE_CODE = ${HTTP_CODE}"
-	exit 1
-fi
-echo "Webapp HTTP_RESPONSE_CODE = ${HTTP_CODE}"
-echo "Webapp endpoint: ${ELB_HOST}:${ELB_PORT}"

@@ -46,28 +46,6 @@ resource "aws_lb_cookie_stickiness_policy" "default" {
   cookie_expiration_period = 600
 }
 
-resource "aws_autoscaling_group" "demo2_autoscalegroup" {
-# availability_zones should be used only if no vpc_zone_identifier parameter is specified
-  availability_zones   = ["${split(",", var.availability_zones)}"]
-  name                 = "demo2_autoscalegroup"
-  depends_on           = ["aws_launch_configuration.demo2_launch_configuration", "aws_elb.demo2_elb", "aws_subnet.demo2_subnet"]
-  max_size             = "${var.max_servers_in_autoscaling_group}"
-  min_size             = "${var.min_servers_in_autoscaling_group}"
-  desired_capacity     = "${var.desired_servers_in_autoscaling_group}"
-  launch_configuration = "${aws_launch_configuration.demo2_launch_configuration.name}"
-  health_check_type    = "EC2"
-  load_balancers       = ["${aws_elb.demo2_elb.name}"]
-# vpc_zone_identifier should be used only if no availability_zones parameter is specified.
-# Must provide at least one classic link security group if a classic link VPC is provided
-  vpc_zone_identifier  = ["${aws_subnet.demo2_subnet.id}"]
-
-  tag {
-    key                 = "Name"
-    value               = "webapp"
-    propagate_at_launch = "true"
-  }
-}
-
 resource "aws_launch_configuration" "demo2_launch_configuration" {
   name                = "demo2_launch_configuration"
   depends_on          = ["aws_security_group.demo2_webapp_secgroup"]
@@ -83,9 +61,7 @@ resource "aws_launch_configuration" "demo2_launch_configuration" {
 
 resource "aws_db_instance" "demo2_rds" {
   name = "demo2_rds"
-# Added aws_autoscaling_group.demo2_autoscalegroup to dependencies as it's too long to wait for RDS creation, deletion,
-# recreation in case of failure(glitch) with aws_autoscaling_group.demo2_autoscalegroup"
-  depends_on              = ["aws_security_group.demo2_rds_secgroup", "aws_autoscaling_group.demo2_autoscalegroup"]
+  depends_on              = ["aws_security_group.demo2_rds_secgroup"]
   identifier              = "${var.db_identifier}"
   allocated_storage       = "${var.db_storage_size}"
   storage_type            = "gp2"
@@ -100,6 +76,33 @@ resource "aws_db_instance" "demo2_rds" {
   publicly_accessible     = "false"
   vpc_security_group_ids  = ["${aws_security_group.demo2_rds_secgroup.id}"]
   db_subnet_group_name    = "${aws_db_subnet_group.demo2_db_subnet_group.id}"
+
+  provisioner "local-exec" {
+    command = "../../job-dsl/populate-database.sh"
+  }
+}
+
+# Commented due to glitch in terraform
+resource "aws_autoscaling_group" "demo2_autoscalegroup" {
+## availability_zones should be used only if no vpc_zone_identifier parameter is specified
+  availability_zones   = ["${var.availability_zone1}", "${var.availability_zone2}", "${var.availability_zone3}"]
+  name                 = "demo2_autoscalegroup"
+  depends_on           = ["aws_launch_configuration.demo2_launch_configuration", "aws_elb.demo2_elb", "aws_subnet.demo2_subnet"]
+  max_size             = "${var.max_servers_in_autoscaling_group}"
+  min_size             = "${var.min_servers_in_autoscaling_group}"
+  desired_capacity     = "${var.desired_servers_in_autoscaling_group}"
+  launch_configuration = "${aws_launch_configuration.demo2_launch_configuration.name}"
+  health_check_type    = "EC2"
+  load_balancers       = ["${aws_elb.demo2_elb.name}"]
+## vpc_zone_identifier should be used only if no availability_zones parameter is specified.
+## Must provide at least one classic link security group if a classic link VPC is provided
+  vpc_zone_identifier  = ["${aws_subnet.demo2_subnet.id}"]
+
+  tag {
+    key                 = "Name"
+    value               = "webapp"
+    propagate_at_launch = "true"
+  }
 }
 
 //resource "aws_instance" "demo2_tomcat" {

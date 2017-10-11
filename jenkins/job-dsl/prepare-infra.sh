@@ -15,6 +15,6 @@ export TF_VAR_db_pass=`get_from_parameter_store "DB_PASS"`
 
 cd "${WORKSPACE}/jenkins/jenkins/infra/terraform"
 /home/ec2-user/terraform init
-# /home/ec2-user/terraform plan --out infra-plan
-/home/ec2-user/terraform apply #"infra-plan"
+/home/ec2-user/terraform plan --out infra-plan
+/home/ec2-user/terraform apply "infra-plan"
 /home/ec2-user/terraform show

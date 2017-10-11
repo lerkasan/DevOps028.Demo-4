@@ -43,7 +43,6 @@ pipeline {
                         prepare_rds: {
                             echo "Preparing RDS"
                             sh "chmod +x jenkins/jenkins/job-dsl/tomcat/*.sh"
-                            sh "chmod +x jenkins/jenkins/infra/tomcat-userdata.sh"
                             sh "jenkins/jenkins/job-dsl/tomcat/jobdsl-prepare-rds-step.sh"
                         },
                         prepare_tomcat: {
