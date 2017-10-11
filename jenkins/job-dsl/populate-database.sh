@@ -43,15 +43,6 @@ POSTGRES_JDBC_DRIVER_URL="s3://${BUCKET_NAME}/${POSTGRES_JDBC_DRIVER_FILENAME}"
 
 DOWNLOAD_RETRIES=5
 
-# Obtain RDS endpoint
-echo "Obtaining RDS endpoint ..."
-EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
---query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
-
-DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
-DB_PORT=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $3}'`
-echo "Database URL ${DB_HOST}:${DB_PORT}"
-
 # Download Liquibase binaries and PostgreSQL JDBC driver
 echo "Downloading Liquibase binaries and PostgreSQL JDBC driver ..."
 mkdir -p ${LIQUIBASE_BIN_DIR}
@@ -65,6 +56,26 @@ fi
 if [ ! -e "${LIQUIBASE_BIN_DIR}/lib/${POSTGRES_JDBC_DRIVER_FILENAME}" ]; then
     download_from_s3 "${POSTGRES_JDBC_DRIVER_URL}" "${LIQUIBASE_BIN_DIR}/lib/${POSTGRES_JDBC_DRIVER_FILENAME}" ${DOWNLOAD_RETRIES}
 fi
+
+# Obtain RDS database endpoint
+echo "Obtaining RDS database endpoint ..."
+EXISTING_DB_INSTANCE_INFO=""
+MAX_RETRIES_TO_GET_DBINFO=20
+RETRIES=0
+while [[ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ]] && [ ${RETRIES} -lt ${MAX_RETRIES_TO_GET_DBINFO} ]; do
+    sleep 30
+    EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
+    --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
+    echo "Try: ${RETRIES}    DBinfo: ${EXISTING_DB_INSTANCE_INFO}"
+    let "RETRIES++"
+done
+if [[ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ]]; then
+    echo "Failure - no RDS database with identifier ${DB_INSTANCE_ID} available."
+    exit 1
+fi
+DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
+DB_PORT=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $3}'`
+echo "RDS endpoint: ${DB_HOST}:${DB_PORT}  Retries: ${RETRIES}"
 
 # Update database using Liquibase
 echo "Updating database using Liquibase ..."
