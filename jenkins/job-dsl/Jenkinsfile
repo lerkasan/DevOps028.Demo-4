@@ -67,7 +67,7 @@ pipeline {
                 echo "Deploying project"
                 unstash 'artifact'
             //  unarchive()
-                sh "jenkins/jenkins/job-dsl/tomcat/deploy-step.sh"
+                sh "jenkins/jenkins/job-dsl/deploy-step.sh"
             //  emailext body: '${BUILD_LOG_REGEX, regex="Webapp endpoint", showTruncatedLines=false}',
                 emailext body: 'Webapp endpoint: ${env.ELB_HOST}:${env.ELB_PORT}',
                          subject: 'Web application Samsara was deployed',
