@@ -31,7 +31,7 @@ resource "aws_subnet" "demo2_subnet2_for_rds" {
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
   tags {
-    Name = "demo2_second_rds_subnet"
+    Name = "demo2_subnet2_for_rds"
   }
 }
 
@@ -42,7 +42,7 @@ resource "aws_subnet" "demo2_subnet3_for_rds" {
   cidr_block              = "10.0.2.0/24"
   map_public_ip_on_launch = true
   tags {
-    Name = "demo2_second_rds_subnet"
+    Name = "demo2_subnet3_for_rds"
   }
 }
 
