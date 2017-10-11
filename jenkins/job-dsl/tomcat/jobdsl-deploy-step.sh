@@ -19,8 +19,8 @@ function download_from_s3 {
 }
 
 export AWS_DEFAULT_REGION="us-west-2"
-export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "SECRET_ACCESS_KEY"`
-export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
+export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
+export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 
 export DB_NAME=`get_from_parameter_store "DB_NAME"`
 export DB_USER=`get_from_parameter_store "DB_USER"`

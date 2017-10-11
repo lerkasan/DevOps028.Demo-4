@@ -1,14 +1,13 @@
 #!groovy
 
 pipeline {
-    agent any
+    agent {
+        label 'slave-node'
+    }
     tools {
         jdk 'oracle-jdk8u144-linux-x64'
         maven "maven-3.5.0"
     }
-//    environment {
-//        REPO_URL = 'www.my.repo'
-//    }
     options {
         timestamps()
     }

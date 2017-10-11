@@ -47,16 +47,17 @@ resource "aws_lb_cookie_stickiness_policy" "default" {
 }
 
 resource "aws_launch_configuration" "demo2_launch_configuration" {
-  name                = "demo2_launch_configuration"
-  depends_on          = ["aws_security_group.demo2_webapp_secgroup"]
-  image_id            = "${var.ec2_ami}"
-  instance_type       = "${var.ec2_instance_type}"
-  security_groups     = ["${aws_security_group.demo2_webapp_secgroup.id}"]
-  user_data           = "${file("userdata.sh")}"
-  key_name            = "${var.ssh_key_name}"
+  name                  = "demo2_launch_configuration"
+  depends_on            = ["aws_security_group.demo2_webapp_secgroup"]
+  image_id              = "${var.ec2_ami}"
+  instance_type         = "${var.ec2_instance_type}"
+  security_groups       = ["${aws_security_group.demo2_webapp_secgroup.id}"]
+  user_data             = "${file("../job-dsl/userdata.sh")}"
+  key_name              = "${var.ssh_key_name}"
+  iam_instance_profile  = "${var.iam_profile}" # IAM role for ec2 instances in launch configuration. Role gives read only permissions to S3, RDS, SSM
 # Must provide at least one classic link security group if a classic link VPC is provided.
-# vpc_classic_link_id = "${var.default_vpc_id}}"
-  enable_monitoring   = "false"
+# vpc_classic_link_id   = "${var.default_vpc_id}}"
+  enable_monitoring     = "false"
 }
 
 resource "aws_db_instance" "demo2_rds" {
@@ -117,7 +118,7 @@ resource "aws_autoscaling_group" "demo2_autoscalegroup" {
 //  # Security group to allow HTTP and SSH access
 //  vpc_security_group_ids = ["${aws_security_group.demo2_webapp_secgroup.id}"]
 //  subnet_id              = "${aws_subnet.demo2_subnet.id}"
-//  user_data              = "${file("userdata.sh")}"
+//  user_data              = "${file("../job-dsl/tomcat/tomcat-userdata.sh")}"
 //  count = 2
 //
 //  tags {

@@ -62,16 +62,21 @@ variable "ssh_key_name" {
 
 variable "ec2_instance_type" {
   description = "AWS EC2 instance type"
-  default = "t2.micro"
+  default   = "t2.micro"
 }
 
 variable "ec2_ami" {
-  default =  "ami-e689729e"
+  default     =  "ami-e689729e"
   description = "Amazon Linux AMI x64 2017.09.0 (HVM)"
 }
 
+variable "iam_profile" {
+  default = "demo2_webapp_instance"
+  description = "IAM role for ec2 instances in launch configuration. Role gives read only permissions to S3, RDS, SSM"
+}
+
 variable "webapp_port" {
-  default =  9000
+  default     =  9000
   description = "HTTP port of web application, may be 8080 for Tomcat or 9000 for Spring Boot"
 }
 

@@ -6,8 +6,8 @@ function get_from_parameter_store {
 }
 
 export AWS_DEFAULT_REGION="us-west-2"
-export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "SECRET_ACCESS_KEY"`
-export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
+export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
+export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 
 ELB_NAME="demo2-elb"
 
@@ -15,8 +15,8 @@ ELB_NAME="demo2-elb"
 echo "Obtaining public DNS address of load balancer ..."
 ELB_INFO=`aws elb describe-load-balancers --load-balancer-name ${ELB_NAME} --output text \
           --query 'LoadBalancerDescriptions[*].{Name:DNSName,Listeners:ListenerDescriptions[*].Listener.LoadBalancerPort}'`
-export ELB_HOST=`echo ${ELB_INFO} | grep amazonaws`
-export ELB_PORT=`echo ${ELB_INFO} | grep LISTENERS | awk '{print $2}'`
+export ELB_HOST=`echo ${ELB_INFO} | grep amazonaws | awk '{print $1}'`
+export ELB_PORT=`echo ${ELB_INFO} | grep LISTENERS | awk '{print $3}'`
 echo "ELB endpoint: ${ELB_HOST}:${ELB_PORT}"
 
 # Check connectivity to webapp loadbalancer

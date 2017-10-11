@@ -19,8 +19,8 @@ function download_from_s3 {
 }
 
 export AWS_DEFAULT_REGION="us-west-2"
-export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "SECRET_ACCESS_KEY"`
-export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
+export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "webapp_secret_access_key"`
+export AWS_ACCESS_KEY_ID=`get_from_parameter_store "webapp_access_key_id"`
 
 export DB_NAME=`get_from_parameter_store "DB_NAME"`
 export DB_USER=`get_from_parameter_store "DB_USER"`
@@ -29,7 +29,7 @@ export LOGIN_HOST="localhost"
 
 DB_INSTANCE_ID="demo2"
 BUCKET_NAME="ansible-demo1"
-OS_USERNAME=`whoami`
+OS_USERNAME="ec2-user"
 DEMO_DIR="demo2"
 
 JDK_FILENAME="jdk-8u144-linux-x64.tar.gz"

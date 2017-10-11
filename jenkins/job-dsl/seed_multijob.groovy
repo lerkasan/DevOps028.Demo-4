@@ -1,6 +1,7 @@
 #!groovy
 
 job('demo2-build') {
+    label('slave-node')
     jdk('oracle-jdk8u144-linux-x64')
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
@@ -42,6 +43,7 @@ job('demo2-build') {
 }
 
 job('demo2-infra-preparation') {
+    label('slave-node')
     scm {
         git {
             remote {
@@ -84,6 +86,7 @@ job('demo2-infra-preparation') {
 }
 
 multiJob('demo2-MULTIJOB') {
+    label('slave-node')
     jdk('oracle-jdk8u144-linux-x64')
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
