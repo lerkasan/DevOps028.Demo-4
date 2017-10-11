@@ -21,6 +21,10 @@ variable "availability_zone2" {
   default     = "us-west-2b"
 }
 
+variable "availability_zone3" {
+  default     = "us-west-2c"
+}
+
 # --------- Default VPC parameters -----------
 
 variable "default_vpc_id" {

@@ -15,6 +15,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                echo "Cleaning workspace ..."
+                cleanWs()
                 echo "Checkout master branch to workspace folder and checkout jenkins branch to subfolder 'jenkins'"
                 checkout(
                         [$class: 'GitSCM',
