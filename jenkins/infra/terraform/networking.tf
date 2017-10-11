@@ -13,7 +13,6 @@ resource "aws_vpc" "demo2_vpc" {
 }
 
 resource "aws_subnet" "demo2_subnet" {
-# depends_on              = ["aws_vpc.demo2_vpc"]
   vpc_id                  = "${aws_vpc.demo2_vpc.id}"
   availability_zone       = "${var.availability_zone1}"
   cidr_block              = "10.0.0.0/24"
@@ -25,7 +24,6 @@ resource "aws_subnet" "demo2_subnet" {
 }
 
 resource "aws_subnet" "demo2_subnet2_for_rds" {
-  # depends_on              = ["aws_vpc.demo2_vpc"]
   vpc_id                  = "${aws_vpc.demo2_vpc.id}"
   availability_zone       = "${var.availability_zone2}"
   cidr_block              = "10.0.1.0/24"
@@ -36,7 +34,6 @@ resource "aws_subnet" "demo2_subnet2_for_rds" {
 }
 
 resource "aws_subnet" "demo2_subnet3_for_rds" {
-  # depends_on              = ["aws_vpc.demo2_vpc"]
   vpc_id                  = "${aws_vpc.demo2_vpc.id}"
   availability_zone       = "${var.availability_zone3}"
   cidr_block              = "10.0.2.0/24"
@@ -70,11 +67,6 @@ resource "aws_route_table" "demo2_route_table" {
     Name = "demo2_route_table"
   }
 }
-
-//resource "aws_route_table_association" "demo2_route_table_association" {
-//  subnet_id      = "${aws_subnet.demo2_subnet.id}"
-//  route_table_id = "${aws_route_table.demo2_route_table.id}"
-//}
 
 resource "aws_main_route_table_association" "demo2_main_route_table_association" {
   vpc_id          = "${aws_vpc.demo2_vpc.id}"

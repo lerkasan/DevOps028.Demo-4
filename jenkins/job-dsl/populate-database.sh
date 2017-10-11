@@ -59,7 +59,8 @@ fi
 
 # Obtain RDS database endpoint
 echo "Obtaining RDS database endpoint ..."
-EXISTING_DB_INSTANCE_INFO=""
+EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
+    --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
 MAX_RETRIES_TO_GET_DBINFO=20
 RETRIES=0
 while [[ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ]] && [ ${RETRIES} -lt ${MAX_RETRIES_TO_GET_DBINFO} ]; do

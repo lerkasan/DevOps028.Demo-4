@@ -74,14 +74,11 @@ resource "aws_launch_configuration" "demo2_launch_configuration" {
   enable_monitoring     = "false"
 }
 
-# Commented due to glitch in terraform
-# aws_autoscaling_group.demo2_autoscalegroup: diffs didn't match during apply. This is a bug with Terraform and should be reported as a GitHub Issue.
-# Mismatch reason: attribute mismatch: availability_zones.2050015877.  "availability_zones.2050015877":*terraform.ResourceAttrDiff{Old:"", New:"us-west-2c"
-# Glitch may be cause by using both alternative options: availability_zones and vpc_zone_identifier
 resource "aws_autoscaling_group" "demo2_autoscalegroup" {
-## availability_zones should be used only if no vpc_zone_identifier parameter is specified
-## availability_zones   = ["${var.availability_zone1}", "${var.availability_zone2}", "${var.availability_zone3}"]
   name                 = "demo2_autoscalegroup"
+# availability_zones should be used only if no vpc_zone_identifier parameter is specified
+# availability_zones   = ["${var.availability_zone1}", "${var.availability_zone2}", "${var.availability_zone3}"]
+
 # Added dependency on aws_db_instance.demo2_rds to wait for RDS database creation and population before creating
 # autoscaling group with ec2 instances, because their userdata scripts tries to retrieve data from RDS database
   depends_on           = ["aws_db_instance.demo2_rds", "aws_launch_configuration.demo2_launch_configuration", "aws_subnet.demo2_subnet"]
@@ -90,10 +87,10 @@ resource "aws_autoscaling_group" "demo2_autoscalegroup" {
   desired_capacity     = "${var.desired_servers_in_autoscaling_group}"
   launch_configuration = "${aws_launch_configuration.demo2_launch_configuration.name}"
   health_check_type    = "EC2"
-## Attaching load balancers here results in load balancer with all instances being out of service. I'll try resource "aws_autoscaling_attachment" instead
+# Alternative to attaching load balancers here is using resource "aws_autoscaling_attachment"
   load_balancers       = ["${aws_elb.demo2_elb.name}"]
-## vpc_zone_identifier should be used only if no availability_zones parameter is specified.
-## Must provide at least one classic link security group if a classic link VPC is provided
+# vpc_zone_identifier should be used only if no availability_zones parameter is specified.
+# Must provide at least one classic link security group if a classic link VPC is provided
   vpc_zone_identifier  = ["${aws_subnet.demo2_subnet.id}"]
 
   tag {
@@ -103,25 +100,9 @@ resource "aws_autoscaling_group" "demo2_autoscalegroup" {
   }
 }
 
-//# Attach classic load balancer to autoscaling group here instead of using parameter load_balancers at resource "aws_autoscaling_group"
-//resource "aws_autoscaling_attachment" "asg_attachment_bar" {
-//  depends_on             = ["aws_autoscaling_group.demo2_autoscalegroup"]
-//  autoscaling_group_name = "${aws_autoscaling_group.demo2_autoscalegroup.id}"
-//  elb                    = "${aws_elb.demo2_elb.id}"
-//}
-
-
-//resource "aws_instance" "demo2_tomcat" {
-//  instance_type = "t2.micro"
-//  ami = "{$var.ec2_ami}"
-//  key_name = "${var.ssh_key_name}"
-//  # Security group to allow HTTP and SSH access
-//  vpc_security_group_ids = ["${aws_security_group.demo2_webapp_secgroup.id}"]
-//  subnet_id              = "${aws_subnet.demo2_subnet.id}"
-//  user_data              = "${file("../job-dsl/tomcat/tomcat-userdata.sh")}"
-//  count = 2
-//
-//  tags {
-//    Name = "tomcat"
-//  }
-//}
+# Attach classic load balancer to autoscaling group here can be used instead of using parameter load_balancers at resource "aws_autoscaling_group"
+# resource "aws_autoscaling_attachment" "asg_attachment_bar" {
+#   depends_on             = ["aws_autoscaling_group.demo2_autoscalegroup"]
+#   autoscaling_group_name = "${aws_autoscaling_group.demo2_autoscalegroup.id}"
+#   elb                    = "${aws_elb.demo2_elb.id}"
+# }
