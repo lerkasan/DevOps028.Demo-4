@@ -2,25 +2,6 @@ provider "aws" {
   region = "${var.aws_region}"
 }
 
-resource "aws_db_instance" "demo2_rds" {
-  name = "demo2_rds"
-  depends_on              = ["aws_security_group.demo2_rds_secgroup"]
-  identifier              = "${var.db_identifier}"
-  allocated_storage       = "${var.db_storage_size}"
-  storage_type            = "gp2"
-  instance_class          = "${var.db_instance_class}"
-  engine                  = "${var.db_engine}"
-  engine_version          = "${var.db_engine_version}"
-  port                    = "${var.db_port}"
-  backup_retention_period = "0"
-  name                    = "${var.db_name}"
-  username                = "${var.db_user}"
-  password                = "${var.db_pass}"
-  publicly_accessible     = "false"
-  vpc_security_group_ids  = ["${aws_security_group.demo2_rds_secgroup.id}"]
-  db_subnet_group_name    = "${aws_db_subnet_group.demo2_db_subnet_group.id}"
-}
-
 resource "aws_elb" "demo2_elb" {
   name                = "demo2-elb"
   depends_on          = ["aws_security_group.demo2_elb_secgroup", "aws_subnet.demo2_subnet"]
@@ -89,6 +70,25 @@ resource "aws_launch_configuration" "demo2_launch_configuration" {
 # Must provide at least one classic link security group if a classic link VPC is provided.
 # vpc_classic_link_id = "${var.default_vpc_id}}"
   enable_monitoring   = "false"
+}
+
+resource "aws_db_instance" "demo2_rds" {
+  name = "demo2_rds"
+  depends_on              = ["aws_security_group.demo2_rds_secgroup"]
+  identifier              = "${var.db_identifier}"
+  allocated_storage       = "${var.db_storage_size}"
+  storage_type            = "gp2"
+  instance_class          = "${var.db_instance_class}"
+  engine                  = "${var.db_engine}"
+  engine_version          = "${var.db_engine_version}"
+  port                    = "${var.db_port}"
+  backup_retention_period = "0"
+  name                    = "${var.db_name}"
+  username                = "${var.db_user}"
+  password                = "${var.db_pass}"
+  publicly_accessible     = "false"
+  vpc_security_group_ids  = ["${aws_security_group.demo2_rds_secgroup.id}"]
+  db_subnet_group_name    = "${aws_db_subnet_group.demo2_db_subnet_group.id}"
 }
 
 //resource "aws_instance" "demo2_tomcat" {
