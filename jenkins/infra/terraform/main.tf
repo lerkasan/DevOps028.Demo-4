@@ -25,17 +25,17 @@ resource "aws_elb" "demo2_elb" {
     lb_protocol       = "http"
   }
   health_check {
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = 3
+    healthy_threshold   = 3
+    unhealthy_threshold = 4
+    timeout             = 15
     target              = "HTTP:${var.webapp_port}/"
-    interval            = 30
+    interval            = 180
   }
 # instances                   = ["${aws_instance.demo2_tomcat.id}"]
   cross_zone_load_balancing   = true
-  idle_timeout                = 400
+  idle_timeout                = 600
   connection_draining         = true
-  connection_draining_timeout = 400
+  connection_draining_timeout = 600
 }
 
 resource "aws_lb_cookie_stickiness_policy" "default" {
