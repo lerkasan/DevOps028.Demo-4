@@ -43,11 +43,13 @@ pipeline {
             }
         }
         stage("Build artifact") {
-            echo "Building jar ..."
-            sh "mvn clean package"
-            sh "chmod +x jenkins/jenkins/job-dsl/*.sh"
-            sh "jenkins/jenkins/job-dsl/postbuild-step.sh"
-            archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
+            steps {
+                echo "Building jar ..."
+                sh "mvn clean package"
+                sh "chmod +x jenkins/jenkins/job-dsl/*.sh"
+                sh "jenkins/jenkins/job-dsl/postbuild-step.sh"
+                archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
+            }
         }
         stage("Prepare AWS infrastructure and deploy") {
             steps {
