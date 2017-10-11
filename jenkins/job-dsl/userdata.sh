@@ -27,7 +27,7 @@ export DB_USER=`get_from_parameter_store "DB_USER"`
 export DB_PASS=`get_from_parameter_store "DB_PASS"`
 export LOGIN_HOST="localhost"
 
-DB_INSTANCE_ID="demo2"
+DB_INSTANCE_ID="demo2-rds"
 BUCKET_NAME="ansible-demo1"
 OS_USERNAME="ec2-user"
 DEMO_DIR="demo2"
@@ -36,7 +36,7 @@ JDK_FILENAME="jdk-8u144-linux-x64.tar.gz"
 JDK_URL="s3://${BUCKET_NAME}/${JDK_FILENAME}"
 JDK_INSTALL_DIR="/usr/lib/jvm"
 
-PROJECT_DIR="/home/${OS_USERNAME}/demo1"
+PROJECT_DIR="/home/${OS_USERNAME}/demo2"
 WEB_APP_FILENAME="Samsara-1.3.5.RELEASE.jar"
 WEB_APP_URL="s3://${BUCKET_NAME}/${WEB_APP_FILENAME}"
 TEMP_DIR="/home/${OS_USERNAME}/tmp"
@@ -63,8 +63,8 @@ fi
 export JAVA_HOME=`find ${JDK_INSTALL_DIR} -name java | grep -v -e "openjdk" -e "jre" | head -n 1 | rev | cut -c 10- | rev`
 export PATH=${JAVA_HOME}/bin:${PATH}
 
-sudo alternatives --install /usr/bin/java java "${JAVA_HOME}/bin/java" 2
-sudo alternatives --install /usr/bin/javac javac "${JAVA_HOME}/bin/javac" 2
+sudo alternatives --install /usr/bin/java java "${JAVA_HOME}/bin/java" 200
+sudo alternatives --install /usr/bin/javac javac "${JAVA_HOME}/bin/javac" 200
 sudo alternatives --set java "${JAVA_HOME}/bin/java"
 sudo alternatives --set javac "${JAVA_HOME}/bin/javac"
 
@@ -76,7 +76,8 @@ fi
 
 # Obtain RDS database host and port
 echo "Obtaining RDS database endpoint ..."
-EXISTING_DB_INSTANCE_INFO=""
+EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
+    --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
 MAX_RETRIES_TO_GET_DBINFO=20
 RETRIES=0
 while [[ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ]] && [ ${RETRIES} -lt ${MAX_RETRIES_TO_GET_DBINFO} ]; do
