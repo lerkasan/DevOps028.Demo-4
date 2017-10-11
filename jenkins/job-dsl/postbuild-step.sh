@@ -9,7 +9,7 @@ export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "SECRET_ACCESS_KEY"`
 export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
 
 BUCKET_NAME="ansible-demo1"
-ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep war | grep -v original`
+ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original`
 
 # Copy artifact to S3 bucket
 echo "Copying artifact to S3 bucket ..."

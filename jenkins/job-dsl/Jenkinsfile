@@ -52,9 +52,9 @@ pipeline {
                             echo "Building jar ..."
                             sh "mvn clean package"
                             sh "jenkins/jenkins/job-dsl/postbuild-step.sh"
-                            archiveArtifacts artifacts: 'target/ROOT.war', onlyIfSuccessful: true
+                            archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
                             //  archive "target/ROOT.war"
-                            stash includes: 'target/ROOT.war', name: 'artifact'
+                            stash includes: 'target/*.jar', name: 'artifact'
                         }
 
                 )

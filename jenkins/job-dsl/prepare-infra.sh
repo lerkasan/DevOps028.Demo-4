@@ -13,6 +13,6 @@ export TF_VAR_db_user=`get_from_parameter_store "DB_USER"`
 export TF_VAR_db_pass=`get_from_parameter_store "DB_PASS"`
 
 cd "${WORKSPACE}/jenkins/jenkins/infra/terraform"
-terraform init
-terraform plan
-terraform apply
+/home/ec2-user/terraform init
+/home/ec2-user/terraform plan
+/home/ec2-user/terraform apply
