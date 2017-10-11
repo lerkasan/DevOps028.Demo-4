@@ -2,12 +2,26 @@ provider "aws" {
   region = "${var.aws_region}"
 }
 
-data "terraform_remote_state" "remote_state" {
-  backend = "s3"
-  config {
-    bucket = "${var.bucket_name}"
-    key    = "terraform.tfstate"
-    region = "${var.aws_region}"
+resource "aws_db_instance" "demo2_rds" {
+  name = "demo2_rds"
+  depends_on              = ["aws_security_group.demo2_rds_secgroup"]
+  identifier              = "${var.db_identifier}"
+  allocated_storage       = "${var.db_storage_size}"
+  storage_type            = "gp2"
+  instance_class          = "${var.db_instance_class}"
+  engine                  = "${var.db_engine}"
+  engine_version          = "${var.db_engine_version}"
+  port                    = "${var.db_port}"
+  backup_retention_period = "0"
+  name                    = "${var.db_name}"
+  username                = "${var.db_user}"
+  password                = "${var.db_pass}"
+  publicly_accessible     = "false"
+  vpc_security_group_ids  = ["${aws_security_group.demo2_rds_secgroup.id}"]
+  db_subnet_group_name    = "${aws_db_subnet_group.demo2_db_subnet_group.id}"
+
+  provisioner "local-exec" {
+    command = "../../job-dsl/populate-database.sh"
   }
 }
 
@@ -60,29 +74,6 @@ resource "aws_launch_configuration" "demo2_launch_configuration" {
   enable_monitoring     = "false"
 }
 
-resource "aws_db_instance" "demo2_rds" {
-  name = "demo2_rds"
-  depends_on              = ["aws_security_group.demo2_rds_secgroup"]
-  identifier              = "${var.db_identifier}"
-  allocated_storage       = "${var.db_storage_size}"
-  storage_type            = "gp2"
-  instance_class          = "${var.db_instance_class}"
-  engine                  = "${var.db_engine}"
-  engine_version          = "${var.db_engine_version}"
-  port                    = "${var.db_port}"
-  backup_retention_period = "0"
-  name                    = "${var.db_name}"
-  username                = "${var.db_user}"
-  password                = "${var.db_pass}"
-  publicly_accessible     = "false"
-  vpc_security_group_ids  = ["${aws_security_group.demo2_rds_secgroup.id}"]
-  db_subnet_group_name    = "${aws_db_subnet_group.demo2_db_subnet_group.id}"
-
-  provisioner "local-exec" {
-    command = "../../job-dsl/populate-database.sh"
-  }
-}
-
 # Commented due to glitch in terraform
 # aws_autoscaling_group.demo2_autoscalegroup: diffs didn't match during apply. This is a bug with Terraform and should be reported as a GitHub Issue.
 # Mismatch reason: attribute mismatch: availability_zones.2050015877.  "availability_zones.2050015877":*terraform.ResourceAttrDiff{Old:"", New:"us-west-2c"
@@ -93,13 +84,14 @@ resource "aws_autoscaling_group" "demo2_autoscalegroup" {
   name                 = "demo2_autoscalegroup"
 # Added dependency on aws_db_instance.demo2_rds to wait for RDS database creation and population before creating
 # autoscaling group with ec2 instances, because their userdata scripts tries to retrieve data from RDS database
-  depends_on           = ["aws_db_instance.demo2_rds", "aws_launch_configuration.demo2_launch_configuration", "aws_elb.demo2_elb", "aws_subnet.demo2_subnet"]
+  depends_on           = ["aws_db_instance.demo2_rds", "aws_launch_configuration.demo2_launch_configuration", "aws_subnet.demo2_subnet"]
   max_size             = "${var.max_servers_in_autoscaling_group}"
   min_size             = "${var.min_servers_in_autoscaling_group}"
   desired_capacity     = "${var.desired_servers_in_autoscaling_group}"
   launch_configuration = "${aws_launch_configuration.demo2_launch_configuration.name}"
   health_check_type    = "EC2"
-  load_balancers       = ["${aws_elb.demo2_elb.name}"]
+## Attaching load balancers here results in load balancer with all instances being out of service. I'll try resource "aws_autoscaling_attachment" instead
+## load_balancers       = ["${aws_elb.demo2_elb.name}"]
 ## vpc_zone_identifier should be used only if no availability_zones parameter is specified.
 ## Must provide at least one classic link security group if a classic link VPC is provided
   vpc_zone_identifier  = ["${aws_subnet.demo2_subnet.id}"]
@@ -110,6 +102,14 @@ resource "aws_autoscaling_group" "demo2_autoscalegroup" {
     propagate_at_launch = "true"
   }
 }
+
+# Attach classic load balancer to autoscaling group here instead of using parameter load_balancers at resource "aws_autoscaling_group"
+resource "aws_autoscaling_attachment" "asg_attachment_bar" {
+  depends_on             = ["aws_autoscaling_group.demo2_autoscalegroup"]
+  autoscaling_group_name = "${aws_autoscaling_group.demo2_autoscalegroup.id}"
+  elb                    = "${aws_elb.demo2_elb.id}"
+}
+
 
 //resource "aws_instance" "demo2_tomcat" {
 //  instance_type = "t2.micro"
