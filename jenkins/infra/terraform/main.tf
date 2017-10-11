@@ -52,7 +52,7 @@ resource "aws_launch_configuration" "demo2_launch_configuration" {
   image_id              = "${var.ec2_ami}"
   instance_type         = "${var.ec2_instance_type}"
   security_groups       = ["${aws_security_group.demo2_webapp_secgroup.id}"]
-  user_data             = "${file("../job-dsl/userdata.sh")}"
+  user_data             = "${file("../../job-dsl/userdata.sh")}"
   key_name              = "${var.ssh_key_name}"
   iam_instance_profile  = "${var.iam_profile}" # IAM role for ec2 instances in launch configuration. Role gives read only permissions to S3, RDS, SSM
 # Must provide at least one classic link security group if a classic link VPC is provided.
