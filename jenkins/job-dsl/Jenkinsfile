@@ -39,6 +39,7 @@ pipeline {
         stage("Prepare AWS infrastructure") {
             steps {
                 echo "Preparing AWS infrastructure ..."
+                sh "chmod +x jenkins/jenkins/job-dsl/*.sh"
                 sh "jenkins/jenkins/job-dsl/prepare-infra.sh"
             }
         }
@@ -53,7 +54,6 @@ pipeline {
             steps {
                 echo "Building jar ..."
                 sh "mvn clean package"
-                sh "chmod +x jenkins/jenkins/job-dsl/*.sh"
                 sh "jenkins/jenkins/job-dsl/postbuild-step.sh"
                 archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
             }
