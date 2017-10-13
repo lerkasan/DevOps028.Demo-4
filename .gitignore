@@ -93,4 +93,3 @@ credentials
 tmp
 /infra/initial/terraform.tfstate
 /infra/initial/terraform.tfstate.backup
-/jenkins/infra/dummy-ec2-userdata/
