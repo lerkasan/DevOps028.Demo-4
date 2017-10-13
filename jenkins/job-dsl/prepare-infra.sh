@@ -19,9 +19,9 @@ export TF_VAR_elb_name=`get_from_parameter_store "demo2_elb_name"`
 export TF_VAR_asg_name=`get_from_parameter_store "demo2_autoscalegroup_name"`
 
 cd "${WORKSPACE}/jenkins/jenkins/infra/initial"
-/home/ec2-user/terraform init -backend-config backend.tf -backend=true
+#/home/ec2-user/terraform init -backend-config backend.tf -backend=true
 #./{terraform init -backend-config backend.tf -backend=true -force-copy
-#./terraform init terraform init -backend-config="bucket=ansible-demo1" -backend-config="key=terraform.tfstate" -backend-config="region=us-west-2" -backend=true -force-copy -get=true -input=false
+/home/ec2-user/terraform init -backend-config="bucket=ansible-demo1" -backend-config="key=terraform.tfstate" -backend-config="region=us-west-2" -backend=true -force-copy -get=true -input=false
 #./terraform refresh
 /home/ec2-user/terraform plan --out infra-plan
 /home/ec2-user/terraform apply "infra-plan"
