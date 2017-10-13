@@ -9,7 +9,7 @@ export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_ke
 export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 AUTOSCALEGROUP_NAME=`get_from_parameter_store "demo2_autoscalegroup_name"`
 
-MAX_SIZE=2
+MAX_SIZE=3
 let TMP_MAX_SIZE=${MAX_SIZE}*2
 
 # Force ASG to create new instances that will download new jar executing userdata

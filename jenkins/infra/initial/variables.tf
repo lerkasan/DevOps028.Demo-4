@@ -49,7 +49,7 @@ variable "max_servers_in_autoscaling_group" {
 }
 
 variable "desired_servers_in_autoscaling_group" {
-  default     = 2
+  default     = 3
   description = "Desired number of servers in autoscaling group"
 }
 

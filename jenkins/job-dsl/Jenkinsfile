@@ -36,36 +36,44 @@ pipeline {
         }
         // Let's create here AWS infrastructure and assume that it is our production environment that has already existed before running this pipeline
         // This stage should be ommited in real situation when we already have existing production environment
-        stage("Prepare AWS infrastructure") {
-            steps {
-                echo "Preparing AWS infrastructure ..."
-                sh "chmod +x jenkins/jenkins/job-dsl/*.sh"
-                sh "jenkins/jenkins/job-dsl/prepare-infra.sh"
-            }
-        }
-        stage("Test") {
-            steps {
-                sh "javac -version"
-                echo "Testing project"
-                sh "mvn clean test"
-            }
-        }
-        stage("Build artifact") {
-            steps {
-                echo "Building jar ..."
-                sh "mvn clean package"
-                sh "jenkins/jenkins/job-dsl/postbuild-step.sh"
-                archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
+        stage("Prepare AWS infrastructure, test and build ") {
+            parallel  {
+                stage("Prepare AWS infrastructure") {
+                    steps {
+                        echo "Preparing AWS infrastructure ..."
+                        sh "chmod +x jenkins/jenkins/job-dsl/*.sh"
+                        sh "jenkins/jenkins/job-dsl/prepare-infra.sh"
+                    }
+                }
+                stage("Test and build")  {
+                    steps {
+                        sh "javac -version"
+                        echo "Testing project"
+                        sh "mvn clean test"
+                        echo "Building jar ..."
+                        sh "mvn clean package"
+                    }
+                    post {
+                        always {
+                            archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
+                            sh "jenkins/jenkins/job-dsl/postbuild-step.sh"
+                        }
+                    }
+                }
             }
         }
         stage("Deploy") {
             steps {
                 echo "Deploying ..."
                 sh "jenkins/jenkins/job-dsl/rolling-update-instances.sh"
-                sh "jenkins/jenkins/job-dsl/check-webapp-response.sh"
-                emailext body: '${BUILD_LOG_REGEX, regex="Webapp endpoint", showTruncatedLines=false}',
-                         subject: 'Web application Samsara was deployed',
-                         to: 'lerkasan@gmail.com'
+            }
+            post {
+                always {
+                    sh "jenkins/jenkins/job-dsl/check-webapp-response.sh"
+                    emailext body: '${BUILD_LOG_REGEX, regex="Webapp endpoint", showTruncatedLines=false}',
+                            subject: 'Web application Samsara was deployed',
+                            to: 'lerkasan@gmail.com'
+                }
             }
         }
     }

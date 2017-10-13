@@ -38,9 +38,9 @@ resource "aws_elb" "demo2_elb" {
   health_check {
     healthy_threshold   = 2
     unhealthy_threshold = 5
-    timeout             = 15
+    timeout             = 10
     target              = "HTTP:${var.webapp_port}/login"
-    interval            = 20
+    interval            = 15
   }
   cross_zone_load_balancing   = true
   idle_timeout                = 400
@@ -85,6 +85,10 @@ resource "aws_autoscaling_group" "demo2_autoscalegroup" {
 
   lifecycle {
     create_before_destroy = true
+  }
+  # Sleep to give Spring Boot application (in userdata of launch configuration) time to properly start
+  provisioner "local-exec" {
+    command = "sleep 30"
   }
   tag {
     key                 = "Name"
