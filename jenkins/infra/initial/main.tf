@@ -2,14 +2,6 @@ provider "aws" {
   region = "${var.aws_region}"
 }
 
-terraform {
-  backend "s3" {
-    bucket = "${var.bucket_name}"
-    key    = "terraform/terraform.tfstate"
-    region = "${var.aws_region}"
-  }
-}
-
 resource "aws_db_instance" "demo2_rds" {
   name = "demo2_rds"
   depends_on              = ["aws_security_group.demo2_rds_secgroup"]
