@@ -9,7 +9,7 @@ variable "aws_region" {
 }
 
 variable "availability_zone1" {
-  default     = "us-west-2c"
+  default     = "us-west-2a"
 }
 
 variable "availability_zone2" {

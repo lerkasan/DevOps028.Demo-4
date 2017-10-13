@@ -21,7 +21,7 @@ echo "ELB endpoint: ${ELB_HOST}:${ELB_PORT}"
 
 # Wait for Spring Boot application to launch properly
 echo "Waiting 90 seconds for Spring Boot application to launch properly before checking connectivity to webapp load balancer ..."
-sleep 90
+sleep 120
 
 # Check connectivity to webapp loadbalancer
 echo "Checking connectivity to webapp load balancer ..."

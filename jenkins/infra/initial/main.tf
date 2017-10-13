@@ -30,8 +30,8 @@ resource "aws_elb" "demo2_elb" {
 # depends_on          = ["aws_security_group.demo2_elb_secgroup"]
 # Only one of SubnetIds or AvailabilityZones parameter may be specified
 # availability_zones  = ["${split(",", var.availability_zones)}"] # The same availability zone as autoscaling group instances have
-# subnets             = ["${aws_subnet.demo2_subnet1.id}", "${aws_subnet.demo2_subnet2.id}", "${aws_subnet.demo2_subnet3.id}"] # The same subnet as autoscaling group instances have
-  subnets             = ["${aws_subnet.demo2_subnet1.id}"]
+  subnets             = ["${aws_subnet.demo2_subnet1.id}", "${aws_subnet.demo2_subnet2.id}", "${aws_subnet.demo2_subnet3.id}"] # The same subnet as autoscaling group instances have
+# subnets             = ["${aws_subnet.demo2_subnet1.id}"]
   security_groups     = ["${aws_security_group.demo2_elb_secgroup.id}"]
   listener {
     instance_port     = "${var.webapp_port}"
@@ -92,7 +92,7 @@ resource "aws_autoscaling_group" "demo2_autoscalegroup" {
   min_size             = "${var.min_servers_in_autoscaling_group}"
   desired_capacity     = "${var.desired_servers_in_autoscaling_group}"
   launch_configuration = "${aws_launch_configuration.demo2_launch_configuration.name}"
-  health_check_type    = "EC2"
+  health_check_type    = "ELB"
 # Alternative to attaching load balancers here is using resource "aws_autoscaling_attachment"
   load_balancers       = ["${aws_elb.demo2_elb.name}"]
 # vpc_zone_identifier should be used only if no availability_zones parameter is specified.
