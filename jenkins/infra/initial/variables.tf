@@ -53,8 +53,8 @@ variable "desired_servers_in_autoscaling_group" {
   description = "Desired number of servers in autoscaling group"
 }
 
-variable "demo2_autoscalegroup_name" {
-  description = "Provided through ENV variable TF_VAR_asg_name"
+variable "autoscalegroup_name" {
+  description = "Provided through ENV variable TF_VAR_autoscalegroup_name"
 }
 
 variable "elb_name" {

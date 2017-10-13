@@ -79,7 +79,7 @@ resource "aws_launch_configuration" "demo2_launch_configuration" {
 }
 
 resource "aws_autoscaling_group" "demo2_autoscalegroup" {
-  name                 = "${var.demo2_autoscalegroup_name}"
+  name                 = "${var.autoscalegroup_name}"
 # availability_zones should be used only if no vpc_zone_identifier parameter is specified
 # availability_zones   = ["${var.availability_zone1}", "${var.availability_zone2}", "${var.availability_zone3}"]
 

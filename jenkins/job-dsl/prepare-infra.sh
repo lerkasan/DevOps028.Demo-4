@@ -16,7 +16,7 @@ export TF_VAR_db_pass=`get_from_parameter_store "demo2_db_pass"`
 export TF_VAR_bucket_name=`get_from_parameter_store "demo2_bucket_name"`
 export TF_VAR_webapp_port=`get_from_parameter_store "demo2_webapp_port"`
 export TF_VAR_elb_name=`get_from_parameter_store "demo2_elb_name"`
-export TF_VAR_asg_name=`get_from_parameter_store "demo2_autoscalegroup_name"`
+export TF_VAR_autoscalegroup_name=`get_from_parameter_store "demo2_autoscalegroup_name"`
 
 cd "${WORKSPACE}/jenkins/jenkins/infra/initial"
 #/home/ec2-user/terraform init -backend-config backend.tf -backend=true
