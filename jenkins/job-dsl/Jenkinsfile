@@ -34,6 +34,14 @@ pipeline {
                          userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git']]])
             }
         }
+        // Let's create here AWS infrastructure and assume that it is our production environment that has already existed before running this pipeline
+        // This stage should be ommited in real situation when we already have existing production environment
+        stage("Prepare AWS infrastructure") {
+            steps {
+                echo "Preparing AWS infrastructure ..."
+                sh "jenkins/jenkins/job-dsl/prepare-infra.sh"
+            }
+        }
         stage("Test") {
             steps {
                 sh "javac -version"
@@ -50,12 +58,13 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
             }
         }
-        stage("Prepare AWS infrastructure and deploy") {
+        stage("Deploy") {
             steps {
-                echo "Preparing AWS infrastructure ..."
-                sh "jenkins/jenkins/job-dsl/prepare-infra.sh"
+                echo "Deploying ..."
+                sh "jenkins/jenkins/job-dsl/rolling-update-instances.sh"
                 sh "jenkins/jenkins/job-dsl/check-webapp-response.sh"
-                emailext body: 'Webapp endpoint: ${env.ELB_HOST}:${env.ELB_PORT}',
+            //  emailext body: 'Webapp endpoint: ${env.ELB_HOST}:${env.ELB_PORT}',
+                emailext body: '${BUILD_LOG_REGEX, regex="Webapp endpoint", showTruncatedLines=false}',
                          subject: 'Web application Samsara was deployed',
                          to: 'lerkasan@gmail.com'
             }

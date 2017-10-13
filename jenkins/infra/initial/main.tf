@@ -2,10 +2,18 @@ provider "aws" {
   region = "${var.aws_region}"
 }
 
+terraform {
+  backend "s3" {
+    bucket = "${var.bucket_name}"
+    key    = "terraform/terraform.tfstate"
+    region = "${var.aws_region}"
+  }
+}
+
 resource "aws_db_instance" "demo2_rds" {
   name = "demo2_rds"
   depends_on              = ["aws_security_group.demo2_rds_secgroup"]
-  identifier              = "${var.db_identifier}"
+  identifier              = "${var.rds_identifier}"
   allocated_storage       = "${var.db_storage_size}"
   storage_type            = "gp2"
   instance_class          = "${var.db_instance_class}"
@@ -26,11 +34,11 @@ resource "aws_db_instance" "demo2_rds" {
 }
 
 resource "aws_elb" "demo2_elb" {
-  name                = "demo2-elb"
-  depends_on          = ["aws_security_group.demo2_elb_secgroup", "aws_subnet.demo2_subnet"]
+  name                = "${var.elb_name}"
+# depends_on          = ["aws_security_group.demo2_elb_secgroup"]
 # Only one of SubnetIds or AvailabilityZones parameter may be specified
 # availability_zones  = ["${split(",", var.availability_zones)}"] # The same availability zone as autoscaling group instances have
-  subnets             = ["${aws_subnet.demo2_subnet.id}"] # The same subnet as autoscaling group instances have
+  subnets             = ["${aws_subnet.demo2_subnet1.id}", "${aws_subnet.demo2_subnet2.id}", "${aws_subnet.demo2_subnet3.id}"] # The same subnet as autoscaling group instances have
   security_groups     = ["${aws_security_group.demo2_elb_secgroup.id}"]
   listener {
     instance_port     = "${var.webapp_port}"
@@ -54,7 +62,7 @@ resource "aws_elb" "demo2_elb" {
 
 resource "aws_lb_cookie_stickiness_policy" "default" {
   name                     = "lb-cookie-stickiness-policy"
-  depends_on               = ["aws_elb.demo2_elb"]
+# depends_on               = ["aws_elb.demo2_elb"]
   load_balancer            = "${aws_elb.demo2_elb.id}"
   lb_port                  = "${var.webapp_port}"
   cookie_expiration_period = 600
@@ -72,16 +80,21 @@ resource "aws_launch_configuration" "demo2_launch_configuration" {
 # Must provide at least one classic link security group if a classic link VPC is provided.
 # vpc_classic_link_id   = "${var.default_vpc_id}}"
   enable_monitoring     = "false"
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_autoscaling_group" "demo2_autoscalegroup" {
-  name                 = "demo2_autoscalegroup"
+  name                 = "${var.demo2_autoscalegroup_name}"
 # availability_zones should be used only if no vpc_zone_identifier parameter is specified
 # availability_zones   = ["${var.availability_zone1}", "${var.availability_zone2}", "${var.availability_zone3}"]
 
 # Added dependency on aws_db_instance.demo2_rds to wait for RDS database creation and population before creating
 # autoscaling group with ec2 instances, because their userdata scripts tries to retrieve data from RDS database
-  depends_on           = ["aws_db_instance.demo2_rds", "aws_launch_configuration.demo2_launch_configuration", "aws_subnet.demo2_subnet"]
+# depends_on           = ["aws_db_instance.demo2_rds", "aws_launch_configuration.demo2_launch_configuration", "aws_subnet.demo2_subnet"]
+# depends_on           = ["aws_launch_configuration.demo2_launch_configuration"]
   max_size             = "${var.max_servers_in_autoscaling_group}"
   min_size             = "${var.min_servers_in_autoscaling_group}"
   desired_capacity     = "${var.desired_servers_in_autoscaling_group}"
@@ -90,9 +103,12 @@ resource "aws_autoscaling_group" "demo2_autoscalegroup" {
 # Alternative to attaching load balancers here is using resource "aws_autoscaling_attachment"
   load_balancers       = ["${aws_elb.demo2_elb.name}"]
 # vpc_zone_identifier should be used only if no availability_zones parameter is specified.
-# Must provide at least one classic link security group if a classic link VPC is provided
-  vpc_zone_identifier  = ["${aws_subnet.demo2_subnet.id}"]
+  vpc_zone_identifier  = ["${aws_subnet.demo2_subnet1.id}", "${aws_subnet.demo2_subnet2.id}", "${aws_subnet.demo2_subnet3.id}"]
+  termination_policies = ["OldestInstance"]
 
+  lifecycle {
+    create_before_destroy = true
+  }
   tag {
     key                 = "Name"
     value               = "webapp"

@@ -9,7 +9,7 @@ export AWS_DEFAULT_REGION="us-west-2"
 export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
 export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 
-ELB_NAME="demo2-elb"
+ELB_NAME=`get_from_parameter_store "demo2_elb_name"`
 
 # Obtain public DNS address of load balancer
 echo "Obtaining public DNS address of load balancer ..."

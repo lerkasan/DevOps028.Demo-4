@@ -12,41 +12,41 @@ resource "aws_vpc" "demo2_vpc" {
   }
 }
 
-resource "aws_subnet" "demo2_subnet" {
+resource "aws_subnet" "demo2_subnet1" {
   vpc_id                  = "${aws_vpc.demo2_vpc.id}"
   availability_zone       = "${var.availability_zone1}"
   cidr_block              = "10.0.0.0/24"
   map_public_ip_on_launch = true
   availability_zone = ""
   tags {
-    Name = "demo2_subnet"
+    Name = "demo2_subnet1"
   }
 }
 
-resource "aws_subnet" "demo2_subnet2_for_rds" {
+resource "aws_subnet" "demo2_subnet2" {
   vpc_id                  = "${aws_vpc.demo2_vpc.id}"
   availability_zone       = "${var.availability_zone2}"
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
   tags {
-    Name = "demo2_subnet2_for_rds"
+    Name = "demo2_subnet2"
   }
 }
 
-resource "aws_subnet" "demo2_subnet3_for_rds" {
+resource "aws_subnet" "demo2_subnet3" {
   vpc_id                  = "${aws_vpc.demo2_vpc.id}"
   availability_zone       = "${var.availability_zone3}"
   cidr_block              = "10.0.2.0/24"
   map_public_ip_on_launch = true
   tags {
-    Name = "demo2_subnet3_for_rds"
+    Name = "demo2_subnet3"
   }
 }
 
 resource "aws_db_subnet_group" "demo2_db_subnet_group" {
   name        = "demo2_db_subnet_group"
   description = "demo2_db_subnet_group"
-  subnet_ids  = ["${aws_subnet.demo2_subnet.id}", "${aws_subnet.demo2_subnet2_for_rds.id}", "${aws_subnet.demo2_subnet3_for_rds.id}"]
+  subnet_ids  = ["${aws_subnet.demo2_subnet1.id}", "${aws_subnet.demo2_subnet2.id}", "${aws_subnet.demo2_subnet3.id}"]
 }
 
 resource "aws_internet_gateway" "demo2_gateway" {

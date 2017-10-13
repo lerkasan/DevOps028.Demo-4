@@ -21,7 +21,7 @@ variable "availability_zone3" {
 }
 
 variable "bucket_name" {
-  default     = "ansible-demo1"
+  description = "Provided through ENV variable TF_VAR_bucket_name"
 }
 
 # --------- Default VPC parameters -----------
@@ -53,10 +53,18 @@ variable "desired_servers_in_autoscaling_group" {
   description = "Desired number of servers in autoscaling group"
 }
 
+variable "demo2_autoscalegroup_name" {
+  description = "Provided through ENV variable TF_VAR_asg_name"
+}
+
+variable "elb_name" {
+  description = "Provided through ENV variable TF_VAR_elb_name"
+}
+
 # --------- EC2 parameters -----------
 
 variable "ssh_key_name" {
-  default     = "aws_ec2_2"
+  default     = "demo2_webapp"
   description = "Name of the SSH keypair to use in AWS."
 }
 
@@ -76,15 +84,13 @@ variable "iam_profile" {
 }
 
 variable "webapp_port" {
-  default     =  9000
-  description = "HTTP port of web application, may be 8080 for Tomcat or 9000 for Spring Boot"
+  description = "HTTP port of web application, may be 8080 for Tomcat or 9000 for Spring Boot. Provided through ENV variable TF_VAR_webapp_port"
 }
 
 # --------- RDS parameters -----------
 
-variable "db_identifier" {
-  default     = "demo2-rds"
-  description = "Identifier for DB"
+variable "rds_identifier" {
+  description = "Identifier for RDS. Provided through ENV variable TF_VAR_rds_identifier"
 }
 
 variable "db_storage_size" {

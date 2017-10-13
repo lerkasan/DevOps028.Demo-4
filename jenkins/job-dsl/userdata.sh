@@ -27,8 +27,8 @@ export DB_USER=`get_from_parameter_store "DB_USER"`
 export DB_PASS=`get_from_parameter_store "DB_PASS"`
 export LOGIN_HOST="localhost"
 
-DB_INSTANCE_ID="demo2-rds"
-BUCKET_NAME="ansible-demo1"
+BUCKET_NAME=`get_from_parameter_store "demo2_bucket_name"`
+DB_INSTANCE_ID=`get_from_parameter_store "demo2_rds_identifier"`
 OS_USERNAME="ec2-user"
 DEMO_DIR="demo2"
 
