@@ -30,7 +30,8 @@ resource "aws_elb" "demo2_elb" {
 # depends_on          = ["aws_security_group.demo2_elb_secgroup"]
 # Only one of SubnetIds or AvailabilityZones parameter may be specified
 # availability_zones  = ["${split(",", var.availability_zones)}"] # The same availability zone as autoscaling group instances have
-  subnets             = ["${aws_subnet.demo2_subnet1.id}", "${aws_subnet.demo2_subnet2.id}", "${aws_subnet.demo2_subnet3.id}"] # The same subnet as autoscaling group instances have
+# subnets             = ["${aws_subnet.demo2_subnet1.id}", "${aws_subnet.demo2_subnet2.id}", "${aws_subnet.demo2_subnet3.id}"] # The same subnet as autoscaling group instances have
+  subnets             = ["${aws_subnet.demo2_subnet1.id}"]
   security_groups     = ["${aws_security_group.demo2_elb_secgroup.id}"]
   listener {
     instance_port     = "${var.webapp_port}"
