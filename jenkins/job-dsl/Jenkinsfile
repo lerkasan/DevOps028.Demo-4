@@ -63,7 +63,6 @@ pipeline {
                 echo "Deploying ..."
                 sh "jenkins/jenkins/job-dsl/rolling-update-instances.sh"
                 sh "jenkins/jenkins/job-dsl/check-webapp-response.sh"
-            //  emailext body: 'Webapp endpoint: ${env.ELB_HOST}:${env.ELB_PORT}',
                 emailext body: '${BUILD_LOG_REGEX, regex="Webapp endpoint", showTruncatedLines=false}',
                          subject: 'Web application Samsara was deployed',
                          to: 'lerkasan@gmail.com'

@@ -17,7 +17,6 @@ resource "aws_subnet" "demo2_subnet1" {
   availability_zone       = "${var.availability_zone1}"
   cidr_block              = "10.0.0.0/24"
   map_public_ip_on_launch = true
-  availability_zone = ""
   tags {
     Name = "demo2_subnet1"
   }
@@ -50,7 +49,6 @@ resource "aws_db_subnet_group" "demo2_db_subnet_group" {
 }
 
 resource "aws_internet_gateway" "demo2_gateway" {
-# depends_on  = ["aws_vpc.demo2_vpc"]
   vpc_id      = "${aws_vpc.demo2_vpc.id}"
   tags {
     Name = "demo2_gateway"
@@ -145,14 +143,13 @@ resource "aws_security_group" "demo2_elb_secgroup" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  # Ensure that VPC has an Internet gateway or this step will fail
+  # Dependency is used to ensure that VPC has an Internet gateway or this step will fail
   depends_on = ["aws_internet_gateway.demo2_gateway"]
 }
 
 # Configure vpc peering connection between default VPC where Jenkins is running and demo2_vpc created by Terraform"
 # VPC peering connection will allow Jenkins to populate RDS database using liquibase through private IP without enabling publicly_accessible option for RDS database
 resource "aws_vpc_peering_connection" "demo2_vpc_peering" {
-  # depends_on    = ["aws_vpc.demo2_vpc"]
   peer_owner_id = "${var.aws_account_id}"
   peer_vpc_id   = "${var.default_vpc_id}"
   vpc_id        = "${aws_vpc.demo2_vpc.id}"
