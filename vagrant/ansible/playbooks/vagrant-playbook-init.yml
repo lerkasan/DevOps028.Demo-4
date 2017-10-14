@@ -205,10 +205,6 @@
         url: "{{ postgres_jdbc_driver_url }}"
         dest: "{{ liquibase.bin_dir }}/lib/postgresql-jdbc-driver.jar"
         mode: 0440
-      # register: jdbc_driver_download_status
-      # retries: 10
-      # delay: 15
-      # until: jdbc_driver_download_status|succeeded
 
   # - name: Report error if there was a connectivity problem while downloading PostgreSQL JDBC driver
   #  fail:
