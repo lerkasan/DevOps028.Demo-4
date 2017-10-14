@@ -107,12 +107,12 @@ resource "aws_security_group" "demo2_webapp_secgroup" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  # HTTP access to webapp port from anywhere
+  # HTTP access to webapp port from demo2_vpc for ELB only
   ingress {
     from_port   = "${var.webapp_port}"
     to_port     = "${var.webapp_port}"
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["${aws_vpc.demo2_vpc.cidr_block}"]
   }
   # outbound internet access
   egress {
