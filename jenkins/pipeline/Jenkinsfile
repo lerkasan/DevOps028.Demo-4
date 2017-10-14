@@ -32,7 +32,7 @@ pipeline {
                          branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
                       // extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins']],
                       // extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins'], [$class: 'PathRestriction', excludedRegions: 'jenkins/.*']],
-                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins'], [$class: 'IgnoreNotifyCommit']],
+                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins'], [$class: 'IgnoreNotifyCommit'], [$class: 'PathRestriction', excludedRegions: 'jenkins/.*']],
                          gitTool: 'git-slave',
                          submoduleCfg: [],
                          userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
