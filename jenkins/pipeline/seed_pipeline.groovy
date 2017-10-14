@@ -31,6 +31,7 @@ pipelineJob('demo2-PIPELINE') {
                     remote {
                         url('https://github.com/lerkasan/DevOps028.git')
                         name('origin')
+                        credentials('github_lerkasan')
                     }
                     branch('jenkins')
                     browser {
