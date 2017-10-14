@@ -29,7 +29,7 @@ pipeline {
                 checkout(
                         [$class: 'GitSCM',
                          branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
-                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins']],
+                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins'], [$class: 'IgnoreNotifyCommit']],
                          gitTool: 'git-slave',
                          submoduleCfg: [],
                          userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
