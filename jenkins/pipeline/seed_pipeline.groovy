@@ -22,7 +22,7 @@ pipelineJob('demo2-PIPELINE') {
     }
     definition {
 //      cps {
-//          script(readFileFromWorkspace('jenkins/job-dsl/Jenkinsfile'))
+//          script(readFileFromWorkspace('jenkins/pipeline/Jenkinsfile'))
 //          sandbox()
 //      }
         cpsScm {
@@ -41,7 +41,7 @@ pipelineJob('demo2-PIPELINE') {
                     }
                 }
             }
-            scriptPath('jenkins/job-dsl/Jenkinsfile')
+            scriptPath('jenkins/pipeline/Jenkinsfile')
         }
     }
 }

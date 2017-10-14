@@ -41,8 +41,8 @@ pipeline {
                 stage("Prepare AWS infrastructure") {
                     steps {
                         echo "Preparing AWS infrastructure ..."
-                        sh "chmod +x jenkins/jenkins/job-dsl/*.sh"
-                        sh "jenkins/jenkins/job-dsl/prepare-infra.sh"
+                        sh "chmod +x jenkins/jenkins/pipeline/*.sh"
+                        sh "jenkins/jenkins/pipeline/prepare-infra.sh"
                     }
                 }
                 stage("Test and build")  {
@@ -56,7 +56,7 @@ pipeline {
                     post {
                         always {
                             archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
-                            sh "jenkins/jenkins/job-dsl/postbuild-step.sh"
+                            sh "jenkins/jenkins/pipeline/postbuild-step.sh"
                         }
                     }
                 }
@@ -65,11 +65,11 @@ pipeline {
         stage("Deploy") {
             steps {
                 echo "Deploying ..."
-                sh "jenkins/jenkins/job-dsl/rolling-update-instances.sh"
+                sh "jenkins/jenkins/pipeline/rolling-update-instances.sh"
             }
             post {
                 always {
-                    sh "jenkins/jenkins/job-dsl/check-webapp-response.sh"
+                    sh "jenkins/jenkins/pipeline/check-webapp-response.sh"
                     emailext body: '${BUILD_LOG_REGEX, regex="Webapp endpoint", showTruncatedLines=false}',
                             subject: 'Web application Samsara was deployed',
                             to: 'lerkasan@gmail.com'
