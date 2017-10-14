@@ -21,15 +21,17 @@ pipeline {
                         [$class: 'GitSCM',
                          branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false,
                          browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/lerkasan/DevOps028.git'],
-                         extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'PathRestriction', excludedRegions: 'jenkins/.*']],
+                         extensions: [[$class: 'CleanBeforeCheckout']],
                          gitTool: 'git-slave',
                          submoduleCfg: [],
                          userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
                         ])
                 checkout(
-                        [$class: 'GitSCM',
+                        poll: false,
+                        changelog: false,
+                        scm: [$class: 'GitSCM',
                          branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
-                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins'], [$class: 'IgnoreNotifyCommit'], [$class: 'PathRestriction', excludedRegions: 'jenkins/.*']],
+                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins'], [$class: 'IgnoreNotifyCommit']],
                          gitTool: 'git-slave',
                          submoduleCfg: [],
                          userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
