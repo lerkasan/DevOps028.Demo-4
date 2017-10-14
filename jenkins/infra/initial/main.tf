@@ -21,7 +21,7 @@ resource "aws_db_instance" "demo2_rds" {
   db_subnet_group_name    = "${aws_db_subnet_group.demo2_db_subnet_group.id}"
 
   provisioner "local-exec" {
-    command = "../../pipeline-dsl/populate-database.sh"
+    command = "../../pipeline/populate-database.sh"
   }
 }
 
@@ -61,7 +61,7 @@ resource "aws_launch_configuration" "demo2_launch_configuration" {
   image_id              = "${var.ec2_ami}"
   instance_type         = "${var.ec2_instance_type}"
   security_groups       = ["${aws_security_group.demo2_webapp_secgroup.id}"]
-  user_data             = "${file("../../pipeline-dsl/userdata.sh")}"
+  user_data             = "${file("../../pipeline/userdata.sh")}"
   key_name              = "${var.ssh_key_name}"
   iam_instance_profile  = "${var.iam_profile}" # IAM role for ec2 instances in launch configuration. Role gives read only permissions to S3, RDS, SSM
   enable_monitoring     = "false"
