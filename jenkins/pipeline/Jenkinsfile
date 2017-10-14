@@ -59,7 +59,7 @@ pipeline {
                         sh "mvn clean package"
                     }
                     post {
-                        always {
+                        success {
                             archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
                             sh "jenkins/jenkins/pipeline/postbuild-step.sh"
                         }
@@ -73,13 +73,22 @@ pipeline {
                 sh "jenkins/jenkins/pipeline/rolling-update-instances.sh"
             }
             post {
-                always {
+                success {
                     sh "jenkins/jenkins/pipeline/check-webapp-response.sh"
-                    emailext body: '${BUILD_LOG_REGEX, regex="Webapp endpoint", showTruncatedLines=false}',
-                            subject: 'Web application Samsara was deployed',
-                            to: 'lerkasan@gmail.com'
                 }
             }
+        }
+    }
+    post {
+        success {
+            emailext body: '${BUILD_LOG_REGEX, regex="Webapp endpoint", showTruncatedLines=false}',
+                    subject: 'Web application Samsara was deployed',
+                    to: 'lerkasan@gmail.com'
+        }
+        failure {
+            emailext body: '${BUILD_LOG}',
+                    subject: 'Web application Samsara deploy failed',
+                    to: 'lerkasan@gmail.com'
         }
     }
 }
