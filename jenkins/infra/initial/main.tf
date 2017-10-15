@@ -4,19 +4,21 @@ provider "aws" {
 
 # Create SSM parameters with bucket name and RDS identifier. Parameters will be used at userdata script of autoscaling group launch configuration
 resource "aws_ssm_parameter" "demo2_bucket_name_param" {
-  name  = "demo2_bucket_name"
-  type  = "SecureString"
-  value = "${var.bucket_name}"
+  name      = "demo2_bucket_name"
+  type      = "String"
+  value     = "${var.bucket_name}"
+  overwrite = "true"
 }
 
 resource "aws_ssm_parameter" "demo2_rds_identifier_param" {
-  name  = "demo2_rds_identifier"
-  type  = "SecureString"
-  value = "${var.rds_identifier}"
+  name      = "demo2_rds_identifier"
+  type      = "String"
+  value     = "${var.rds_identifier}"
+  overwrite = "true"
 }
 
 resource "aws_db_instance" "demo2_rds" {
-  name = "demo2_rds"
+  name                    = "demo2_rds"
   depends_on              = ["aws_security_group.demo2_rds_secgroup"]
   identifier              = "${var.rds_identifier}"
   allocated_storage       = "${var.db_storage_size}"
