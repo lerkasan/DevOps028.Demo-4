@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-MAX_SIZE=3
+MAX_SIZE=${TF_VAR_max_servers_in_autoscaling_group}
 let TMP_MAX_SIZE=${MAX_SIZE}*2
 
 # Force ASG to create new instances that will download new jar executing userdata

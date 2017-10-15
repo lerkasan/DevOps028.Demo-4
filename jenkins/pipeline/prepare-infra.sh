@@ -11,7 +11,7 @@ export TF_VAR_db_pass=`get_from_parameter_store "demo2_db_pass"`
 
 cd "${WORKSPACE}/jenkins/jenkins/infra/initial"
 # /home/ec2-user/terraform init -backend-config backend.tf -backend=true -force-copy
-/home/ec2-user/terraform init -backend-config="bucket=${TF_VAR_bucket_name}" -backend-config="key=terraform.tfstate" \
+/home/ec2-user/terraform init -backend-config="bucket=${TF_VAR_bucket_name}" -backend-config="key=terraform/terraform.tfstate" \
                               -backend-config="region=${AWS_DEFAULT_REGION}" -backend=true -force-copy -get=true -input=false
 /home/ec2-user/terraform refresh
 /home/ec2-user/terraform plan --out infra-plan

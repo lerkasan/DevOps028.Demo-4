@@ -32,12 +32,12 @@ OS_USERNAME="ec2-user"
 DEMO_DIR="demo2"
 
 JDK_FILENAME="jdk-8u144-linux-x64.tar.gz"
-JDK_URL="s3://${BUCKET_NAME}/${JDK_FILENAME}"
+JDK_URL="s3://${BUCKET_NAME}/tools/${JDK_FILENAME}"
 JDK_INSTALL_DIR="/usr/lib/jvm"
 
 PROJECT_DIR="/home/${OS_USERNAME}/demo2"
-WEB_APP_FILENAME="Samsara-1.3.5.RELEASE.jar"
-WEB_APP_URL="s3://${BUCKET_NAME}/${WEB_APP_FILENAME}"
+WEB_APP_FILENAME=`get_from_parameter_store "demo2_artifact_filename"`
+WEB_APP_URL="s3://${BUCKET_NAME}/artifacts/${WEB_APP_FILENAME}"
 TEMP_DIR="/home/${OS_USERNAME}/tmp"
 DOWNLOAD_DIR="/home/${OS_USERNAME}/${DEMO_DIR}/download"
 DOWNLOAD_RETRIES=5

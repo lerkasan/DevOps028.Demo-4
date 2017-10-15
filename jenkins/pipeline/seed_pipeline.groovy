@@ -1,4 +1,4 @@
-pipelineJob('demo2-PIPELINE') {
+pipelineJob('demo2-pipeline') {
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
     }

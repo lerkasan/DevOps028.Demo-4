@@ -25,12 +25,12 @@ export LOGIN_HOST="localhost"
 
 LIQUIBASE_BIN_DIR="${WORKSPACE}/liquibase/bin"
 LIQUIBASE_FILENAME="liquibase-3.5.3-bin.tar.gz"
-LIQUIBASE_URL="s3://${TF_VAR_bucket_name}/${LIQUIBASE_FILENAME}"
+LIQUIBASE_URL="s3://${TF_VAR_bucket_name}/tools/${LIQUIBASE_FILENAME}"
 LIQUIBASE_PROPERTIES_TEMPLATE="${WORKSPACE}/liquibase/liquibase.properties.template"
 LIQUIBASE_PROPERTIES="${WORKSPACE}/liquibase/liquibase.properties"
 
 POSTGRES_JDBC_DRIVER_FILENAME="postgresql-42.1.4.jar"
-POSTGRES_JDBC_DRIVER_URL="s3://${TF_VAR_bucket_name}/${POSTGRES_JDBC_DRIVER_FILENAME}"
+POSTGRES_JDBC_DRIVER_URL="s3://${TF_VAR_bucket_name}/tools/${POSTGRES_JDBC_DRIVER_FILENAME}"
 
 DOWNLOAD_RETRIES=5
 

@@ -43,8 +43,7 @@ variable "min_servers_in_autoscaling_group" {
 }
 
 variable "max_servers_in_autoscaling_group" {
-  default     = 3
-  description = "Max numbers of servers in autoscaling group"
+  description = "Max numbers of servers in autoscaling group. Provided through ENV variable TF_VAR_max_servers_in_autoscaling_group"
 }
 
 variable "desired_servers_in_autoscaling_group" {

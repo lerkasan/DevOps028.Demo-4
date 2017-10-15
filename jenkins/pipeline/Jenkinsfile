@@ -12,7 +12,7 @@ pipeline {
         timestamps()
     }
     parameters {
-        string(name: 'bucket_name', defaultValue: 'ansible-demo1', description: 'Bucket with JDK, liquibase binaries and artifact for Demo2')
+        string(name: 'bucket_name', defaultValue: 'demo2-ssa', description: 'Bucket with JDK, liquibase binaries and artifact for Demo2')
         string(name: 'rds_identifier', defaultValue: 'demo2-rds', description: 'RDS instance identifier for Demo2')
         string(name: 'elb_name', defaultValue: 'demo2-elb', description: 'Classic load balancer name for Demo2')
         string(name: 'autoscalegroup_name', defaultValue: 'demo2_autoscalegroup', description: 'Autoscaling group name for Demo2')
@@ -20,11 +20,11 @@ pipeline {
     environment {
         AWS_DEFAULT_REGION="us-west-2"
         AWS_SECRET_ACCESS_KEY = sh(
-                script: "export AWS_DEFAULT_REGION=\"${AWS_DEFAULT_REGION}\" && aws ssm get-parameters --names jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
+                script: "aws ssm get-parameters --names jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
                 returnStdout: true
         ).trim()
         AWS_ACCESS_KEY_ID = sh(
-                script: "export AWS_DEFAULT_REGION=\"${AWS_DEFAULT_REGION}\" && aws ssm get-parameters --names jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
+                script: "aws ssm get-parameters --names jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
                 returnStdout: true
         ).trim()
 
@@ -36,7 +36,8 @@ pipeline {
         TF_VAR_rds_identifier="${params.rds_identifier}"
         TF_VAR_elb_name="${params.elb_name}"
         TF_VAR_autoscalegroup_name="${params.autoscalegroup_name}"
-        TF_VAR_webapp_port="9000"
+        TF_VAR_max_servers_in_autoscaling_group=3
+        TF_VAR_webapp_port=9000
         TF_VAR_health_check_path="/login"
     }
     stages {
@@ -90,7 +91,8 @@ pipeline {
                             archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
                             echo "Copying artifact to S3 bucket ..."
                             sh 'ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original` && ' +
-                               'aws s3 cp "${WORKSPACE}/target/${ARTIFACT_FILENAME}" "s3://${TF_VAR_bucket_name}/${ARTIFACT_FILENAME}"'
+                               'aws s3 cp "${WORKSPACE}/target/${ARTIFACT_FILENAME}" "s3://${TF_VAR_bucket_name}/artifacts/${ARTIFACT_FILENAME}" && ' +
+                               'aws ssm put-parameter --name demo2_artifact_filename --value="${ARTIFACT_FILENAME}" --type String --overwrite'
                         }
                     }
                 }
