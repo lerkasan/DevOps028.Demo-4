@@ -32,6 +32,8 @@ def connectNode(String privateIp, String nodeName) {
 }
 
 String[] slavesIpAddresses = "${env.SLAVE_IP_ADDRESSES}".split(' ')
+print("Slave ip addresses ${env.SLAVE_IP_ADDRESSES}")
+print("Slave ip addresses ${SLAVE_IP_ADDRESSES}")
 int counter = 1
 for (ipAddress in slavesIpAddresses) {
     connectNode(ipAddress, "node"+counter)
