@@ -92,7 +92,9 @@ pipeline {
                     post {
                         success {
                             archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
-                            sh "jenkins/jenkins/pipeline/postbuild-step.sh"
+//                            sh "jenkins/jenkins/pipeline/postbuild-step.sh"
+                            echo "Copying artifact to S3 bucket ..."
+                            sh "ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original` && aws s3 cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} s3://${BUCKET_NAME}/${ARTIFACT_FILENAME}"
                         }
                     }
                 }

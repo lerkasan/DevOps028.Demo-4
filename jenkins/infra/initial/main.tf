@@ -19,6 +19,7 @@ resource "aws_db_instance" "demo2_rds" {
   publicly_accessible     = "false"
   vpc_security_group_ids  = ["${aws_security_group.demo2_rds_secgroup.id}"]
   db_subnet_group_name    = "${aws_db_subnet_group.demo2_db_subnet_group.id}"
+  skip_final_snapshot     = "true"
 
   provisioner "local-exec" {
     command = "../../pipeline/populate-database.sh"
