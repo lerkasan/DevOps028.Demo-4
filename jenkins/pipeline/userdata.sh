@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# set -e
 
 function get_from_parameter_store {
     aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
@@ -22,9 +21,9 @@ export AWS_DEFAULT_REGION="us-west-2"
 export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "webapp_secret_access_key"`
 export AWS_ACCESS_KEY_ID=`get_from_parameter_store "webapp_access_key_id"`
 
-export DB_NAME=`get_from_parameter_store "DB_NAME"`
-export DB_USER=`get_from_parameter_store "DB_USER"`
-export DB_PASS=`get_from_parameter_store "DB_PASS"`
+export DB_NAME=`get_from_parameter_store "demo2_db_name"`
+export DB_USER=`get_from_parameter_store "demo2_db_user"`
+export DB_PASS=`get_from_parameter_store "demo2_db_pass"`
 export LOGIN_HOST="localhost"
 
 BUCKET_NAME=`get_from_parameter_store "demo2_bucket_name"`

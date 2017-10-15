@@ -18,17 +18,10 @@ function download_from_s3 {
     fi
 }
 
-#export AWS_DEFAULT_REGION="us-west-2"
-#export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
-#export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
-
-export DB_NAME=`get_from_parameter_store "DB_NAME"`
-export DB_USER=`get_from_parameter_store "DB_USER"`
-export DB_PASS=`get_from_parameter_store "DB_PASS"`
+export DB_NAME=`get_from_parameter_store "demo2_db_name"`
+export DB_USER=`get_from_parameter_store "demo2_db_user"`
+export DB_PASS=`get_from_parameter_store "demo2_db_pass"`
 export LOGIN_HOST="localhost"
-
-#BUCKET_NAME=`get_from_parameter_store "demo2_bucket_name"`
-#DB_INSTANCE_ID=`get_from_parameter_store "demo2_rds_identifier"`
 
 LIQUIBASE_BIN_DIR="${WORKSPACE}/liquibase/bin"
 LIQUIBASE_FILENAME="liquibase-3.5.3-bin.tar.gz"

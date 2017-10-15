@@ -37,6 +37,7 @@ pipeline {
         TF_VAR_elb_name="${params.elb_name}"
         TF_VAR_autoscalegroup_name="${params.autoscalegroup_name}"
         TF_VAR_webapp_port="9000"
+        TF_VAR_health_check_path="/login"
     }
     stages {
         stage('Checkout') {
@@ -87,9 +88,9 @@ pipeline {
                     post {
                         success {
                             archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
-                         // sh "jenkins/jenkins/pipeline/postbuild-step.sh"
                             echo "Copying artifact to S3 bucket ..."
-                            sh 'ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original` && aws s3 cp "${WORKSPACE}/target/${ARTIFACT_FILENAME}" "s3://${TF_VAR_bucket_name}/${ARTIFACT_FILENAME}"'
+                            sh 'ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original` && ' +
+                               'aws s3 cp "${WORKSPACE}/target/${ARTIFACT_FILENAME}" "s3://${TF_VAR_bucket_name}/${ARTIFACT_FILENAME}"'
                         }
                     }
                 }

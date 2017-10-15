@@ -2,6 +2,19 @@ provider "aws" {
   region = "${var.aws_region}"
 }
 
+# Create SSM parameters with bucket name and RDS identifier. Parameters will be used at userdata script of autoscaling group launch configuration
+data "aws_ssm_parameter" "demo2_bucket_name_param" {
+  name  = "demo2_bucket_name"
+  type  = "SecureString"
+  value = "${var.bucket_name}"
+}
+
+data "aws_ssm_parameter" "demo2_rds_identifier_param" {
+  name  = "demo2_rds_identifier"
+  type  = "SecureString"
+  value = "${var.rds_identifier}"
+}
+
 resource "aws_db_instance" "demo2_rds" {
   name = "demo2_rds"
   depends_on              = ["aws_security_group.demo2_rds_secgroup"]
@@ -40,7 +53,7 @@ resource "aws_elb" "demo2_elb" {
     healthy_threshold   = 2
     unhealthy_threshold = 5
     timeout             = 10
-    target              = "HTTP:${var.webapp_port}/login"
+    target              = "HTTP:${var.webapp_port}${var.health_check_path}"
     interval            = 15
   }
   cross_zone_load_balancing   = true
@@ -74,6 +87,8 @@ resource "aws_launch_configuration" "demo2_launch_configuration" {
 
 resource "aws_autoscaling_group" "demo2_autoscalegroup" {
   name                 = "${var.autoscalegroup_name}"
+# Depends on is added to check that SSM parameters used in launch configuration userdata are created before userdata executing
+  depends_on = ["aws_ssm_parameter.demo2_bucket_name_param", "aws_ssm_parameter.demo2_rds_identifier_param"]
   max_size             = "${var.max_servers_in_autoscaling_group}"
   min_size             = "${var.min_servers_in_autoscaling_group}"
   desired_capacity     = "${var.desired_servers_in_autoscaling_group}"

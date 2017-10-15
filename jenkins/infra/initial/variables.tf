@@ -35,7 +35,7 @@ variable "default_vpc_cidr_block" {
   description = "Default VPC CIDR block"
 }
 
-# --------- Autoscaling group parameters ------------
+# --------- Autoscaling group and load balancer parameters ------------
 
 variable "min_servers_in_autoscaling_group" {
   default     = 2
@@ -53,11 +53,15 @@ variable "desired_servers_in_autoscaling_group" {
 }
 
 variable "autoscalegroup_name" {
-  description = "Provided through ENV variable TF_VAR_autoscalegroup_name"
+  description = "Autoscaling group name. Provided through ENV variable TF_VAR_autoscalegroup_name"
 }
 
 variable "elb_name" {
-  description = "Provided through ENV variable TF_VAR_elb_name"
+  description = "Load balancer name. Provided through ENV variable TF_VAR_elb_name"
+}
+
+variable "health_check_path" {
+  description = "Health check path for load balancer. Provided through ENV variable TF_VAR_health_check_path"
 }
 
 # --------- EC2 parameters -----------

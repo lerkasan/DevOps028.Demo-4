@@ -1,16 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-#function get_from_parameter_store {
-#    aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
-#}
-
-#export AWS_DEFAULT_REGION="us-west-2"
-#export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
-#export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
-
-#ELB_NAME=`get_from_parameter_store "demo2_elb_name"`
-
 # Obtain public DNS address of load balancer
 echo "Obtaining public DNS address of load balancer ..."
 ELB_INFO=`aws elb describe-load-balancers --load-balancer-name ${TF_VAR_elb_name} --output text \
@@ -25,7 +15,7 @@ sleep 60
 
 # Check connectivity to webapp loadbalancer
 echo "Checking connectivity to webapp load balancer ..."
-HTTP_CODE=`curl -s -o /dev/null -w "%{http_code}" "http://${ELB_HOST}:${ELB_PORT}/login"`
+HTTP_CODE=`curl -s -o /dev/null -w "%{http_code}" "http://${ELB_HOST}:${ELB_PORT}${TF_VAR_health_check_path}"`
 if [[ ${HTTP_CODE} > 399 ]]; then
 	echo "HTTP_RESPONSE_CODE = ${HTTP_CODE}"
 	exit 1
