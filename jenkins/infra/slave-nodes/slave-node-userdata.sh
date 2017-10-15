@@ -22,11 +22,11 @@ export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "SECRET_ACCESS_KEY"`
 export AWS_ACCESS_KEY_ID=`get_from_parameter_store "ACCESS_KEY_ID"`
 
 BUCKET_NAME="ansible-demo1"
-OS_USERNAME=`whoami`
+OS_USERNAME="ec2-user"
 DEMO_DIR="demo2"
 
 JDK_FILENAME="jdk-8u144-linux-x64.tar.gz"
-JDK_URL="s3://${BUCKET_NAME}/${JDK_FILENAME}"
+JDK_URL="s3://${BUCKET_NAME}/tools/${JDK_FILENAME}"
 JDK_INSTALL_DIR="/usr/lib/jvm"
 
 DOWNLOAD_DIR="/home/${OS_USERNAME}/${DEMO_DIR}/download"
