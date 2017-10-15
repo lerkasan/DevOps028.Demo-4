@@ -117,7 +117,8 @@ pipeline {
                     to: 'lerkasan@gmail.com'
         }
         failure {
-            emailext body: '${BUILD_LOG}',
+            emailext attachLog: true,
+                    body: 'Build log is attached.',
                     subject: 'Web application Samsara deploy failed',
                     to: 'lerkasan@gmail.com'
         }
