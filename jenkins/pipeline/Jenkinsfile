@@ -12,12 +12,10 @@ pipeline {
         timestamps()
     }
     parameters {
-        string(
-                bucket_name: "ansible-demo1",
-                db_instance_id: "demo2-rds",
-                elb_name: "demo2-elb",
-                autoscalegroup_name: "demo2_autoscalegroup"
-        )
+        string(name: 'bucket_name', defaultValue: 'ansible-demo1')
+        string(name: 'db_instance_id', defaultValue: 'demo2-rds')
+        string(name: 'elb_name', defaultValue: 'demo2-elb')
+        string(name: 'autoscalegroup_name', defaultValue: 'demo2_autoscalegroup')
     }
     environment {
         AWS_DEFAULT_REGION="us-west-2"
