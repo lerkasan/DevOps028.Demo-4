@@ -28,14 +28,13 @@ def connectNode(String privateIp, String nodeName) {
     agent.labelString = "slave-node"
     agent.mode = Node.Mode.NORMAL
     agent.retentionStrategy = new RetentionStrategy.Always()
-    print("Inside function. Connecting slave node" + nodeName + " with ip " + privateIp)
+    print("Connecting slave node named " + nodeName + " with ip " + privateIp)
     Jenkins.instance.addNode(agent)
 }
 
 String[] slavesIpAddresses = "${env.SLAVE_IP_ADDRESSES}".split(' ')
-int counter = 10
+int counter = 1
 for (ipAddress in slavesIpAddresses) {
-    print("Before function. Connecting slave node" + counter + " with ip " + ipAddress)
-    connectNode(ipAddress, "node"+counter)
+    connectNode(ipAddress, "node0"+counter)
     counter++
 }
