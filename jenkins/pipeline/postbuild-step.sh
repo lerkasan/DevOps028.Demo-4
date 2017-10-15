@@ -13,4 +13,4 @@ ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original`
 
 # Copy artifact to S3 bucket
 echo "Copying artifact to S3 bucket ..."
-aws s3 cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} s3://${params.bucket_name}/${ARTIFACT_FILENAME}
+aws s3 cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} s3://${BUCKET_NAME}/${ARTIFACT_FILENAME}

@@ -13,7 +13,7 @@ set -e
 
 # Obtain public DNS address of load balancer
 echo "Obtaining public DNS address of load balancer ..."
-ELB_INFO=`aws elb describe-load-balancers --load-balancer-name ${params.elb_name} --output text \
+ELB_INFO=`aws elb describe-load-balancers --load-balancer-name ${ELB_NAME} --output text \
           --query 'LoadBalancerDescriptions[*].{Name:DNSName,Listeners:ListenerDescriptions[*].Listener.LoadBalancerPort}'`
 export ELB_HOST=`echo ${ELB_INFO} | grep amazonaws | awk '{print $1}'`
 export ELB_PORT=`echo ${ELB_INFO} | grep LISTENERS | awk '{print $3}'`
