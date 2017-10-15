@@ -9,8 +9,8 @@
 #export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 
 #BUCKET_NAME=`get_from_parameter_store "demo2_bucket_name"`
-ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original`
 
 # Copy artifact to S3 bucket
 echo "Copying artifact to S3 bucket ..."
+ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original`
 aws s3 cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} s3://${BUCKET_NAME}/${ARTIFACT_FILENAME}
