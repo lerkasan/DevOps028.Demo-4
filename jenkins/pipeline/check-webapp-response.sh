@@ -5,9 +5,9 @@ function get_from_parameter_store {
     aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
 }
 
-export AWS_DEFAULT_REGION="us-west-2"
-export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
-export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
+#export AWS_DEFAULT_REGION="us-west-2"
+#export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
+#export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 
 ELB_NAME=`get_from_parameter_store "demo2_elb_name"`
 

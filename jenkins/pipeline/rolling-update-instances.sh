@@ -4,11 +4,11 @@ function get_from_parameter_store {
     aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
 }
 
-export AWS_DEFAULT_REGION="us-west-2"
-export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
-export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
-AUTOSCALEGROUP_NAME=`get_from_parameter_store "demo2_autoscalegroup_name"`
+#export AWS_DEFAULT_REGION="us-west-2"
+#export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
+#export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 
+AUTOSCALEGROUP_NAME=`get_from_parameter_store "demo2_autoscalegroup_name"`
 MAX_SIZE=3
 let TMP_MAX_SIZE=${MAX_SIZE}*2
 

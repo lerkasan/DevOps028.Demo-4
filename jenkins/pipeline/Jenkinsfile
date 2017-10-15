@@ -11,6 +11,18 @@ pipeline {
     options {
         timestamps()
     }
+    environment {
+        AWS_DEFAULT_REGION="us-west-2"
+        AWS_SECRET_ACCESS_KEY = sh(
+                script: "export AWS_DEFAULT_REGION='us-west-2' && aws ssm get-parameters --names webapp_secret_access_key --with-decryption --output text | awk '{print \$4}'",
+                returnStdout: true
+        ).trim()
+        AWS_ACCESS_KEY_ID = sh(
+                script: "export AWS_DEFAULT_REGION='us-west-2' && aws ssm get-parameters --names webapp_access_key_id --with-decryption --output text | awk '{print \$4}'",
+                returnStdout: true
+        ).trim()
+        TF_VAR_aws_region="${AWS_DEFAULT_REGION}"
+    }
     stages {
         stage('Checkout') {
             steps {

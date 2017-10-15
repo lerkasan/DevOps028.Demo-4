@@ -4,7 +4,7 @@ variable "aws_account_id" {
 }
 
 variable "aws_region" {
-  default     = "us-west-2"
+ #default     = "us-west-2"
   description = "AWS region to launch servers."
 }
 
