@@ -28,17 +28,10 @@ pipeline {
                 returnStdout: true
         ).trim()
 
-//        BUCKET_NAME="ansible-demo1"
-//        DB_INSTANCE_ID="demo2-rds"
-//        ELB_NAME="demo2-elb"
-//        AUTOSCALEGROUP_NAME="demo2_autoscalegroup"
-//
-//        TF_VAR_aws_region="${AWS_DEFAULT_REGION}"
-//        TF_VAR_bucket_name="${params.BUCKET_NAME}"
-//        TF_VAR_rds_identifier="${DB_INSTANCE_ID}"
-//        TF_VAR_elb_name="${ELB_NAME}"
-//        TF_VAR_autoscalegroup_name="${AUTOSCALEGROUP_NAME}"
-//        TF_VAR_webapp_port="9000"
+        BUCKET_NAME="${params.bucket_name}"
+        DB_INSTANCE_ID="${params.db_instance_id}"
+        ELB_NAME="${params.elb_name}"
+        AUTOSCALEGROUP_NAME="${params.autoscalegroup_name}"
 
         TF_VAR_aws_region="${AWS_DEFAULT_REGION}"
         TF_VAR_availability_zone1="${AWS_DEFAULT_REGION}a"
