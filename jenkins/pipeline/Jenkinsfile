@@ -44,8 +44,8 @@ pipeline {
 
         TF_VAR_aws_region="${AWS_DEFAULT_REGION}"
         TF_VAR_availability_zone1="${AWS_DEFAULT_REGION}a"
-        TF_VAR_availability_zone1="${AWS_DEFAULT_REGION}b"
-        TF_VAR_availability_zone1="${AWS_DEFAULT_REGION}c"
+        TF_VAR_availability_zone2="${AWS_DEFAULT_REGION}b"
+        TF_VAR_availability_zone3="${AWS_DEFAULT_REGION}c"
         TF_VAR_bucket_name="${params.bucket_name}"
         TF_VAR_rds_identifier="${params.db_instance_id}"
         TF_VAR_elb_name="${params.elb_name}"
