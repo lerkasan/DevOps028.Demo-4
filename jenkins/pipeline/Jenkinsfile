@@ -13,7 +13,7 @@ pipeline {
     }
     parameters {
         string(name: 'bucket_name', defaultValue: 'ansible-demo1')
-        string(name: 'db_instance_id', defaultValue: 'demo2-rds')
+        string(name: 'rds_identifier', defaultValue: 'demo2-rds')
         string(name: 'elb_name', defaultValue: 'demo2-elb')
         string(name: 'autoscalegroup_name', defaultValue: 'demo2_autoscalegroup')
     }
@@ -28,17 +28,12 @@ pipeline {
                 returnStdout: true
         ).trim()
 
-        BUCKET_NAME="${params.bucket_name}"
-        DB_INSTANCE_ID="${params.db_instance_id}"
-        ELB_NAME="${params.elb_name}"
-        AUTOSCALEGROUP_NAME="${params.autoscalegroup_name}"
-
         TF_VAR_aws_region="${AWS_DEFAULT_REGION}"
         TF_VAR_availability_zone1="${AWS_DEFAULT_REGION}a"
         TF_VAR_availability_zone2="${AWS_DEFAULT_REGION}b"
         TF_VAR_availability_zone3="${AWS_DEFAULT_REGION}c"
         TF_VAR_bucket_name="${params.bucket_name}"
-        TF_VAR_rds_identifier="${params.db_instance_id}"
+        TF_VAR_rds_identifier="${params.rds_identifier}"
         TF_VAR_elb_name="${params.elb_name}"
         TF_VAR_autoscalegroup_name="${params.autoscalegroup_name}"
         TF_VAR_webapp_port="9000"
@@ -94,7 +89,7 @@ pipeline {
                             archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
 //                            sh "jenkins/jenkins/pipeline/postbuild-step.sh"
                             echo "Copying artifact to S3 bucket ..."
-                            sh "ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original` && aws s3 cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} s3://${BUCKET_NAME}/${ARTIFACT_FILENAME}"
+                            sh "ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original` && aws s3 cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} s3://${TF_VAR_bucket_name}/${ARTIFACT_FILENAME}"
                         }
                     }
                 }

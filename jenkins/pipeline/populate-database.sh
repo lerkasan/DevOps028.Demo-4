@@ -32,12 +32,12 @@ export LOGIN_HOST="localhost"
 
 LIQUIBASE_BIN_DIR="${WORKSPACE}/liquibase/bin"
 LIQUIBASE_FILENAME="liquibase-3.5.3-bin.tar.gz"
-LIQUIBASE_URL="s3://${BUCKET_NAME}/${LIQUIBASE_FILENAME}"
+LIQUIBASE_URL="s3://${TF_VAR_bucket_name}/${LIQUIBASE_FILENAME}"
 LIQUIBASE_PROPERTIES_TEMPLATE="${WORKSPACE}/liquibase/liquibase.properties.template"
 LIQUIBASE_PROPERTIES="${WORKSPACE}/liquibase/liquibase.properties"
 
 POSTGRES_JDBC_DRIVER_FILENAME="postgresql-42.1.4.jar"
-POSTGRES_JDBC_DRIVER_URL="s3://${BUCKET_NAME}/${POSTGRES_JDBC_DRIVER_FILENAME}"
+POSTGRES_JDBC_DRIVER_URL="s3://${TF_VAR_bucket_name}/${POSTGRES_JDBC_DRIVER_FILENAME}"
 
 DOWNLOAD_RETRIES=5
 
@@ -57,19 +57,19 @@ fi
 
 # Obtain RDS database endpoint
 echo "Obtaining RDS database endpoint ..."
-EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
+EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${TF_VAR_rds_identifier} \
     --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
 MAX_RETRIES_TO_GET_DBINFO=20
 RETRIES=0
 while [[ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ]] && [ ${RETRIES} -lt ${MAX_RETRIES_TO_GET_DBINFO} ]; do
     sleep 30
-    EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${DB_INSTANCE_ID} \
+    EXISTING_DB_INSTANCE_INFO=`aws rds describe-db-instances --db-instance-identifier ${TF_VAR_rds_identifier} \
     --query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,Endpoint.Port,DBInstanceStatus]' --output text`
     echo "Try: ${RETRIES}    DBinfo: ${EXISTING_DB_INSTANCE_INFO}"
     let "RETRIES++"
 done
 if [[ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ]]; then
-    echo "Failure - no RDS database with identifier ${DB_INSTANCE_ID} available."
+    echo "Failure - no RDS database with identifier ${TF_VAR_rds_identifier} available."
     exit 1
 fi
 DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
@@ -78,7 +78,7 @@ echo "RDS endpoint: ${DB_HOST}:${DB_PORT}  Retries: ${RETRIES}"
 
 # Update database using Liquibase
 echo "Updating database using Liquibase ..."
-aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
+aws rds wait db-instance-available --db-instance-identifier ${TF_VAR_rds_identifier}
 sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" ${LIQUIBASE_PROPERTIES_TEMPLATE} |
     sed "s/%DB_HOST%/${DB_HOST}/g" |
     sed "s/%DB_PORT%/${DB_PORT}/g" |
