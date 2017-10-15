@@ -12,10 +12,10 @@ pipeline {
         timestamps()
     }
     parameters {
-        string(name: 'bucket_name', defaultValue: 'ansible-demo1')
-        string(name: 'rds_identifier', defaultValue: 'demo2-rds')
-        string(name: 'elb_name', defaultValue: 'demo2-elb')
-        string(name: 'autoscalegroup_name', defaultValue: 'demo2_autoscalegroup')
+        string(name: 'bucket_name', defaultValue: 'ansible-demo1', description: 'Bucket with JDK, liquibase binaries and artifact for Demo2')
+        string(name: 'rds_identifier', defaultValue: 'demo2-rds', description: 'RDS instance identifier for Demo2')
+        string(name: 'elb_name', defaultValue: 'demo2-elb', description: 'Classic load balancer name for Demo2')
+        string(name: 'autoscalegroup_name', defaultValue: 'demo2_autoscalegroup', description: 'Autoscaling group name for Demo2')
     }
     environment {
         AWS_DEFAULT_REGION="us-west-2"
@@ -89,7 +89,7 @@ pipeline {
                             archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
 //                            sh "jenkins/jenkins/pipeline/postbuild-step.sh"
                             echo "Copying artifact to S3 bucket ..."
-                            sh "ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original` && aws s3 cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} s3://${TF_VAR_bucket_name}/${ARTIFACT_FILENAME}"
+                            sh "export ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original` && aws s3 cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} s3://${TF_VAR_bucket_name}/${ARTIFACT_FILENAME}"
                         }
                     }
                 }
