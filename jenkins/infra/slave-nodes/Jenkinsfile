@@ -29,15 +29,15 @@ pipeline {
                 sh "jenkins/slave-nodes/start-slave-nodes.sh"
             }
         }
-        environment {
-            SLAVE_IP_ADDRESSES = sh(
-                    script: "aws ec2 describe-instances --filters \"Name=tag:Name,Values=jenkins-slaves\" " +
-                            "--query 'Reservations[*].Instances[*].[State.Name,InstanceId,PrivateIpAddress,PublicDnsName]' " +
-                            "--output text | grep -v -e terminated | awk '{print \$3}' | tr '\\n' ' '",
-                    returnStdout: true
-            ).trim()
-        }
         stage("Connect slave nodes") {
+            environment {
+                SLAVE_IP_ADDRESSES = sh(
+                        script: "aws ec2 describe-instances --filters \"Name=tag:Name,Values=jenkins-slaves\" " +
+                                "--query 'Reservations[*].Instances[*].[State.Name,InstanceId,PrivateIpAddress,PublicDnsName]' " +
+                                "--output text | grep -v -e terminated | awk '{print \$3}' | tr '\\n' ' '",
+                        returnStdout: true
+                ).trim()
+            }
             steps {
                 echo "Connecting slave nodes to Jenkins ..."
                 script {
