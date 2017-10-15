@@ -50,6 +50,7 @@ pipeline {
                 ).trim()
             }
             steps {
+                echo "${SLAVE_IP_ADDRESSES}"
                 echo "Connecting slave nodes to Jenkins ..."
                 script {
                      load 'jenkins/infra/slave-nodes/connect_slave_nodes.groovy'
