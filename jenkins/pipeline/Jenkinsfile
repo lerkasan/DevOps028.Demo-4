@@ -51,7 +51,7 @@ pipeline {
                          branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false,
                          browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/lerkasan/DevOps028.git'],
                          extensions: [[$class: 'CleanBeforeCheckout']],
-                         gitTool: 'git-slave',
+                         gitTool: 'git',
                          submoduleCfg: [],
                          userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
                         ])
@@ -61,7 +61,7 @@ pipeline {
                         scm: [$class: 'GitSCM',
                          branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
                          extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins'], [$class: 'IgnoreNotifyCommit']],
-                         gitTool: 'git-slave',
+                         gitTool: 'git',
                          submoduleCfg: [],
                          userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
                         ])
