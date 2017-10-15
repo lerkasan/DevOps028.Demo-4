@@ -45,8 +45,8 @@ echo "PubkeyAuthentication yes" | sudo tee --append /etc/ssh/sshd_config
 sudo service sshd restart
 
 #Download and install Terraform
-wget https://releases.hashicorp.com/terraform/0.10.7/terraform_0.10.7_linux_amd64.zip
-unzip terraform_0.10.7_linux_amd64.zip
+cd "/home/${OS_USERNAME}" && wget https://releases.hashicorp.com/terraform/0.10.7/terraform_0.10.7_linux_amd64.zip
+cd "/home/${OS_USERNAME}" && unzip terraform_0.10.7_linux_amd64.zip
 export PATH="/home/ec2-user:${PATH}"
 
 # Download and install JDK
