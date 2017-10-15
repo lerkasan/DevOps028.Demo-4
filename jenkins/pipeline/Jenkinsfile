@@ -11,17 +11,46 @@ pipeline {
     options {
         timestamps()
     }
+    parameters {
+        string(
+                bucket_name="ansible-demo1",
+                db_instance_id="demo2-rds",
+                elb_name="demo2-elb",
+                autoscalegroup_name="demo2_autoscalegroup"
+        )
+    }
     environment {
         AWS_DEFAULT_REGION="us-west-2"
         AWS_SECRET_ACCESS_KEY = sh(
-                script: "export AWS_DEFAULT_REGION='us-west-2' && aws ssm get-parameters --names webapp_secret_access_key --with-decryption --output text | awk '{print \$4}'",
+                script: "export AWS_DEFAULT_REGION=\"${AWS_DEFAULT_REGION}\" && aws ssm get-parameters --names jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
                 returnStdout: true
         ).trim()
         AWS_ACCESS_KEY_ID = sh(
-                script: "export AWS_DEFAULT_REGION='us-west-2' && aws ssm get-parameters --names webapp_access_key_id --with-decryption --output text | awk '{print \$4}'",
+                script: "export AWS_DEFAULT_REGION=\"${AWS_DEFAULT_REGION}\" && aws ssm get-parameters --names jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
                 returnStdout: true
         ).trim()
+
+//        BUCKET_NAME="ansible-demo1"
+//        DB_INSTANCE_ID="demo2-rds"
+//        ELB_NAME="demo2-elb"
+//        AUTOSCALEGROUP_NAME="demo2_autoscalegroup"
+//
+//        TF_VAR_aws_region="${AWS_DEFAULT_REGION}"
+//        TF_VAR_bucket_name="${params.BUCKET_NAME}"
+//        TF_VAR_rds_identifier="${DB_INSTANCE_ID}"
+//        TF_VAR_elb_name="${ELB_NAME}"
+//        TF_VAR_autoscalegroup_name="${AUTOSCALEGROUP_NAME}"
+//        TF_VAR_webapp_port="9000"
+
         TF_VAR_aws_region="${AWS_DEFAULT_REGION}"
+        TF_VAR_availability_zone1="${AWS_DEFAULT_REGION}a"
+        TF_VAR_availability_zone1="${AWS_DEFAULT_REGION}b"
+        TF_VAR_availability_zone1="${AWS_DEFAULT_REGION}c"
+        TF_VAR_bucket_name="${params.bucket_name}"
+        TF_VAR_rds_identifier="${params.db_instance_id}"
+        TF_VAR_elb_name="${params.elb_name}"
+        TF_VAR_autoscalegroup_name="${params.autoscalegroup_name}"
+        TF_VAR_webapp_port="9000"
     }
     stages {
         stage('Checkout') {

@@ -9,15 +9,18 @@ variable "aws_region" {
 }
 
 variable "availability_zone1" {
-  default     = "us-west-2a"
+  #default     = "us-west-2a"
+  description = "Provided through ENV variable TF_VAR_availability_zone1"
 }
 
 variable "availability_zone2" {
-  default     = "us-west-2b"
+  #default     = "us-west-2b"
+  description = "Provided through ENV variable TF_VAR_availability_zone2"
 }
 
 variable "availability_zone3" {
-  default     = "us-west-2c"
+  #default     = "us-west-2c"
+  description = "Provided through ENV variable TF_VAR_availability_zone2"
 }
 
 variable "bucket_name" {

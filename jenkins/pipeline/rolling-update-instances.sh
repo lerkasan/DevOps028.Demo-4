@@ -8,7 +8,8 @@ function get_from_parameter_store {
 #export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
 #export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 
-AUTOSCALEGROUP_NAME=`get_from_parameter_store "demo2_autoscalegroup_name"`
+#AUTOSCALEGROUP_NAME=`get_from_parameter_store "demo2_autoscalegroup_name"`
+AUTOSCALEGROUP_NAME="${params.autoscale_group}"
 MAX_SIZE=3
 let TMP_MAX_SIZE=${MAX_SIZE}*2
 

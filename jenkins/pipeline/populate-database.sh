@@ -27,8 +27,11 @@ export DB_USER=`get_from_parameter_store "DB_USER"`
 export DB_PASS=`get_from_parameter_store "DB_PASS"`
 export LOGIN_HOST="localhost"
 
-BUCKET_NAME=`get_from_parameter_store "demo2_bucket_name"`
-DB_INSTANCE_ID=`get_from_parameter_store "demo2_rds_identifier"`
+#BUCKET_NAME=`get_from_parameter_store "demo2_bucket_name"`
+#DB_INSTANCE_ID=`get_from_parameter_store "demo2_rds_identifier"`
+
+BUCKET_NAME="${params.bucket_name}"
+DB_INSTANCE_ID="${params.db_instance_id}"
 
 LIQUIBASE_BIN_DIR="${WORKSPACE}/liquibase/bin"
 LIQUIBASE_FILENAME="liquibase-3.5.3-bin.tar.gz"
