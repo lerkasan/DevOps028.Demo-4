@@ -77,6 +77,8 @@ pipeline {
                 stage("Prepare AWS infrastructure") {
                     steps {
                         echo "Preparing AWS infrastructure ..."
+                        echo "Bucket name parameter is: ${params.bucket_name}"
+                        echo "Bucket name environment variable is: ${BUCKET_NAME}"
                         sh "chmod +x jenkins/jenkins/pipeline/*.sh"
                         sh "jenkins/jenkins/pipeline/prepare-infra.sh"
                     }
