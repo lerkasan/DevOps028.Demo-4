@@ -33,7 +33,7 @@ def connectNode(String privateIp, String nodeName) {
 }
 
 String[] slavesIpAddresses = "${env.SLAVE_IP_ADDRESSES}".split(' ')
-int counter = 1
+int counter = 10
 for (ipAddress in slavesIpAddresses) {
     print("Before function. Connecting slave node" + counter + " with ip " + ipAddress)
     connectNode(ipAddress, "node"+counter)
