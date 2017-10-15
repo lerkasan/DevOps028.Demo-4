@@ -7,6 +7,17 @@ pipeline {
     options {
         timestamps()
     }
+    environment {
+        AWS_DEFAULT_REGION = "us-west-2"
+        AWS_SECRET_ACCESS_KEY = sh(
+                script: "aws ssm get-parameters --names jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
+                returnStdout: true
+        ).trim()
+        AWS_ACCESS_KEY_ID = sh(
+                script: "aws ssm get-parameters --names jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
+                returnStdout: true
+        ).trim()
+    }
     stages {
         stage('Checkout') {
             steps {
