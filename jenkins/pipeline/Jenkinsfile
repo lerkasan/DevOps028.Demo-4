@@ -13,10 +13,10 @@ pipeline {
     }
     parameters {
         string(
-                bucket_name="ansible-demo1",
-                db_instance_id="demo2-rds",
-                elb_name="demo2-elb",
-                autoscalegroup_name="demo2_autoscalegroup"
+                bucket_name: "ansible-demo1",
+                db_instance_id: "demo2-rds",
+                elb_name: "demo2-elb",
+                autoscalegroup_name: "demo2_autoscalegroup"
         )
     }
     environment {
