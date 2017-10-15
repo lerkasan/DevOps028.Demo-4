@@ -31,7 +31,7 @@ def connectNode(String privateIp, String nodeName) {
     Jenkins.instance.addNode(agent)
 }
 
-String[] slavesIpAddresses = ${SLAVE_IP_ADDRESSES}.split(' ')
+String[] slavesIpAddresses = "${env.SLAVE_IP_ADDRESSES}".split(' ')
 int counter = 1
 for (ipAddress in slavesIpAddresses) {
     connectNode(ipAddress, "node"+counter)
