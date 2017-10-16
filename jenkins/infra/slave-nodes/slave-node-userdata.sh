@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
+# Requires one argument:
+# string $1 - name of parameter in EC2 parameter store
 function get_from_parameter_store {
     aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
 }
 
+# Requires three arguments:
+# string $1 - URL of file to be downloaded
+# string $2 - full path to folder where downloaded file should be saved
+# int $3    - number of download retries
 function download_from_s3 {
     let RETRIES=$3
     until [ ${RETRIES} -lt 0 ] || [ -e "$2" ]; do
@@ -22,15 +28,12 @@ export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_ke
 export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 
 BUCKET_NAME="demo2-ssa"
-OS_USERNAME="ec2-user"
+USER_HOME="/home/ec2-user"
 DEMO_DIR="demo2"
 
 JDK_FILENAME="jdk-8u144-linux-x64.tar.gz"
 JDK_URL="s3://${BUCKET_NAME}/tools/${JDK_FILENAME}"
 JDK_INSTALL_DIR="/usr/lib/jvm"
-
-DOWNLOAD_DIR="/home/${OS_USERNAME}/${DEMO_DIR}/download"
-DOWNLOAD_RETRIES=5
 
 # Install Python-Pip, AWS cli, Git
 sudo yum -y update
@@ -45,11 +48,14 @@ echo "PubkeyAuthentication yes" | sudo tee --append /etc/ssh/sshd_config
 sudo service sshd restart
 
 #Download and install Terraform
-cd "/home/${OS_USERNAME}" && wget https://releases.hashicorp.com/terraform/0.10.7/terraform_0.10.7_linux_amd64.zip
-cd "/home/${OS_USERNAME}" && unzip terraform_0.10.7_linux_amd64.zip
-export PATH="/home/ec2-user:${PATH}"
+wget https://releases.hashicorp.com/terraform/0.10.7/terraform_0.10.7_linux_amd64.zip -P "${USER_HOME}"
+unzip "${USER_HOME}/terraform_0.10.7_linux_amd64.zip"
+export PATH="${USER_HOME}:${PATH}"
 
 # Download and install JDK
+#DOWNLOAD_DIR="${USER_HOME}/${DEMO_DIR}/download"
+#DOWNLOAD_RETRIES=5
+#
 #mkdir -p ${DOWNLOAD_DIR}
 #sudo mkdir -p ${JDK_INSTALL_DIR}
 #if [ ! -e "${DOWNLOAD_DIR}/${JDK_FILENAME}" ]; then

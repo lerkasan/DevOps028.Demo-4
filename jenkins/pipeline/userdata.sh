@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
 
+# Requires one argument:
+# string $1 - name of parameter in EC2 parameter store
 function get_from_parameter_store {
     aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
 }
 
+# Requires three arguments:
+# string $1 - URL of file to be downloaded
+# string $2 - full path to folder where downloaded file should be saved
+# int $3    - number of download retries
 function download_from_s3 {
     let RETRIES=$3
     until [ ${RETRIES} -lt 0 ] || [ -e "$2" ]; do
@@ -91,6 +97,7 @@ if [[ -z `echo ${EXISTING_DB_INSTANCE_INFO} | grep "amazonaws"` ]]; then
     exit 1
 fi
 
+aws rds wait db-instance-available --db-instance-identifier ${DB_INSTANCE_ID}
 export DB_HOST=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $2}'`
 export DB_PORT=`echo ${EXISTING_DB_INSTANCE_INFO} | awk '{print $3}'`
 echo "RDS endpoint: ${DB_HOST}:${DB_PORT}  Retries: ${RETRIES}"

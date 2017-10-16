@@ -27,7 +27,7 @@ pipeline {
                         scm: [$class: 'GitSCM',
                               branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
                               extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'IgnoreNotifyCommit']],
-                              gitTool: 'git-slave',
+                              gitTool: 'git',
                               submoduleCfg: [],
                               userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
                         ])
@@ -45,7 +45,7 @@ pipeline {
                 SLAVE_IP_ADDRESSES = sh(
                         script: "aws ec2 describe-instances --filters \"Name=tag:Name,Values=jenkins-slaves\" " +
                                 "--query 'Reservations[*].Instances[*].[State.Name,InstanceId,PrivateIpAddress,PublicDnsName]' " +
-                                "--output text | grep -v -e terminated | awk '{print \$3}' | tr '\\n' ' '",
+                                "--output text | grep running | awk '{print \$3}' | tr '\\n' ' '",
                         returnStdout: true
                 ).trim()
             }
