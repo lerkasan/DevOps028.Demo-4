@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function get_from_parameter_store {
-    aws ssm get-parameters --names $1 --with-decryption --output text | awk '{print $4}'
+    aws ssm get-parameter --name $1 --with-decryption --output text | awk '{print $4}'
 }
 
 export AWS_DEFAULT_REGION="us-west-2"
