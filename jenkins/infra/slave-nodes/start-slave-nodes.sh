@@ -17,7 +17,8 @@ if [[ -z ${INSTANCES_INFO} ]]; then
     --security-group-ids ${SECURITY_GROUP} --user-data "file://${USERDATA_FILE_PATH}" \
     --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=jenkins-slaves}]" --iam-instance-profile Name=${IAM} \
     --disable-api-termination | grep INSTANCES | awk '{print $7}' | tr '\n' ' '`
-    sleep 90
+    echo "Waiting 60 seconds while slave nodes are starting ..."
+    sleep 60
     # aws ec2 wait instance-running --instance-ids ${INSTANCE_IDS}
     # aws ec2 wait instance-status-ok --instance-ids ${INSTANCE_ID} --filters "Name=instance-status.reachability,Values=passed"
 else
@@ -27,7 +28,8 @@ else
         INSTANCE_ID=`echo ${INSTANCE_INFO} | awk '{print $2}'`
         if [[ ${INSTANCE_STATE} == "stopped" ]]; then
             aws ec2 start-instances --instance-ids ${INSTANCE_ID}
-            sleep 90
+            echo "Waiting 60 seconds while slave nodes are starting ..."
+            sleep 60
             # aws ec2 wait instance-running --instance-ids ${INSTANCE_ID}
             # aws ec2 wait instance-status-ok --instance-ids ${INSTANCE_ID} --filters "Name=instance-status.reachability,Values=passed"
         fi
