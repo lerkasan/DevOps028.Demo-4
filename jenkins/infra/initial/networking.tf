@@ -97,7 +97,7 @@ resource "aws_security_group" "demo2_rds_secgroup" {
 # Security group to access EC2 instances over SSH and HTTP
 resource "aws_security_group" "demo2_webapp_secgroup" {
   name        = "demo2_webapp_security_group"
-  description = "Used in the terraform"
+  description = "demo2_webapp_security_group"
   vpc_id      = "${aws_vpc.demo2_vpc.id}"
 
   # SSH access from anywhere
@@ -126,7 +126,7 @@ resource "aws_security_group" "demo2_webapp_secgroup" {
 # ELB security group to access the ELB over HTTP
 resource "aws_security_group" "demo2_elb_secgroup" {
   name        = "demo2_elb_security_group"
-  description = "Used in the terraform"
+  description = "demo2_elb_security_group"
   vpc_id = "${aws_vpc.demo2_vpc.id}"
 
   # HTTP access to webapp port from anywhere
