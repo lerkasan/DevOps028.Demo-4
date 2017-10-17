@@ -18,15 +18,15 @@ pipeline {
         string(name: 'autoscalegroup_name', defaultValue: 'demo2_autoscalegroup', description: 'Autoscaling group name for Demo2')
     }
     environment {
-        AWS_DEFAULT_REGION="us-west-2"
-        AWS_SECRET_ACCESS_KEY = sh(
-                script: "aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
-        AWS_ACCESS_KEY_ID = sh(
-                script: "aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
+//        AWS_DEFAULT_REGION="us-west-2"
+//        AWS_SECRET_ACCESS_KEY = sh(
+//                script: "aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
+//                returnStdout: true
+//        ).trim()
+//        AWS_ACCESS_KEY_ID = sh(
+//                script: "aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
+//                returnStdout: true
+//        ).trim()
 
         TF_VAR_aws_region="${AWS_DEFAULT_REGION}"
         TF_VAR_availability_zone1="${AWS_DEFAULT_REGION}a"
