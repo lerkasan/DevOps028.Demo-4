@@ -127,7 +127,9 @@ pipeline {
                         ).trim()
                     }
                     steps {
-                        docker.withRegistry('370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3') {
+//                        docker.withRegistry('https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3') {
+//                        withDockerRegistry([url: "https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3", credentialsId: 'docker-registry-credentials']) {
+                        withDockerRegistry([url: "https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3"]) {
                             def samsaraImage = docker.build("Samsara:${env.BUILD_ID}",
                                     "--build-arg DB_HOST=${env.DB_HOST} --build-arg DB_PORT=${env.DB_PORT} --build-arg DB_NAME=${env.DB_NAME} " +
                                     "--build-arg DB_USER=${env.DB_USER} --build-arg DB_PASS=${env.DB_PASS} --build-arg WEBAPP_FILENAME=${env.ARTIFACT_FILENAME}.")
