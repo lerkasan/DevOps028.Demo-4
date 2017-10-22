@@ -148,7 +148,6 @@ pipeline {
         stage("Push docker image to AWS ECR") {
             steps {
                 echo "Pushing docker image to AWS ECR ..."
-                sh "id"
                 script {
                     docker.withRegistry("${params.aws_ecr_url}", 'ecr:us-west-2:demo3-aws-ecr-credentials') {
                         docker.image("samsara:${env.BUILD_ID}").push()
