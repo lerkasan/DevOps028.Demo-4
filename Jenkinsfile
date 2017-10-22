@@ -152,6 +152,12 @@ pipeline {
                     }
                 }
             }
+            post {
+                always {
+                    // Delete Docker images from Jenkins slave node after pushing it to AWS Container Repository
+                    sh "docker rmi demo3:samsara-${env.BUILD_ID} | true"
+                }
+            }
         }
         stage("Deploy") {
             steps {
