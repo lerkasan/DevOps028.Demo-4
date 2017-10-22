@@ -23,7 +23,7 @@ pipelineJob('demo2-pipeline') {
     }
     definition {
 //      cps {
-//          script(readFileFromWorkspace('jenkins/pipeline/Jenkinsfile'))
+//          script(readFileFromWorkspace('Jenkinsfile'))
 //          sandbox()
 //      }
         cpsScm {
@@ -34,7 +34,7 @@ pipelineJob('demo2-pipeline') {
                         name('origin')
                         credentials('github_lerkasan')
                     }
-                    branch('jenkins')
+                    branch('master')
                     browser {
                         gitWeb('https://github.com/lerkasan/DevOps028.git')
                     }
@@ -43,7 +43,7 @@ pipelineJob('demo2-pipeline') {
                     }
                 }
             }
-            scriptPath('jenkins/pipeline/Jenkinsfile')
+            scriptPath('Jenkinsfile')
         }
     }
 }
