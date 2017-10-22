@@ -143,7 +143,7 @@ pipeline {
             }
             steps {
                 echo "Pushing docker image to AWS ECR ${AWS_ECR_URL} ..."
-                sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && ecr_url=`echo "${AWS_ECR_URL}"` && docker login -u AWS -p "${docker_pass}" "${ecr_url}"'
+                sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && ecr_url="${AWS_ECR_URL}" && docker login -u AWS -p "${docker_pass}" "${ecr_url}"'
 //              sh 'docker_login_command=`aws ecr get-login --no-include-email --region us-west-2` && "${docker_login_command}"'
                 script {
                     docker.withRegistry("${params.aws_ecr_url}") {
