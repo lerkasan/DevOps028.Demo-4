@@ -133,7 +133,7 @@ pipeline {
                 sh "cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ."
                 script {
 //                    docker.withRegistry("${params.aws_ecr_url}", 'ecr:us-west-2:demo3-aws-ecr-credentials') {
-                        samsaraImage = docker.build("samsara:${env.BUILD_ID}", "--build-arg DB_HOST=${DB_HOST} --build-arg DB_PORT=${DB_PORT} --build-arg DB_NAME=${TF_VAR_db_name}, " +
+                        samsaraImage = docker.build("demo3:samsara-${env.BUILD_ID}", "--build-arg DB_HOST=${DB_HOST} --build-arg DB_PORT=${DB_PORT} --build-arg DB_NAME=${TF_VAR_db_name}, " +
                                                     "--build-arg DB_USER=${TF_VAR_db_user} --build-arg DB_PASS=${TF_VAR_db_pass} --build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} .")
 //                        samsaraImage.push("Samsara:${env.BUILD_ID}")
 //                    }
@@ -158,7 +158,7 @@ pipeline {
                 script {
                     docker.withRegistry("${params.aws_ecr_url}") {
 //                  docker.withRegistry("${params.aws_ecr_url}", 'ecr:us-west-2:demo3-aws-ecr-credentials') {
-                        docker.image("samsara:${env.BUILD_ID}").push()
+                        docker.image("demo3:samsara-${env.BUILD_ID}").push()
                     }
                 }
             }
