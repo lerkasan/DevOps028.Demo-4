@@ -132,22 +132,23 @@ pipeline {
                 echo "Building docker image ..."
                 script {
 //                    docker.withRegistry("${params.aws_ecr_url}", 'ecr:us-west-2:demo3-aws-ecr-credentials') {
-                        SamsaraImage = docker.build("samsara:${env.BUILD_ID}")
-//                        SamsaraImage.push("Samsara:${env.BUILD_ID}")
+                        samsaraImage = docker.build("samsara:${env.BUILD_ID}")
+//                        samsaraImage.push("Samsara:${env.BUILD_ID}")
 //                    }
                 }
 //            withDockerRegistry([url: "${params.aws_ecr_url}", credentialsId: 'ecr:us-west-2:demo3-aws-ecr-credentials']) {
 //                echo "Building docker image ..."
 //                sh 'docker_login_command=`aws ecr get-login --no-include-email --region us-west-2` && "${docker_login_command}"'
-//                sh "docker build --tag  Samsara:${BUILD_ID} --build-arg DB_HOST=${DB_HOST} --build-arg DB_PORT=${DB_PORT} --build-arg DB_NAME=${TF_VAR_db_name} " +
+//                sh "docker build --tag  samsara:${BUILD_ID} --build-arg DB_HOST=${DB_HOST} --build-arg DB_PORT=${DB_PORT} --build-arg DB_NAME=${TF_VAR_db_name} " +
 //                        "--build-arg DB_USER=${TF_VAR_db_user} --build-arg DB_PASS=${TF_VAR_db_pass} --build-arg WEBAPP_FILENAME=${ARTIFACT_FILENAME} ."
-//                sh "docker push Samsara:${BUILD_ID}"
+//                sh "docker push samsara:${BUILD_ID}"
 //            }
             }
         }
         stage("Push docker image to AWS ECR") {
             steps {
                 echo "Pushing docker image to AWS ECR ..."
+                sh "id"
                 script {
                     docker.withRegistry("${params.aws_ecr_url}", 'ecr:us-west-2:demo3-aws-ecr-credentials') {
                         docker.image("samsara:${env.BUILD_ID}").push()
