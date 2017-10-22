@@ -11,5 +11,5 @@ ARG WEBAPP_FILENAME
 EXPOSE 9000
 WORKDIR demo3
 COPY ${WEBAPP_FILENAME} ${WEBAPP_FILENAME}
-#RUN apt-get update && apt-get install -y mc && \
-RUN java -jar ${WEBAPP_FILENAME}
+RUN apt-get update && apt-get install -y mc && \
+    java -jar "${WEBAPP_FILENAME}"
