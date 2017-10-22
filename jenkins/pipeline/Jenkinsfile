@@ -129,7 +129,7 @@ pipeline {
                 ).trim()
             }
             steps {
-                withDockerRegistry([url: "{params.aws_ecr_url}", credentialsId: 'aws-ecr-creds']) {
+                withDockerRegistry([url: "${params.aws_ecr_url}", credentialsId: 'ecr:us-west-2:aws-ecr-creds']) {
                     sh "docker build --tag  Samsara:${BUILD_ID} --build-arg DB_HOST=${DB_HOST} --build-arg DB_PORT=${DB_PORT} --build-arg DB_NAME=${TF_VAR_db_name} " +
                             "--build-arg DB_USER=${TF_VAR_db_user} --build-arg DB_PASS=${TF_VAR_db_pass} --build-arg WEBAPP_FILENAME=${ARTIFACT_FILENAME} ."
                     sh "docker push Samsara:${BUILD_ID}"
