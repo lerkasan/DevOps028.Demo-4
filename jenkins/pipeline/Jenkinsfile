@@ -114,7 +114,7 @@ pipeline {
                 }
             }
         }
-        stage("Build and register docker image") {
+        stage("Build docker image") {
             environment {
                 DB_HOST = sh(script: "aws rds describe-db-instances --db-instance-identifier ${TF_VAR_rds_identifier} " +
                         "--query 'DBInstances[*].[DBInstanceIdentifier,Endpoint.Address,DBInstanceStatus]' --output text | awk '{print \$2}'",
@@ -131,10 +131,10 @@ pipeline {
             steps {
                 echo "Building docker image ..."
                 script {
-                    docker.withRegistry("${params.aws_ecr_url}", 'ecr:us-west-2:demo3-aws-ecr-credentials') {
-                        def SamsaraImage = docker.build("Samsara:${env.BUILD_ID}")
-                        SamsaraImage.push("Samsara:${env.BUILD_ID}")
-                    }
+//                    docker.withRegistry("${params.aws_ecr_url}", 'ecr:us-west-2:demo3-aws-ecr-credentials') {
+                        SamsaraImage = docker.build("Samsara:${env.BUILD_ID}")
+//                        SamsaraImage.push("Samsara:${env.BUILD_ID}")
+//                    }
                 }
 //            withDockerRegistry([url: "${params.aws_ecr_url}", credentialsId: 'ecr:us-west-2:demo3-aws-ecr-credentials']) {
 //                echo "Building docker image ..."
@@ -143,6 +143,16 @@ pipeline {
 //                        "--build-arg DB_USER=${TF_VAR_db_user} --build-arg DB_PASS=${TF_VAR_db_pass} --build-arg WEBAPP_FILENAME=${ARTIFACT_FILENAME} ."
 //                sh "docker push Samsara:${BUILD_ID}"
 //            }
+            }
+        }
+        stage("Push docker image to AWS ECR") {
+            steps {
+                echo "Pushing docker image to AWS ECR ..."
+                script {
+                    docker.withRegistry("${params.aws_ecr_url}", 'ecr:us-west-2:demo3-aws-ecr-credentials') {
+                        docker.image("Samsara:${env.BUILD_ID}").push()
+                    }
+                }
             }
         }
         stage("Deploy") {
