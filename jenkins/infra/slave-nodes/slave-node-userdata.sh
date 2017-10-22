@@ -36,6 +36,11 @@ sudo yum -y install python python-pip mc
 sudo `which pip` install --upgrade pip
 sudo `which pip` install awscli
 
+# Install Docker
+sudo yum -y install docker
+sudo service docker start
+sudo usermod -a -G docker ec2-user
+
 # Add Jenkins master EC2 instance ssh public key to authorized_keys file at Jenkins slave node EC2 instance
 echo "ssh-rsa ${JENKINS_SSH_PUBLIC_KEY} ec2-user@ip-172-31-17-210" >> /home/ec2-user/.ssh/authorized_keys
 echo "PubkeyAuthentication yes" | sudo tee --append /etc/ssh/sshd_config
