@@ -147,7 +147,7 @@ pipeline {
 // //             sh 'docker_login_command=`aws ecr get-login --no-include-email --region us-west-2` && "${docker_login_command}"'
                 script {
 //                    docker.withRegistry("${params.aws_ecr_url}") {
-                    docker.withRegistry("${params.aws_ecr_url}", 'ecr:demo3-aws-ecr-credentials') {
+                    docker.withRegistry("${params.aws_ecr_url}", 'demo3-aws-ecr-credentials') {
                         docker.image("demo3:samsara-${env.BUILD_ID}").push()
                     }
                 }
