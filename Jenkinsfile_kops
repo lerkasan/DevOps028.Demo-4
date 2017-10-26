@@ -1,0 +1,49 @@
+#!groovy
+
+pipeline {
+    agent {
+        label 'slave-node'
+    }
+    options {
+        timestamps()
+    }
+    parameters {
+        string(name: 'cluster_dns', defaultValue: 'demo3-cluster.k8s.local', description: 'Cluster name')
+    }
+    environment {
+        AWS_DEFAULT_REGION="us-west-2"
+        AWS_SECRET_ACCESS_KEY = sh(
+                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
+                returnStdout: true
+        ).trim()
+        AWS_ACCESS_KEY_ID = sh(
+                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
+                returnStdout: true
+        ).trim()
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "Cleaning workspace ..."
+                cleanWs()
+                echo "Checkout master branch to workspace folder ..."
+                checkout(
+                        [$class: 'GitSCM',
+                         branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false,
+                         browser: [$class: 'GithubWeb', repoUrl: 'https://github.com/lerkasan/DevOps028.git'],
+                         extensions: [[$class: 'CleanBeforeCheckout']],
+                         gitTool: 'git',
+                         submoduleCfg: [],
+                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
+                        ])
+            }
+        }
+        stage("Prepare AWS cluster infrastructure with kops ...") {
+            steps {
+                echo "Preparing AWS cluster infrastructure with kops ..."
+                sh "chmod +x kops/prepare-infra.sh"
+                sh "kops/prepare-infra.sh"
+            }
+        }
+    }
+}
