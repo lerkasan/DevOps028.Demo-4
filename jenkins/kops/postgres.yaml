@@ -1,0 +1,35 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: postgres-service
+  labels: postgres-service
+spec:
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
+
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    service: postgres-service
+  name: postgres-deployment
+spec:
+  selector:
+    matchLabels:
+      service: postgres-service
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        service: postgres-service
+    spec:
+      containers:
+      - image: postgres:latest
+        name: postgresdb
+        ports:
+        - protocol: TCP
+          containerPort: 5432
+

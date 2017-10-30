@@ -1,4 +1,4 @@
-FROM openjdk:8
+FROM demo3:jdk8u152
 
 ARG DB_HOST
 ARG DB_PORT
@@ -18,4 +18,5 @@ ENV LOGIN_HOST ${LOGIN_HOST}
 EXPOSE 9000
 WORKDIR /home/demo3
 COPY ${ARTIFACT_FILENAME} .
+RUN useradd -ms /bin/bash demo3
 CMD java -jar *.jar

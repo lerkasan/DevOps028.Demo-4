@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: samsara-pod
+  labels:
+    app: samsara
+spec:
+  containers:
+  - name: samsara
+    image: https://370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest
+    ports:
+      - containerPort: 9000
+  - name: postgres
+    image: postgres:latest
+    ports:
+      - containerPort: 5432
+    volumeMounts:
+       - mountPath: /var/lib/postgresql
+         name: psql-data
+  volumes:
+  - name: psql-data
+  initContainers:
+  - name: init-postgres
+    image: busybox
+    command: ['sh', '-c', 'until nslookup postgres; do echo waiting for postgres; sleep 10; done;']

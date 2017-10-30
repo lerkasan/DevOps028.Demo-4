@@ -1,0 +1,35 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: samsara-service
+  labels: samsara-service
+spec:
+  ports:
+  - protocol: TCP
+    port: 9000
+    targetPort: 9000
+
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    service: samsara-service
+  name: samsara-deployment
+spec:
+  selector:
+    matchLabels:
+      service: samsara-service
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        service: samsara-service
+    spec:
+      containers:
+      - image: https://370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest
+        name: samsara
+        ports:
+        - protocol: TCP
+          containerPort: 9000
+
