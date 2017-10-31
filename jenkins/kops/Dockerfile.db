@@ -1,0 +1,32 @@
+FROM postgres:latest
+
+ARG DB_NAME
+ARG DB_USER
+ARG DB_PASS
+
+#ARG POSTGRES_JDBC_DRIVER_URL=https://jdbc.postgresql.org/download/postgresql-42.1.4.jar
+#ARG LIQUIBASE_URL=https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.5.3/liquibase-3.5.3-bin.tar.gz
+
+ENV POSTGRES_DB ${DB_NAME}
+ENV POSTGRES_USER ${DB_USER}
+ENV POSTGRES_PASSWORD ${DB_PASS}
+#ENV DB_HOST localhost
+#ENV DB_PORT 5432
+
+EXPOSE 5432
+WORKDIR /home/demo3
+# COPY liquibase .
+# RUN apt-get update -y && \
+#    apt-get install -y wget && \
+#    wget ${LIQUIBASE_URL} -P liquibase && \
+#    mkdir liquibase/bin && \
+#    tar -xzf liquibase/liquibase-*-bin.tar.gz -C liquibase/bin && \
+#    wget ${POSTGRES_JDBC_DRIVER_URL} -P liquibase/bin/lib && \
+#    sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" liquibase/liquibase.properties.template | \
+#        sed "s/%DB_HOST%/${DB_HOST}/g" | \
+#        sed "s/%DB_PORT%/${DB_PORT}/g" | \
+#        sed "s/%DB_NAME%/${DB_NAME}/g" | \
+#        sed "s/%DB_USER%/${DB_USER}/g" | \
+#        sed "s/%DB_PASS%/${DB_PASS}/g" > liquibase/liquibase.properties && \
+#    liquibase/bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defaultsFile=liquibase/liquibase.properties update
+USER postgres

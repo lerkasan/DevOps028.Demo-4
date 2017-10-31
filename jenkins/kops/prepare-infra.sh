@@ -35,7 +35,7 @@ kops create cluster --zones us-west-2a ${CLUSTER_NAME} --master-size=t2.micro --
                                                        --master-volume-size=8 --node-volume-size=8
 kops update cluster ${CLUSTER_NAME} --yes
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml
-kubectl run --image=370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3:samsara-35 demo3-samsara-app --port=9000 --replicas=2
+kubectl run --image=370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest demo3-samsara-app --port=9000 --replicas=2
 kubectl expose deployment demo3-samsara-app --port=9000 --type=LoadBalancer
 # kubectl proxy
 

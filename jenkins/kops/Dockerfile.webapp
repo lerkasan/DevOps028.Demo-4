@@ -1,0 +1,30 @@
+FROM jdk8:new
+
+ARG DB_NAME
+ARG DB_USER
+ARG DB_PASS
+ARG LOGIN_HOST=localhost
+
+ENV DB_HOST postgres-service
+ENV DB_PORT 5432
+ENV DB_NAME ${DB_NAME}
+ENV DB_USER ${DB_USER}
+ENV DB_PASS ${DB_PASS}
+ENV LOGIN_HOST ${LOGIN_HOST}
+
+ARG ARTIFACT_FILENAME
+EXPOSE 9000
+WORKDIR /home/demo3
+COPY ${ARTIFACT_FILENAME} .
+COPY liquibase ./liquibase
+# RUN useradd -ms /bin/bash demo3
+RUN sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" liquibase/liquibase.properties.template | \
+        sed "s/%DB_HOST%/${DB_HOST}/g" | \
+        sed "s/%DB_PORT%/${DB_PORT}/g" | \
+        sed "s/%DB_NAME%/${DB_NAME}/g" | \
+        sed "s/%DB_USER%/${DB_USER}/g" | \
+        sed "s/%DB_PASS%/${DB_PASS}/g" > liquibase.properties
+
+USER demo3
+CMD bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defaultsFile=liquibase/liquibase.properties update && \
+    java -jar *.jar
