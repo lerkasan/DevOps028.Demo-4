@@ -128,10 +128,11 @@ pipeline {
                 }
             }
         }
-        stage("Deploy") {
+        stage("Create cluster") {
             steps {
-                echo "Deploying ..."
-                sh "jenkins/jenkins/pipeline/rolling-update-instances.sh"
+                echo "Creating cluster ..."
+                sh "chmod +x jenkins/kops/prepare-infra.sh"
+                sh "jenkins/kops/prepare-infra.sh"
             }
             post {
                 success {

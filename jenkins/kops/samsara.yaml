@@ -16,6 +16,8 @@ metadata:
     service: samsara-service
   name: samsara-deployment
 spec:
+  replicas: 2
+  type: LoadBalancer
   selector:
     matchLabels:
       service: samsara-service

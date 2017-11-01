@@ -1,4 +1,4 @@
-FROM jdk8:new
+FROM jdk8:152
 
 ARG DB_NAME
 ARG DB_USER

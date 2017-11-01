@@ -27,7 +27,7 @@ spec:
         service: postgres-service
     spec:
       containers:
-      - image: postgres:latest
+      - image: https://370535134506.dkr.ecr.us-west-2.amazonaws.com/db:latest
         name: postgresdb
         ports:
         - protocol: TCP
