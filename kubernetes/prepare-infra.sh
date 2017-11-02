@@ -19,6 +19,7 @@ kops create cluster --zones us-west-2a ${CLUSTER_NAME} --master-size=t2.micro --
 kops update cluster ${CLUSTER_NAME} --yes
 echo "Adding dashboard ..."
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml
 kubectl apply -f kubernetes/pod.yaml
 echo "Deploying database ..."
 kubectl apply -f kubernetes/database.yaml
