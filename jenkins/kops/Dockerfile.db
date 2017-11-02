@@ -15,19 +15,19 @@ ENV POSTGRES_PASSWORD ${DB_PASS}
 
 EXPOSE 5432
 WORKDIR /home/demo3
-# COPY liquibase .
-# RUN apt-get update -y && \
-#    apt-get install -y wget && \
-#    wget ${LIQUIBASE_URL} -P liquibase && \
-#    mkdir liquibase/bin && \
-#    tar -xzf liquibase/liquibase-*-bin.tar.gz -C liquibase/bin && \
-#    wget ${POSTGRES_JDBC_DRIVER_URL} -P liquibase/bin/lib && \
-#    sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" liquibase/liquibase.properties.template | \
-#        sed "s/%DB_HOST%/${DB_HOST}/g" | \
-#        sed "s/%DB_PORT%/${DB_PORT}/g" | \
-#        sed "s/%DB_NAME%/${DB_NAME}/g" | \
-#        sed "s/%DB_USER%/${DB_USER}/g" | \
-#        sed "s/%DB_PASS%/${DB_PASS}/g" > liquibase/liquibase.properties && \
-#    liquibase/bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defaultsFile=liquibase/liquibase.properties update
+COPY liquibase .
+RUN apt-get update -y && \
+    apt-get install -y wget && \
+    wget ${LIQUIBASE_URL} -P liquibase && \
+    mkdir liquibase/bin && \
+    tar -xzf liquibase/liquibase-*-bin.tar.gz -C liquibase/bin && \
+    wget ${POSTGRES_JDBC_DRIVER_URL} -P liquibase/bin/lib
+CMD sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" liquibase/liquibase.properties.template | \
+        sed "s/%DB_HOST%/${DB_HOST}/g" | \
+        sed "s/%DB_PORT%/${DB_PORT}/g" | \
+        sed "s/%DB_NAME%/${DB_NAME}/g" | \
+        sed "s/%DB_USER%/${DB_USER}/g" | \
+        sed "s/%DB_PASS%/${DB_PASS}/g" > liquibase/liquibase.properties && \
+    liquibase/bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defaultsFile=liquibase/liquibase.properties update
 USER postgres
-VOLUME  ["/var/lib/postgresql"]
+VOLUME  ["/var/lib/postgresql/data"]

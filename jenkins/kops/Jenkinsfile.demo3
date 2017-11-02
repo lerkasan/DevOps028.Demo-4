@@ -56,16 +56,6 @@ pipeline {
                          submoduleCfg: [],
                          userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
                         ])
-                checkout(
-                        poll: false,
-                        changelog: false,
-                        scm: [$class: 'GitSCM',
-                              branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
-                              extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins'], [$class: 'IgnoreNotifyCommit']],
-                              gitTool: 'git',
-                              submoduleCfg: [],
-                              userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
-                        ])
             }
         }
         stage("Prepare AWS infrastructure, test and build ") {
