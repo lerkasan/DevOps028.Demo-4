@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -e
 # Requires one argument:
 # string $1 - name of parameter in EC2 parameter store
 function get_from_parameter_store {
