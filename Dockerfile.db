@@ -1,18 +1,8 @@
 FROM postgres:latest
 
-ARG JDK_FILENAME=jdk-8u152-linux-x64.tar.gz
-ARG JDK_URL=http://download.oracle.com/otn-pub/java/jdk/8u152-b16/aa0333dd3019491ca4f6ddbe78cdb6d0/${JDK_FILENAME}
-ARG JDK_INSTALL_DIR="/usr/lib/jvm"
-ARG POSTGRES_JDBC_DRIVER_URL=https://jdbc.postgresql.org/download/postgresql-42.1.4.jar
-ARG LIQUIBASE_URL=https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.5.3/liquibase-3.5.3-bin.tar.gz
-ENV JAVA_HOME ${JDK_INSTALL_DIR}/jdk1.8.0_152
-
-ENV DB_HOST postgres-service
-ENV DB_PORT 5432
 ENV DB_NAME auradb
 ENV DB_USER aura
 ENV DB_PASS mysecretpassword
-ENV LOGIN_HOST localhost
 
 ENV POSTGRES_DB ${DB_NAME}
 ENV POSTGRES_USER ${DB_USER}
@@ -20,26 +10,7 @@ ENV POSTGRES_PASSWORD ${DB_PASS}
 
 EXPOSE 5432
 WORKDIR /home/demo3
-COPY liquibase ./liquibase
-
-RUN apt-get update -y && \
-    apt-get install -y wget && \
-    wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" ${JDK_URL} && \
-    mkdir ${JDK_INSTALL_DIR} && \
-    tar -xzf ${JDK_FILENAME} -C "${JDK_INSTALL_DIR}" && \
-    update-alternatives --install /usr/bin/java java "${JAVA_HOME}/bin/java" 200 && \
-    update-alternatives --install /usr/bin/javac javac "${JAVA_HOME}/bin/javac" 200 && \
-    wget ${LIQUIBASE_URL} -P liquibase && \
-    mkdir liquibase/bin && \
-    tar -xzf liquibase/liquibase-*-bin.tar.gz -C liquibase/bin && \
-    wget ${POSTGRES_JDBC_DRIVER_URL} -P liquibase/bin/lib && \
-    sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" liquibase/liquibase.properties.template | \
-        sed "s/%DB_HOST%/${DB_HOST}/g" | \
-        sed "s/%DB_PORT%/${DB_PORT}/g" | \
-        sed "s/%DB_NAME%/${DB_NAME}/g" | \
-        sed "s/%DB_USER%/${DB_USER}/g" | \
-        sed "s/%DB_PASS%/${DB_PASS}/g" > liquibase/liquibase.properties && \
-    liquibase/bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defaultsFile=liquibase/liquibase.properties update
 
 USER postgres
 VOLUME  ["/var/lib/postgresql/data"]
+

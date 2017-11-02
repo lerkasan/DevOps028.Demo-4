@@ -12,6 +12,16 @@ ARG ARTIFACT_FILENAME
 EXPOSE 9000
 WORKDIR /home/demo3
 COPY ${ARTIFACT_FILENAME} .
-RUN useradd -ms /bin/bash demo3
+COPY liquibase ./liquibase
+
+RUN useradd -ms /bin/bash demo3 && \
+    sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" liquibase/liquibase.properties.template | \
+        sed "s/%DB_HOST%/${DB_HOST}/g" | \
+        sed "s/%DB_PORT%/${DB_PORT}/g" | \
+        sed "s/%DB_NAME%/${DB_NAME}/g" | \
+        sed "s/%DB_USER%/${DB_USER}/g" | \
+        sed "s/%DB_PASS%/${DB_PASS}/g" > liquibase/liquibase.properties
+
 USER demo3
-CMD java -jar *.jar
+CMD bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defaultsFile=liquibase/liquibase.properties update && \
+    java -jar *.jar
