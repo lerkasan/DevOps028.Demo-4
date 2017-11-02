@@ -37,8 +37,6 @@ spec:
       - image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest
         name: samsara
         env:
-        - name: DB_HOST
-          value: samsara-postgres
         - name: DB_PORT
           value: 5432
         - name: DB_NAME

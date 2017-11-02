@@ -89,7 +89,7 @@ pipeline {
                 script {
                     jdkImage = docker.build("jdk8:152", "-f Dockerfile.jdk .")
                     dbImage = docker.build("db:latest", "--build-arg DB_NAME=${DB_NAME} --build-arg DB_USER=${DB_USER} --build-arg DB_PASS=${DB_PASS} -f Dockerfile.db .")
-                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} --build-arg DB_NAME=${DB_NAME} --build-arg DB_USER=${DB_USER} --build-arg DB_PASS=${DB_PASS} -f Dockerfile.webapp .")
+//                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} --build-arg DB_NAME=${DB_NAME} --build-arg DB_USER=${DB_USER} --build-arg DB_PASS=${DB_PASS} -f Dockerfile.webapp .")
                 }
             }
         }
@@ -108,7 +108,7 @@ pipeline {
 //                      docker.withRegistry("${params.aws_ecr_url}", 'ecr:us-west-2:demo3-aws-ecr-credentials') {
                         jdkImage.push()
                         dbImage.push()
-                        samsaraImage.push()
+//                        samsaraImage.push()
                     }
                 }
             }
@@ -134,6 +134,12 @@ pipeline {
                 ).trim()
             }
             steps {
+                script {
+                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} --build-arg DB_NAME=${DB_NAME} --build-arg DB_USER=${DB_USER} --build-arg DB_PASS=${DB_PASS} -f Dockerfile.webapp .")
+                    docker.withRegistry("${params.aws_ecr_url}") {
+                        samsaraImage.push()
+                    }
+                }
                 echo "Deploying web application ..."
                 sh "sleep 20 && kubectl apply -f kubernetes/webapp.yaml"
                 sh "sleep 20 && kubectl apply -f kubernetes/pod.yaml"
