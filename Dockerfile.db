@@ -4,8 +4,8 @@ ARG DB_NAME
 ARG DB_USER
 ARG DB_PASS
 
-#ARG POSTGRES_JDBC_DRIVER_URL=https://jdbc.postgresql.org/download/postgresql-42.1.4.jar
-#ARG LIQUIBASE_URL=https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.5.3/liquibase-3.5.3-bin.tar.gz
+ARG POSTGRES_JDBC_DRIVER_URL=https://jdbc.postgresql.org/download/postgresql-42.1.4.jar
+ARG LIQUIBASE_URL=https://github.com/liquibase/liquibase/releases/download/liquibase-parent-3.5.3/liquibase-3.5.3-bin.tar.gz
 
 ENV POSTGRES_DB ${DB_NAME}
 ENV POSTGRES_USER ${DB_USER}
