@@ -109,11 +109,11 @@ pipeline {
                 sh "chmod +x kubernetes/prepare-infra.sh"
                 sh "kubernetes/prepare-infra.sh"
             }
-            post {
-                success {
+//            post {
+//                success {
 //                    sh "jenkins/jenkins/pipeline/check-webapp-response.sh"
-                }
-            }
+//                }
+//            }
         }
     }
     post {
