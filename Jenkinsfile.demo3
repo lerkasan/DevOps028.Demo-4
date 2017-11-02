@@ -174,8 +174,8 @@ pipeline {
                     }
                 }
                 echo "Deploying web application ..."
-                sh "sleep 20 && kubectl apply -f kubernetes/webapp.yaml"
-                sh "sleep 20 && kubectl apply -f kubernetes/pod.yaml"
+                sh "chmod +x kubernetes/deploy.sh"
+                sh "kubernetes/deploy.sh"
             }
         }
 //            post {
