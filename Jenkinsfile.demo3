@@ -82,6 +82,21 @@ pipeline {
                 ARTIFACT_FILENAME = sh(script: "ls ${WORKSPACE}/target | grep jar | grep -v original",
                         returnStdout: true
                 ).trim()
+                DB_NAME = sh(
+                        script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_name --with-decryption --output text | awk '{print \$4}'",
+                        returnStdout: true
+                ).trim()
+
+                DB_USER = sh(
+                        script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_user --with-decryption --output text | awk '{print \$4}'",
+                        returnStdout: true
+                ).trim()
+
+                DB_PASS = sh(
+                        script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_pass --with-decryption --output text | awk '{print \$4}'",
+                        returnStdout: true
+                ).trim()
+                DB_PORT=5432
             }
             steps {
                 echo "Building docker images ..."
@@ -132,6 +147,21 @@ pipeline {
                         script: "kubectl describe services samsara-postgres | grep 'LoadBalancer Ingress:' | cut -d':' -f2 | tr -d ' '",
                         returnStdout: true
                 ).trim()
+                DB_NAME = sh(
+                        script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_name --with-decryption --output text | awk '{print \$4}'",
+                        returnStdout: true
+                ).trim()
+
+                DB_USER = sh(
+                        script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_user --with-decryption --output text | awk '{print \$4}'",
+                        returnStdout: true
+                ).trim()
+
+                DB_PASS = sh(
+                        script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_pass --with-decryption --output text | awk '{print \$4}'",
+                        returnStdout: true
+                ).trim()
+                DB_PORT=5432
                 ARTIFACT_FILENAME = sh(script: "ls ${WORKSPACE}/target | grep jar | grep -v original",
                         returnStdout: true
                 ).trim()
