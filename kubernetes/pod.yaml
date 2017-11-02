@@ -19,7 +19,7 @@ spec:
          name: postgres-volume
   volumes:
   - name: postgres-volume
-  initContainers:
-  - name: init-db
-    image: busybox
-    command: ['sh', '-c', 'until nslookup samsara-postgres; do echo "waiting for db"; sleep 10; done;']
+#  initContainers:
+#  - name: init-db
+#    image: busybox
+#    command: ['sh', '-c', 'until nslookup samsara-postgres; do echo "waiting for db"; sleep 10; done;']

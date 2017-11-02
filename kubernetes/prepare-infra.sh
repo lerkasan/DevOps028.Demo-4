@@ -25,11 +25,11 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons
 echo "Deploying database ..."
 sleep 20
 kubectl apply -f kubernetes/database.yaml
-echo "Deploying web application ..."
-sleep 20
-kubectl apply -f kubernetes/webapp.yaml
-sleep 20
-kubectl apply -f kubernetes/pod.yaml
+#echo "Deploying web application ..."
+#sleep 20
+#kubectl apply -f kubernetes/webapp.yaml
+#sleep 20
+#kubectl apply -f kubernetes/pod.yaml
 #kubectl run --image=370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest demo3-samsara-app --port=9000 --replicas=2
 #kubectl expose deployment demo3-samsara-app --port=9000 --type=LoadBalancer
 # kubectl proxy

@@ -39,6 +39,7 @@ pipeline {
                 script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_pass --with-decryption --output text | awk '{print \$4}'",
                 returnStdout: true
         ).trim()
+        DB_PORT=5432
         BUCKET_NAME="${params.bucket_name}"
     }
     stages {
@@ -88,7 +89,7 @@ pipeline {
                 script {
                     jdkImage = docker.build("jdk8:152", "-f Dockerfile.jdk .")
                     dbImage = docker.build("db:latest", "--build-arg DB_NAME=${DB_NAME} --build-arg DB_USER=${DB_USER} --build-arg DB_PASS=${DB_PASS} -f Dockerfile.db .")
-                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} -f Dockerfile.webapp .")
+                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} --build-arg DB_NAME=${DB_NAME} --build-arg DB_USER=${DB_USER} --build-arg DB_PASS=${DB_PASS} -f Dockerfile.webapp .")
                 }
             }
         }
@@ -124,12 +125,25 @@ pipeline {
                 sh "chmod +x kubernetes/prepare-infra.sh"
                 sh "kubernetes/prepare-infra.sh"
             }
+        }
+        stage("Deploy webapp") {
+            environment {
+                DB_HOST = sh(
+                        script: "kubectl describe services samsara-postgres | grep 'LoadBalancer Ingress:' | cut -d':' -f2 | tr -d ' '",
+                        returnStdout: true
+                ).trim()
+            }
+            steps {
+                echo "Deploying web application ..."
+                sh "sleep 20 && kubectl apply -f kubernetes/webapp.yaml"
+                sh "sleep 20 && kubectl apply -f kubernetes/pod.yaml"
+            }
+        }
 //            post {
 //                success {
 //                    sh "jenkins/jenkins/pipeline/check-webapp-response.sh"
 //                }
 //            }
-        }
     }
     post {
         success {

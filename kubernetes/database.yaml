@@ -10,6 +10,7 @@ spec:
   selector:
     app: samsara
     tier: postgres
+  type: LoadBalancer
 
 ---
 apiVersion: v1
