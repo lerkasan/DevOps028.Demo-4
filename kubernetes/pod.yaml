@@ -10,10 +10,28 @@ spec:
     image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest
     ports:
       - containerPort: 9000
+    env:
+            - name: DB_PORT
+              value: 5432
+            - name: DB_NAME
+              value: auradb
+            - name: DB_USER
+              value: aura
+            - name: DB_PASS
+              value: mysecretpassword
   - name: samsara-postgres
     image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/db:latest
     ports:
       - containerPort: 5432
+    env:
+            - name: DB_PORT
+              value: 5432
+            - name: DB_NAME
+              value: auradb
+            - name: DB_USER
+              value: aura
+            - name: DB_PASS
+              value: mysecretpassword
     volumeMounts:
        - mountPath: /var/lib/postgresql/data
          name: postgres-volume
