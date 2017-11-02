@@ -3,15 +3,16 @@ kind: Pod
 metadata:
   name: samsara-pod
   labels:
+    name: samsara
     app: samsara
 spec:
   containers:
   - name: samsara
-    image: https://370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest
+    image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest
     ports:
       - containerPort: 9000
-  - name: postgres
-    image: https://370535134506.dkr.ecr.us-west-2.amazonaws.com/db:latest
+  - name: db
+    image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/db:latest
     ports:
       - containerPort: 5432
     volumeMounts:
@@ -20,6 +21,6 @@ spec:
   volumes:
   - name: psql-data
   initContainers:
-  - name: init-postgres
+  - name: init-db
     image: busybox
-    command: ['sh', '-c', 'until nslookup postgres-service; do echo "waiting for postgres"; sleep 10; done;']
+    command: ['sh', '-c', 'until nslookup db-service; do echo "waiting for db"; sleep 10; done;']

@@ -30,3 +30,4 @@ WORKDIR /home/demo3
 #        sed "s/%DB_PASS%/${DB_PASS}/g" > liquibase/liquibase.properties && \
 #    liquibase/bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defaultsFile=liquibase/liquibase.properties update
 USER postgres
+VOLUME  ["/var/lib/postgresql"]

@@ -2,12 +2,14 @@ kind: Service
 apiVersion: v1
 metadata:
   name: samsara-service
-  labels: samsara-service
+  labels:
+    app: samsara
 spec:
   ports:
   - protocol: TCP
     port: 9000
     targetPort: 9000
+  type: LoadBalancer
 
 apiVersion: apps/v1beta1
 kind: Deployment
@@ -17,21 +19,31 @@ metadata:
   name: samsara-deployment
 spec:
   replicas: 2
-  type: LoadBalancer
   selector:
     matchLabels:
       service: samsara-service
+      app: samsara
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
         service: samsara-service
+        app: samsara
     spec:
       containers:
-      - image: https://370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest
+      - image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest
         name: samsara
         ports:
         - protocol: TCP
           containerPort: 9000
+        env:
+          - name: DB_HOST
+            value: localhost
+          - name: DB_NAME
+            value: auradb
+          - name: DB_USER
+            value: aura
+          - name: DB_PASS
+            value: mysecretpassword
 

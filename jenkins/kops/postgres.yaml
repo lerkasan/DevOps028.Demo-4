@@ -1,35 +1,47 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: postgres-service
-  labels: postgres-service
+  name: db-service
+  labels: db-service
 spec:
   ports:
   - protocol: TCP
     port: 5432
     targetPort: 5432
+  selector:
+    name: samsara
+    app: samsara
 
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   labels:
-    service: postgres-service
-  name: postgres-deployment
+    service: db-service
+  name: db-deployment
 spec:
   selector:
     matchLabels:
-      service: postgres-service
+      service: db-service
+      app: samsara
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        service: postgres-service
+        service: db-service
+        app: samsara
     spec:
       containers:
-      - image: https://370535134506.dkr.ecr.us-west-2.amazonaws.com/db:latest
-        name: postgresdb
+      - image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/db:latest
+        name: db
         ports:
         - protocol: TCP
           containerPort: 5432
+        env:
+          - name: DB_NAME
+            value: auradb
+          - name: DB_USER
+            value: aura
+          - name: DB_PASS
+            value: mysecretpassword
 
