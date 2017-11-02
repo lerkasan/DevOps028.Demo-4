@@ -13,7 +13,7 @@ spec:
   type: LoadBalancer
 
 ---
-apiVersion: apps/v1beta2
+apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
   name: samsara
