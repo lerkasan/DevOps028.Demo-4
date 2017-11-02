@@ -132,6 +132,9 @@ pipeline {
                         script: "kubectl describe services samsara-postgres | grep 'LoadBalancer Ingress:' | cut -d':' -f2 | tr -d ' '",
                         returnStdout: true
                 ).trim()
+                ARTIFACT_FILENAME = sh(script: "ls ${WORKSPACE}/target | grep jar | grep -v original",
+                        returnStdout: true
+                ).trim()
             }
             steps {
                 script {
