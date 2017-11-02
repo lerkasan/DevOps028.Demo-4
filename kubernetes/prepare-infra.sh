@@ -17,7 +17,7 @@ echo "Creating cluster ..."
 kops create cluster --zones us-west-2a ${CLUSTER_NAME} --master-size=t2.micro --node-size=t2.micro \
                                                        --master-volume-size=8 --node-volume-size=8
 kops update cluster ${CLUSTER_NAME} --yes
-sleep 240
+sleep 180
 echo "Adding dashboard ..."
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml
 sleep 20
