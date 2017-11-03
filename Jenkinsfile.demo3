@@ -97,15 +97,16 @@ pipeline {
                         returnStdout: true
                 ).trim()
                 DB_PORT=5432
+                DB_HOST=samsara-postgres
             }
             steps {
                 echo "Building docker images ..."
                 sh "cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ."
                 script {
                     jdkImage = docker.build("jdk8:152", "-f Dockerfile.jdk .")
-                    dbImage = docker.build("db:latest", "--build-arg DB_NAME=${DB_NAME} --build-arg DB_USER=${DB_USER} --build-arg DB_PASS=${DB_PASS} -f Dockerfile.db .")
-                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} --build-arg DB_PORT=${DB_NAME} " +
-                            "--build-arg DB_PORT=${DB_NAME} --build-arg DB_USER=${DB_USER} --build-arg DB_PASS=${DB_PASS} -f Dockerfile.webapp .")
+                    dbImage  = docker.build("db:latest", "--build-arg DB_NAME=${DB_NAME} --build-arg DB_USER=${DB_USER} --build-arg DB_PASS=${DB_PASS} -f Dockerfile.db .")
+                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} --build-arg DB_NAME=${DB_NAME} " +
+                            "--build-arg DB_PORT=${DB_PORT} --build-arg DB_HOST=${DB_HOST} --build-arg DB_USER=${DB_USER} --build-arg DB_PASS=${DB_PASS} -f Dockerfile.webapp .")
                 }
             }
         }
