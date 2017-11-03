@@ -1,4 +1,4 @@
-FROM postgres:latest
+FROM postgres:9.6
 
 ARG DB_NAME
 ARG DB_USER
