@@ -42,7 +42,7 @@ spec:
       storage: 2Gi
 
 ---
-apiVersion: apps/v1
+apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: samsara-postgres
