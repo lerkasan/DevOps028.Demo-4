@@ -25,7 +25,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: /var/lib/postgresql/data
+    path: /var/lib/postgresql
 
 ---
 apiVersion: v1
@@ -83,7 +83,7 @@ spec:
           name: postgres
         volumeMounts:
         - name: postgres-volume
-          mountPath: /var/lib/postgresql/data
+          mountPath: /var/lib/postgresql
       volumes:
       - name: postgres-volume
         persistentVolumeClaim:

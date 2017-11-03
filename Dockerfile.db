@@ -12,5 +12,5 @@ EXPOSE 5432
 WORKDIR /home/demo3
 
 USER postgres
-VOLUME  ["/var/lib/postgresql/data"]
+VOLUME  ["/var/lib/postgresql"]
 
