@@ -97,7 +97,7 @@ pipeline {
                         returnStdout: true
                 ).trim()
                 DB_PORT=5432
-                DB_HOST=samsara-postgres
+                DB_HOST="samsara-postgres"
             }
             steps {
                 echo "Building docker images ..."
