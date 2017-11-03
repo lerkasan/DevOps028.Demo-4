@@ -30,6 +30,8 @@ sleep 20
 kubectl apply -f kubernetes/webapp.yaml
 sleep 20
 kubectl apply -f kubernetes/pod.yaml
+sleep 20
+kops rolling-update cluster ${CLUSTER_NAME} --yes
 #kubectl run --image=370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest demo3-samsara-app --port=9000 --replicas=2
 #kubectl expose deployment demo3-samsara-app --port=9000 --type=LoadBalancer
 # kubectl proxy
