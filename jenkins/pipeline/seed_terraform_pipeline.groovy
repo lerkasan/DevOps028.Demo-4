@@ -1,4 +1,4 @@
-pipelineJob('demo2-pipeline') {
+pipelineJob('demo2-terraform') {
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
     }
@@ -43,7 +43,7 @@ pipelineJob('demo2-pipeline') {
                     }
                 }
             }
-            scriptPath('Jenkinsfile.terraform') // OR scriptPath('Jenkinsfile.kubernetes')
+            scriptPath('Jenkinsfile.terraform')
         }
     }
 }
