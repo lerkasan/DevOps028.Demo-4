@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
+chmod +x "${WORKSPACE}/terraform/*.sh"
 cd "${WORKSPACE}/terraform"
 #/home/ec2-user/terraform init -backend-config=backend.tf -backend=true -force-copy -get=true -input=false
 /home/ec2-user/terraform init -backend-config="bucket=${TF_VAR_bucket_name}" -backend-config="key=terraform/terraform.tfstate" \
