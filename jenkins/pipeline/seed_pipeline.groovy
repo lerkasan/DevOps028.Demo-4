@@ -43,7 +43,7 @@ pipelineJob('demo2-pipeline') {
                     }
                 }
             }
-            scriptPath('Jenkinsfile')
+            scriptPath('Jenkinsfile.terraform') // OR scriptPath('Jenkinsfile.kubernetes')
         }
     }
 }

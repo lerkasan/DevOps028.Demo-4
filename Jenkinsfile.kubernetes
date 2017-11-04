@@ -177,11 +177,11 @@ pipeline {
                 sleep time: 2, unit: 'MINUTES'
                 echo "Adding dashboard ..."
                 sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml"
-                sleep time: 20, unit: 'SECONDS'
+                sleep time: 10, unit: 'SECONDS'
                 sh "kubectl apply -f kubernetes/database.yaml"
-                sleep time: 20, unit: 'SECONDS'
+                sleep time: 10, unit: 'SECONDS'
                 sh "kubectl apply -f kubernetes/webapp.yaml"
-                sleep time: 20, unit: 'SECONDS'
+                sleep time: 10, unit: 'SECONDS'
                 sh "kubectl apply -f kubernetes/pod.yaml"
                 sh "aws s3 cp ~/.kube/config ${KOPS_STATE_STORE}/kube-config"
             }

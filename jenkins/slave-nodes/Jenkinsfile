@@ -36,8 +36,8 @@ pipeline {
         stage("Create slave nodes") {
             steps {
                 echo "Creating EC2 instances to be slave nodes at Jenkins ..."
-                sh "chmod +x jenkins/infra/slave-nodes/*.sh"
-                sh "jenkins/infra/slave-nodes/start-slave-nodes.sh"
+                sh "chmod +x jenkins/slave-nodes/*.sh"
+                sh "jenkins/slave-nodes/start-slave-nodes.sh"
             }
         }
         stage("Connect slave nodes") {
@@ -53,7 +53,7 @@ pipeline {
                 echo "${SLAVE_IP_ADDRESSES}"
                 echo "Connecting slave nodes to Jenkins ..."
                 script {
-                     load 'jenkins/infra/slave-nodes/connect_slave_nodes.groovy'
+                     load 'jenkins/slave-nodes/connect_slave_nodes.groovy'
                 }
             }
         }

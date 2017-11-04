@@ -6,7 +6,7 @@ AVAIL_ZONE="us-west-2a"
 SSH_KEY_NAME="demo2_webapp"
 AMI="ami-e689729e"
 SECURITY_GROUP="sg-7c3b9f1a"
-USERDATA_FILE_PATH="${WORKSPACE}/jenkins/infra/slave-nodes/slave-node-userdata.sh"
+USERDATA_FILE_PATH="${WORKSPACE}/jenkins/slave-nodes/slave-node-userdata.sh"
 IAM="demo2_jenkins_instance"
 
 # Create slave node instance if needed

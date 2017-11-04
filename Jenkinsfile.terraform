@@ -71,16 +71,16 @@ pipeline {
                          submoduleCfg: [],
                          userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
                         ])
-                checkout(
-                        poll: false,
-                        changelog: false,
-                        scm: [$class: 'GitSCM',
-                         branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
-                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins'], [$class: 'IgnoreNotifyCommit']],
-                         gitTool: 'git',
-                         submoduleCfg: [],
-                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
-                        ])
+//                checkout(
+//                        poll: false,
+//                        changelog: false,
+//                        scm: [$class: 'GitSCM',
+//                         branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
+//                         extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'jenkins'], [$class: 'IgnoreNotifyCommit']],
+//                         gitTool: 'git',
+//                         submoduleCfg: [],
+//                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
+//                        ])
             }
         }
         stage("Prepare AWS infrastructure, test and build ") {
@@ -90,8 +90,8 @@ pipeline {
                 stage("Prepare AWS infrastructure") {
                     steps {
                         echo "Preparing AWS infrastructure ..."
-                        sh "chmod +x jenkins/jenkins/pipeline/*.sh"
-                        sh "jenkins/jenkins/pipeline/prepare-infra.sh"
+                        sh "chmod +x jenkins/pipeline/*.sh"
+                        sh "jenkins/pipeline/prepare-infra.sh"
                     }
                 }
                 stage("Test and build")  {
@@ -117,11 +117,11 @@ pipeline {
         stage("Deploy") {
             steps {
                 echo "Deploying ..."
-                sh "jenkins/jenkins/pipeline/rolling-update-instances.sh"
+                sh "jenkins/pipeline/rolling-update-instances.sh"
             }
             post {
                 success {
-                    sh "jenkins/jenkins/pipeline/check-webapp-response.sh"
+                    sh "jenkins/pipeline/check-webapp-response.sh"
                 }
             }
         }
