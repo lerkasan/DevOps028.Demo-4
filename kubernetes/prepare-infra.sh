@@ -20,8 +20,6 @@ kops update cluster ${CLUSTER_NAME} --yes
 sleep 180
 echo "Adding dashboard ..."
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml
-sleep 20
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml
 echo "Deploying database ..."
 sleep 20
 kubectl apply -f kubernetes/database.yaml
