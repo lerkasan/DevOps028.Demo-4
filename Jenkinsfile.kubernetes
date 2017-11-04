@@ -178,6 +178,11 @@ pipeline {
             }
         }
         stage("Deploy webapp") {
+            environment {
+                ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
+                        returnStdout: true
+                ).trim()
+            }
             steps {
                 sh "kops update cluster ${CLUSTER_NAME} --yes"
                 sh "kops rolling-update cluster ${CLUSTER_NAME} --yes"
@@ -185,7 +190,15 @@ pipeline {
             }
             post {
                 success {
-                    echo "!!! PUT HERE URL RESPONSE CHECK !!!"
+                    echo "Checking connectivity to webapp load balancer ..."
+                    script {
+                        def response = httpRequest "http://${ELB_HOST}:9000/login"
+                        if (response > 399) {
+                            throw new Exception("Web application returned HTTP response code" + response.getStatus())
+                        }
+                        println("Webapp HTTP_RESPONSE_CODE = " + response.getStatus())
+                        println("Webapp endpoint: " + ${ELB_HOST} + ":9000")
+                    }
                 }
             }
         }
