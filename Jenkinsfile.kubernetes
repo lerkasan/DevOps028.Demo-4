@@ -106,14 +106,7 @@ pipeline {
             }
         }
         stage("Push docker dependency and database images to AWS ECR") {
-//            environment {
-//                AWS_ECR_URL="${params.aws_ecr_url}"
-//            }
             steps {
-//              withEnv([AWS_ECR_URL = "${params.aws_ecr_url}"]) {
-//                sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && docker login -u AWS -p "${docker_pass}" https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3'
-//                  sh 'docker_login_command=`aws ecr get-login --no-include-email --region us-west-2` && "${docker_login_command}"'
-//              }
                 parallel(
                     jdk_img_push: {
                         echo "Pushing dependency and database images to AWS ECR ..."
@@ -165,12 +158,11 @@ pipeline {
                 }
             }
         }
-        stage("Update cluster") {
+        stage("Create cluster") {
             steps {
-                echo "Updating cluster ..."
-                sh "chmod +x kubernetes/prepare-infra.sh"
-                sh "kubernetes/prepare-infra.sh"
-                sh "kops update cluster ${CLUSTER_NAME} --yes"
+                echo "Creating cluster ..."
+                sh "kops create --state=${KOPS_STATE_STORE} -f kubernetes/cluster.yaml"
+                sh "kops update cluster --name=${CLUSTER_NAME} --state=${KOPS_STATE_STORE} --yes"
                 sleep time: 2, unit: 'MINUTES'
                 echo "Adding dashboard ..."
                 sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml"
@@ -185,6 +177,7 @@ pipeline {
         }
         stage("Deploy webapp") {
             steps {
+                sh "kops update cluster ${CLUSTER_NAME} --yes"
                 sh "kops rolling-update cluster ${CLUSTER_NAME} --yes"
                 sleep time: 1, unit: 'MINUTES'
             }
