@@ -192,10 +192,7 @@ pipeline {
                 success {
                     echo "Checking connectivity to webapp load balancer ..."
                     script {
-                        def response = httpRequest "http://${ELB_HOST}:9001/login"
-//                        if (response > 399) {
-//                            throw new Exception("Web application returned HTTP response code" + response.getStatus())
-//                        }
+                        def response = httpRequest "http://${ELB_HOST}:9000/login"
                         println("Webapp HTTP_RESPONSE_CODE = " + response.getStatus())
                         println("Webapp endpoint: " + ${ELB_HOST} + ":9000")
                     }
