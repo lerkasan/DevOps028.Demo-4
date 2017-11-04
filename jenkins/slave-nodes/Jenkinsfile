@@ -1,0 +1,61 @@
+#!groovy
+
+pipeline {
+    agent {
+        label 'slave-node'
+    }
+    options {
+        timestamps()
+    }
+    environment {
+        AWS_DEFAULT_REGION = "us-west-2"
+        AWS_SECRET_ACCESS_KEY = sh(
+                script: "aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
+                returnStdout: true
+        ).trim()
+        AWS_ACCESS_KEY_ID = sh(
+                script: "aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
+                returnStdout: true
+        ).trim()
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout(
+                        poll: false,
+                        changelog: false,
+                        scm: [$class: 'GitSCM',
+                              branches: [[name: '*jenkins']], doGenerateSubmoduleConfigurations: false,
+                              extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'IgnoreNotifyCommit']],
+                              gitTool: 'git',
+                              submoduleCfg: [],
+                              userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
+                        ])
+            }
+        }
+        stage("Create slave nodes") {
+            steps {
+                echo "Creating EC2 instances to be slave nodes at Jenkins ..."
+                sh "chmod +x jenkins/infra/slave-nodes/*.sh"
+                sh "jenkins/infra/slave-nodes/start-slave-nodes.sh"
+            }
+        }
+        stage("Connect slave nodes") {
+            environment {
+                SLAVE_IP_ADDRESSES = sh(
+                        script: "aws ec2 describe-instances --filters \"Name=tag:Name,Values=jenkins-slaves\" " +
+                                "--query 'Reservations[*].Instances[*].[State.Name,InstanceId,PrivateIpAddress,PublicDnsName]' " +
+                                "--output text | grep running | awk '{print \$3}' | tr '\\n' ' '",
+                        returnStdout: true
+                ).trim()
+            }
+            steps {
+                echo "${SLAVE_IP_ADDRESSES}"
+                echo "Connecting slave nodes to Jenkins ..."
+                script {
+                     load 'jenkins/infra/slave-nodes/connect_slave_nodes.groovy'
+                }
+            }
+        }
+    }
+}
