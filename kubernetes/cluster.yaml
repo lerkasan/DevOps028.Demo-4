@@ -55,8 +55,8 @@ metadata:
 spec:
   image: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
   machineType: t2.micro
-  maxSize: 2
-  minSize: 2
+  maxSize: 1
+  minSize: 1
   role: Master
   rootVolumeSize: 8
   subnets:
