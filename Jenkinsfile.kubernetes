@@ -161,8 +161,8 @@ pipeline {
         stage("Create cluster") {
             steps {
                 echo "Creating cluster ..."
-//                sh "kops create -f kubernetes/cluster.yaml"
-                sh "kops replace -f kubernetes/cluster.yaml"
+                sh "kops create -f kubernetes/cluster.yaml"
+//                sh "kops replace -f kubernetes/cluster.yaml"
                 sh "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub"
                 sh "kops update cluster ${CLUSTER_NAME} --yes"
                 sleep time: 3, unit: 'MINUTES'
