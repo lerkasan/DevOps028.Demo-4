@@ -71,12 +71,10 @@ spec:
         - name: DB_USER
           value: aura
         - name: DB_PASS
-          value: mysecretpassword
-#        - name: DB_PASS
-#          valueFrom:
-#            secretKeyRef:
-#              name: dbuser-pass
-#              key: password
+          valueFrom:
+            secretKeyRef:
+              name: dbuser-pass
+              key: password
         ports:
         - containerPort: 5432
           name: postgres
