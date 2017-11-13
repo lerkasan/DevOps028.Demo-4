@@ -84,8 +84,8 @@ pipeline {
             }
         }
         stage("Test and build jar") {
-            container('jenkins-slave') {
-                steps {
+            steps {
+                container('jenkins-slave') {
                     sh "javac -version"
                     echo "Testing project ..."
                     sh "mvn clean test"
@@ -175,8 +175,8 @@ pipeline {
             }
         }
         stage("Create cluster") {
-            container('jenkins-slave') {
-                steps {
+            steps {
+                container('jenkins-slave') {
                     echo "Creating cluster ..."
                     sh "kops create -f kubernetes/cluster.yaml"
 //                sh "kops replace -f kubernetes/cluster.yaml"
@@ -198,13 +198,13 @@ pipeline {
             }
         }
         stage("Deploy webapp") {
-            container('jenkins-slave') {
-                environment {
-                    ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
-                            returnStdout: true
-                    ).trim()
-                }
-                steps {
+            environment {
+                ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
+                        returnStdout: true
+                ).trim()
+            }
+            steps {
+                container('jenkins-slave') {
                     sh "kops update cluster ${CLUSTER_NAME} --yes"
                     sh "kops rolling-update cluster ${CLUSTER_NAME} --yes"
                     sleep time: 2, unit: 'MINUTES'
