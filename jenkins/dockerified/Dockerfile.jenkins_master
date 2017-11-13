@@ -7,6 +7,8 @@ USER root
 RUN mkdir /var/log/jenkins && \
     chown -R  jenkins:jenkins /var/log/jenkins
 
+VOLUME ["/var/log/jenkins", "/var/jenkins_home"]
+
 USER jenkins
 RUN mkdir ${JENKINS_HOME}/init.groovy.d
 
@@ -18,4 +20,3 @@ COPY init_seed_job.groovy ${JENKINS_HOME}/init.groovy.d/init_seed_job.groovy
 # RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state && \
 RUN /usr/local/bin/install-plugins.sh < ${JENKINS_HOME}/plugins.txt
 
-VOLUME ["/var/log/jenkins", "/var/jenkins_home"]

@@ -9,8 +9,15 @@ pipeline {
 //        maven "maven-3.5.0"
 //    }
     agent {
-        docker {
-            image 'xueshanf/awscli:latest'
+        kubernetes {
+            cloud 'kubernetes'
+            label 'slave-node'
+            containerTemplate {
+                name 'jenkins-slave'
+                image '370535134506.dkr.ecr.us-west-2.amazonaws.com/jenkins-slave'
+                ttyEnabled true
+                command 'cat'
+            }
         }
     }
     options {
@@ -20,42 +27,44 @@ pipeline {
         string(name: 'bucket_name', defaultValue: 'demo2-ssa', description: 'Bucket with JDK, liquibase binaries and artifact for Demo2')
         string(name: 'aws_ecr_url', defaultValue: 'https://370535134506.dkr.ecr.us-west-2.amazonaws.com', description: 'AWS Docker Container Registry URL')
     }
-    environment {
-        BUCKET_NAME="${params.bucket_name}"
-        AWS_DEFAULT_REGION="us-west-2"
-        AWS_SECRET_ACCESS_KEY = sh(
-                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
-        AWS_ACCESS_KEY_ID = sh(
-                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
-        CLUSTER_NAME = sh(
-                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo3_cluster_name --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
+    container('jenkins-slave') {
+        environment {
+            BUCKET_NAME = "${params.bucket_name}"
+            AWS_DEFAULT_REGION = "us-west-2"
+            AWS_SECRET_ACCESS_KEY = sh(
+                    script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
+                    returnStdout: true
+            ).trim()
+            AWS_ACCESS_KEY_ID = sh(
+                    script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
+                    returnStdout: true
+            ).trim()
+            CLUSTER_NAME = sh(
+                    script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo3_cluster_name --output text | awk '{print \$4}'",
+                    returnStdout: true
+            ).trim()
 
-        KOPS_STATE_STORE = sh(
-                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo3_kops_state_bucket --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
-        DB_NAME = sh(
-                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_name --with-decryption --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
+            KOPS_STATE_STORE = sh(
+                    script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo3_kops_state_bucket --output text | awk '{print \$4}'",
+                    returnStdout: true
+            ).trim()
+            DB_NAME = sh(
+                    script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_name --with-decryption --output text | awk '{print \$4}'",
+                    returnStdout: true
+            ).trim()
 
-        DB_USER = sh(
-                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_user --with-decryption --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
+            DB_USER = sh(
+                    script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_user --with-decryption --output text | awk '{print \$4}'",
+                    returnStdout: true
+            ).trim()
 
-        DB_PASS = sh(
-                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_pass --with-decryption --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
-        DB_HOST="samsara-postgres"
-        DB_PORT=5432
+            DB_PASS = sh(
+                    script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_pass --with-decryption --output text | awk '{print \$4}'",
+                    returnStdout: true
+            ).trim()
+            DB_HOST = "samsara-postgres"
+            DB_PORT = 5432
+        }
     }
     stages {
         stage('Checkout') {
@@ -75,26 +84,22 @@ pipeline {
             }
         }
         stage("Test and build jar") {
-            agent {
-                docker {
-                    image 'maven:3.5.2-jdk-8-alpine'
-                    args '-v $HOME/.m2:/root/.m2'
+            container('jenkins-slave') {
+                steps {
+                    sh "javac -version"
+                    echo "Testing project ..."
+                    sh "mvn clean test"
+                    echo "Building jar ..."
+                    sh "mvn clean package"
                 }
-            }
-            steps {
-                sh "javac -version"
-                echo "Testing project ..."
-                sh "mvn clean test"
-                echo "Building jar ..."
-                sh "mvn clean package"
-            }
-            post {
-                success {
-                    archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
-                    echo "Copying artifact to S3 bucket ..."
-                    sh 'ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original` && ' +
-                            'aws s3 cp "${WORKSPACE}/target/${ARTIFACT_FILENAME}" "s3://demo2-ssa/artifacts/${ARTIFACT_FILENAME}" && ' +
-                            'aws ssm put-parameter --name demo2_artifact_filename --value="${ARTIFACT_FILENAME}" --type String --overwrite'
+                post {
+                    success {
+                        archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
+                        echo "Copying artifact to S3 bucket ..."
+                        sh 'ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original` && ' +
+                                'aws s3 cp "${WORKSPACE}/target/${ARTIFACT_FILENAME}" "s3://demo2-ssa/artifacts/${ARTIFACT_FILENAME}" && ' +
+                                'aws ssm put-parameter --name demo2_artifact_filename --value="${ARTIFACT_FILENAME}" --type String --overwrite'
+                    }
                 }
             }
         }
@@ -170,46 +175,40 @@ pipeline {
             }
         }
         stage("Create cluster") {
-            agent {
-                docker {
-                    image 'airhelp/kops:latest'
-                }
-            }
-            steps {
-                echo "Creating cluster ..."
-                sh "kops create -f kubernetes/cluster.yaml"
+            container('jenkins-slave') {
+                steps {
+                    echo "Creating cluster ..."
+                    sh "kops create -f kubernetes/cluster.yaml"
 //                sh "kops replace -f kubernetes/cluster.yaml"
-                sh "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub"
-                sh "kops update cluster ${CLUSTER_NAME} --yes"
-                sleep time: 3, unit: 'MINUTES'
-                sh "kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword"
-                sh "kubectl apply -f kubernetes/database.yaml"
-                sleep time: 20, unit: 'SECONDS'
-                sh "kubectl apply -f kubernetes/webapp.yaml"
-                sleep time: 20, unit: 'SECONDS'
-                sh "kubectl apply -f kubernetes/pod.yaml"
-                sleep time: 20, unit: 'SECONDS'
-                sh "aws s3 cp ~/.kube/config ${KOPS_STATE_STORE}/kube-config"
-                echo "Adding dashboard ..."
-                sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml"
-                sleep time: 20, unit: 'SECONDS'
+                    sh "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub"
+                    sh "kops update cluster ${CLUSTER_NAME} --yes"
+                    sleep time: 3, unit: 'MINUTES'
+                    sh "kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword"
+                    sh "kubectl apply -f kubernetes/database.yaml"
+                    sleep time: 20, unit: 'SECONDS'
+                    sh "kubectl apply -f kubernetes/webapp.yaml"
+                    sleep time: 20, unit: 'SECONDS'
+                    sh "kubectl apply -f kubernetes/pod.yaml"
+                    sleep time: 20, unit: 'SECONDS'
+                    sh "aws s3 cp ~/.kube/config ${KOPS_STATE_STORE}/kube-config"
+                    echo "Adding dashboard ..."
+                    sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml"
+                    sleep time: 20, unit: 'SECONDS'
+                }
             }
         }
         stage("Deploy webapp") {
-            agent {
-                docker {
-                    image 'airhelp/kops:latest'
+            container('jenkins-slave') {
+                environment {
+                    ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
+                            returnStdout: true
+                    ).trim()
                 }
-            }
-            environment {
-                ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
-                        returnStdout: true
-                ).trim()
-            }
-            steps {
-                sh "kops update cluster ${CLUSTER_NAME} --yes"
-                sh "kops rolling-update cluster ${CLUSTER_NAME} --yes"
-                sleep time: 2, unit: 'MINUTES'
+                steps {
+                    sh "kops update cluster ${CLUSTER_NAME} --yes"
+                    sh "kops rolling-update cluster ${CLUSTER_NAME} --yes"
+                    sleep time: 2, unit: 'MINUTES'
+                }
             }
             post {
                 success {
