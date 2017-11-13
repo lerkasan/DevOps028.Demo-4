@@ -10,7 +10,7 @@ pipeline {
 //    }
     agent {
         kubernetes {
-            cloud 'jenkins-cluster.k8s.local'
+            cloud 'kubernetes'
             label 'slave-node'
             containerTemplate {
                 name 'jenkins-slave'
