@@ -1,0 +1,21 @@
+FROM jenkins/jenkins:lts
+
+# ENV JAVA_OPTS="-Xmx896m -Djenkins.install.runSetupWizard=false"
+ENV JAVA_OPTS="-Xmx896m"
+
+USER root
+RUN mkdir /var/log/jenkins && \
+    chown -R  jenkins:jenkins /var/log/jenkins
+
+USER jenkins
+RUN mkdir ${JENKINS_HOME}/init.groovy.d
+
+COPY plugins.txt ${JENKINS_HOME}/plugins.txt
+COPY init_jenkins_users.groovy ${JENKINS_HOME}/init.groovy.d/init_jenkins_users.groovy
+COPY Jenkinsfile.seed ${JENKINS_HOME}/Jenkinsfile.seed
+COPY init_seed_job.groovy ${JENKINS_HOME}/init.groovy.d/init_seed_job.groovy
+
+# RUN echo 2.0 > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state && \
+RUN /usr/local/bin/install-plugins.sh < ${JENKINS_HOME}/plugins.txt
+
+VOLUME ["/var/log/jenkins", "/var/jenkins_home"]

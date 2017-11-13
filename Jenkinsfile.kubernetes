@@ -1,12 +1,17 @@
 #!groovy
 
 pipeline {
+//    agent {
+//        label 'slave-node'
+//    }
+//    tools {
+//        jdk 'oracle-jdk8u144-linux-x64'
+//        maven "maven-3.5.0"
+//    }
     agent {
-        label 'slave-node'
-    }
-    tools {
-        jdk 'oracle-jdk8u144-linux-x64'
-        maven "maven-3.5.0"
+        docker {
+            image 'xueshanf/awscli:latest'
+        }
     }
     options {
         timestamps()
@@ -70,6 +75,12 @@ pipeline {
             }
         }
         stage("Test and build jar") {
+            agent {
+                docker {
+                    image 'maven:3.5.2-jdk-8-alpine'
+                    args '-v $HOME/.m2:/root/.m2'
+                }
+            }
             steps {
                 sh "javac -version"
                 echo "Testing project ..."
@@ -159,6 +170,11 @@ pipeline {
             }
         }
         stage("Create cluster") {
+            agent {
+                docker {
+                    image 'airhelp/kops:latest'
+                }
+            }
             steps {
                 echo "Creating cluster ..."
                 sh "kops create -f kubernetes/cluster.yaml"
@@ -180,6 +196,11 @@ pipeline {
             }
         }
         stage("Deploy webapp") {
+            agent {
+                docker {
+                    image 'airhelp/kops:latest'
+                }
+            }
             environment {
                 ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
                         returnStdout: true
