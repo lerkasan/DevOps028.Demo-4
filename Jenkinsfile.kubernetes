@@ -16,7 +16,6 @@ pipeline {
                 name 'jenkins-slave'
                 image '370535134506.dkr.ecr.us-west-2.amazonaws.com/jenkins-slave'
                 alwaysPullImage true
-                workingDir '/var/jenkins_home'
 //              workingDir '/home/jenkins'
                 privileged false
                 ttyEnabled true
