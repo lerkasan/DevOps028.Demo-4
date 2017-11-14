@@ -21,7 +21,6 @@ pipeline {
                 ttyEnabled true
                 command 'cat'
                 volume '/var/run/docker.sock:/var/run/docker.sock'
-                }
             }
         }
     }
