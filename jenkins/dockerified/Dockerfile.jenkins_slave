@@ -74,6 +74,7 @@ RUN mkdir ${HOME}/.kube && \
     mkdir ${HOME}/.aws && \
     mkdir ${HOME}/.m2 && \
     mkdir ${HOME}/.jenkins && \
+    mkdir ${HOME}/workspace && \
     mkdir -p ${AGENT_WORKDIR}
 
 VOLUME ${HOME}/.jenkins
