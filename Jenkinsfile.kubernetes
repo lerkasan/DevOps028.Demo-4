@@ -27,11 +27,9 @@ pipeline {
         timestamps()
     }
     parameters {
-        string(name: 'bucket_name', defaultValue: 'demo2-ssa', description: 'Bucket with JDK, liquibase binaries and artifact for Demo2')
         string(name: 'aws_ecr_url', defaultValue: 'https://370535134506.dkr.ecr.us-west-2.amazonaws.com', description: 'AWS Docker Container Registry URL')
     }
     environment {
-        BUCKET_NAME = "${params.bucket_name}"
         AWS_DEFAULT_REGION = "us-west-2"
         AWS_SECRET_ACCESS_KEY = sh(
                 script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
@@ -41,31 +39,8 @@ pipeline {
                 script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
                 returnStdout: true
         ).trim()
-        CLUSTER_NAME = sh(
-                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo3_cluster_name --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
-
-        KOPS_STATE_STORE = sh(
-                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo3_kops_state_bucket --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
-        DB_NAME = sh(
-                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_name --with-decryption --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
-
-        DB_USER = sh(
-                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_user --with-decryption --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
-
-        DB_PASS = sh(
-                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo2_db_pass --with-decryption --output text | awk '{print \$4}'",
-                returnStdout: true
-        ).trim()
-        DB_HOST = "samsara-postgres"
-        DB_PORT = 5432
+        CLUSTER_NAME = "jenkins-cluster.k8s.local"
+        KOPS_STATE_STORE = "s3://demo3-kops-state"
     }
     stages {
         stage('Checkout') {
@@ -97,10 +72,6 @@ pipeline {
             post {
                 success {
                     archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
-                    echo "Copying artifact to S3 bucket ..."
-                    sh 'ARTIFACT_FILENAME=`ls ${WORKSPACE}/target | grep jar | grep -v original` && ' +
-                            'aws s3 cp "${WORKSPACE}/target/${ARTIFACT_FILENAME}" "s3://demo2-ssa/artifacts/${ARTIFACT_FILENAME}" && ' +
-                            'aws ssm put-parameter --name demo2_artifact_filename --value="${ARTIFACT_FILENAME}" --type String --overwrite'
                 }
             }
         }
@@ -115,8 +86,7 @@ pipeline {
                     },
                     db_img_build: {
                         script {
-                            dbImage = docker.build("db:latest", "--build-arg DB_NAME=${DB_NAME} --build-arg DB_USER=${DB_USER} " +
-                                        "--build-arg DB_PASS=${DB_PASS} -f kubernetes/Dockerfile.db .")
+                            dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db .")
                         }
                     }
                 )
@@ -161,8 +131,7 @@ pipeline {
                 echo "Building and pushing samsara webapp image ..."
                 sh "cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ."
                 script {
-                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} --build-arg DB_NAME=${DB_NAME} " +
-                            "--build-arg DB_PORT=${DB_PORT} --build-arg DB_HOST=${DB_HOST} --build-arg DB_USER=${DB_USER} --build-arg DB_PASS=${DB_PASS} .")
+                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} .")
                     docker.withRegistry("${params.aws_ecr_url}") {
                         samsaraImage.push()
                     }
