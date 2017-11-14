@@ -75,7 +75,9 @@ RUN mkdir ${HOME}/.kube && \
     mkdir ${HOME}/.m2 && \
     mkdir ${HOME}/.jenkins && \
     mkdir ${HOME}/workspace && \
-    mkdir -p ${AGENT_WORKDIR}
+    mkdir -p ${AGENT_WORKDIR} && \
+    chmod 775 ${HOME}/workspace && \
+    chmod 775 ${AGENT_WORKDIR}
 
 VOLUME ${HOME}/.jenkins
 VOLUME ${AGENT_WORKDIR}
