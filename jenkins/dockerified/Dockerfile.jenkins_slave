@@ -4,6 +4,8 @@ ARG MAVEN_VERSION=3.5.2
 ARG MAVEN_SHA=707b1f6e390a65bde4af4cdaf2a24d45fc19a6ded00fff02e91626e3e42ceaff
 ARG MAVEN_BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries
 
+ARG DOCKER_VERSION=17.10.0-ce
+
 ARG JENKINS_HOME="/home/jenkins"
 ARG AGENT_VERSION=3.10
 ARG AGENT_WORKDIR=/home/jenkins/agent
@@ -11,7 +13,8 @@ ARG AGENT_WORKDIR=/home/jenkins/agent
 ENV MAVEN_HOME=/usr/share/maven \
     MAVEN_CONFIG="${JENKINS_HOME}/.m2" \
     JENKINS_HOME=${JENKINS_HOME} \
-    AGENT_WORKDIR=${AGENT_WORKDIR}
+    AGENT_WORKDIR=${AGENT_WORKDIR} \
+    DOCKER_VERSION=${DOCKER_VERSION}
 
 USER root
 RUN apk add --update --no-cache wget \
@@ -29,6 +32,11 @@ RUN mkdir -p /usr/share/maven /usr/share/maven/ref && \
     rm -f /tmp/apache-maven.tar.gz && \
     ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
 
+# Install Docker
+RUN curl -fL -o docker.tgz https://download.docker.com/linux/static/edge/x86_64/docker-${DOCKER_VERSION}.tgz && \
+	tar -xzf docker.tgz -C /usr/local/bin/ --strip-components=1  && \
+	rm docker.tgz
+
 # Install kubectl and kops
 RUN wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
     mv kubectl /usr/local/bin/kubectl && \
@@ -41,3 +49,5 @@ USER jenkins
 RUN mkdir ${JENKINS_HOME}/.kube && \
     mkdir ${JENKINS_HOME}/.aws && \
     mkdir ${JENKINS_HOME}/.m2
+
+VOLUME /var/run/docker.sock
