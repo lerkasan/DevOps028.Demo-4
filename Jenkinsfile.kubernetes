@@ -14,7 +14,8 @@ pipeline {
             label 'slave-node'
             containerTemplate {
                 name 'jenkins-slave'
-                image '370535134506.dkr.ecr.us-west-2.amazonaws.com/jenkins-slave'
+                image 'jenkins/jnlp-slave'
+//                image '370535134506.dkr.ecr.us-west-2.amazonaws.com/jenkins-slave'
                 ttyEnabled true
                 command 'cat'
             }
