@@ -1,9 +1,4 @@
-FROM debian:stretch-slim
-
-ARG JAVA_VERSION=8
-ARG JAVA_UPDATE=152
-ARG JAVA_BUILD=16
-ARG JAVA_PATH=aa0333dd3019491ca4f6ddbe78cdb6d0
+FROM jenkins/jnlp-slave:alpine
 
 ARG MAVEN_VERSION=3.5.2
 ARG MAVEN_SHA=707b1f6e390a65bde4af4cdaf2a24d45fc19a6ded00fff02e91626e3e42ceaff
@@ -13,48 +8,18 @@ ARG JENKINS_HOME="/home/jenkins"
 ARG AGENT_VERSION=3.10
 ARG AGENT_WORKDIR=/home/jenkins/agent
 
-ENV JAVA_VERSION=${JAVA_VERSION} \
-    JAVA_UPDATE=${JAVA_UPDATE} \
-    JAVA_BUILD=${JAVA_BUILD} \
-    JAVA_PATH=${JAVA_PATH} \
-    JAVA_HOME="/usr/lib/jvm/default-jvm" \
-    PATH=${PATH}:${JAVA_HOME}/bin \
-    MAVEN_HOME=/usr/share/maven \
+ENV MAVEN_HOME=/usr/share/maven \
     MAVEN_CONFIG="${JENKINS_HOME}/.m2" \
     JENKINS_HOME=${JENKINS_HOME} \
     AGENT_WORKDIR=${AGENT_WORKDIR}
 
-RUN apt-get update -y && \
-    apt-get install -y curl \
-        wget \
+USER root
+RUN apk add --update --no-cache wget \
+        curl \
         ca-certificates \
-        bash \
-        git \
-        openssh-client \
-        openssl \
         python \
-        python-pip && \
-    pip install --upgrade pip awscli && \
-    rm -rf /var/lib/apt/lists/*
-
-# Instal jenkins slave agent
-RUN addgroup --system --gid 1000 jenkins && \
-    adduser --system --uid 1000 --home ${JENKINS_HOME} --ingroup jenkins jenkins && \
-    chown jenkins:jenkins ${JENKINS_HOME} && \
-    curl --create-dirs -sSLo /usr/share/jenkins/slave.jar https://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting/${AGENT_VERSION}/remoting-${AGENT_VERSION}.jar && \
-    chmod 755 /usr/share/jenkins && \
-    chmod 644 /usr/share/jenkins/slave.jar
-
-# Install JDK
-RUN cd /tmp && \
-    wget --header "Cookie: oraclelicense=accept-securebackup-cookie;" \
-        "http://download.oracle.com/otn-pub/java/jdk/${JAVA_VERSION}u${JAVA_UPDATE}-b${JAVA_BUILD}/${JAVA_PATH}/jdk-${JAVA_VERSION}u${JAVA_UPDATE}-linux-x64.tar.gz" && \
-    tar -xzf "jdk-${JAVA_VERSION}u${JAVA_UPDATE}-linux-x64.tar.gz" && \
-    mkdir -p "/usr/lib/jvm" && \
-    mv "/tmp/jdk1.${JAVA_VERSION}.0_${JAVA_UPDATE}" "/usr/lib/jvm/java-${JAVA_VERSION}-oracle" && \
-    ln -s "java-${JAVA_VERSION}-oracle" "$JAVA_HOME" && \
-    ln -s "${JAVA_HOME}/bin/"* "/usr/bin/" && \
-    rm -rf "${JAVA_HOME}/"*src.zip
+        py-pip && \
+    pip install --upgrade pip awscli
 
 # Install Maven
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref && \
@@ -62,23 +27,17 @@ RUN mkdir -p /usr/share/maven /usr/share/maven/ref && \
     echo "${MAVEN_SHA}  /tmp/apache-maven.tar.gz" | sha256sum -c - && \
     tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 && \
     rm -f /tmp/apache-maven.tar.gz && \
-    ln -s /usr/share/maven/bin/mvn /usr/bin/mvn && \
-    rm /tmp/*
+    ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
 
 # Install kubectl and kops
 RUN wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
     mv kubectl /usr/local/bin/kubectl && \
     wget -O kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64 && \
     mv kops /usr/local/bin/kops && \
-    chmod +x /usr/local/bin/kops /usr/local/bin/kubectl
+    chmod +x /usr/local/bin/kops /usr/local/bin/kubectl && \
+    apk del curl wget py-pip
 
 USER jenkins
 RUN mkdir ${JENKINS_HOME}/.kube && \
     mkdir ${JENKINS_HOME}/.aws && \
-    mkdir ${JENKINS_HOME}/.m2 && \
-    mkdir ${JENKINS_HOME}/.jenkins && \
-    mkdir ${JENKINS_HOME}/workspace && \
-    mkdir -p ${AGENT_WORKDIR}
-
-VOLUME [${JENKINS_HOME}/.jenkins, ${AGENT_WORKDIR}]
-WORKDIR ${JENKINS_HOME}
+    mkdir ${JENKINS_HOME}/.m2

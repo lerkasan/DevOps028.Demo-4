@@ -9,8 +9,8 @@ USER root
 RUN mkdir ${LOG_DIR} && \
     chown -R  jenkins:jenkins ${LOG_DIR} && \
     mkdir ${CONFIG_DIR} && \
-    chown -R jenkins:jenkins ${CONFIG_DIR} && \
-    ln -s ${JENKINS_HOME} /home/jenkins
+    chown -R jenkins:jenkins ${CONFIG_DIR}
+#   ln -s ${JENKINS_HOME} /home/jenkins
 
 USER jenkins
 
@@ -22,4 +22,4 @@ RUN mkdir ${JENKINS_HOME}/workspace && \
     /usr/local/bin/install-plugins.sh < ${CONFIG_DIR}/plugins.txt && \
     echo "JENKINS PLUGINS INSTALLED SUCCESSFULLY! "
 
-VOLUME [${LOG_DIR}, ${JENKINS_HOME}]
+VOLUME ["${LOG_DIR}", "${JENKINS_HOME}"]
