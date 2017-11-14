@@ -20,10 +20,8 @@ pipeline {
                 privileged false
                 ttyEnabled true
                 command 'cat'
-            }
-            hostPathVolume {
-                hostPath '/var/run/docker.sock'
-                mountPath '/var/run/docker.sock'
+                volume '/var/run/docker.sock:/var/run/docker.sock'
+                }
             }
         }
     }
