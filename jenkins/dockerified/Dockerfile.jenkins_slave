@@ -69,15 +69,15 @@ RUN wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(
     chmod +x /usr/local/bin/kops /usr/local/bin/kubectl
 
 USER jenkins
-# RUN mkdir ${HOME} && \
 RUN mkdir ${HOME}/.kube && \
     mkdir ${HOME}/.aws && \
     mkdir ${HOME}/.m2 && \
     mkdir ${HOME}/.jenkins && \
     mkdir ${HOME}/workspace && \
-    mkdir -p ${AGENT_WORKDIR} && \
-    chmod 775 ${HOME}/workspace && \
-    chmod 775 ${AGENT_WORKDIR}
+    mkdir -p ${AGENT_WORKDIR}
+#    chmod 777 ${HOME} && \
+#    chmod -R 777 ${HOME}/workspace && \
+#    chmod 777 ${AGENT_WORKDIR}
 
 VOLUME ${HOME}/.jenkins
 VOLUME ${AGENT_WORKDIR}

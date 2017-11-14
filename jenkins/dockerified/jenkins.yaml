@@ -14,63 +14,63 @@ spec:
     app: jenkins
   type: LoadBalancer
 
-#---
-#apiVersion: v1
-#kind: PersistentVolume
-#metadata:
-#  name: jenkins-home
-#  labels:
-#    type: local
-#spec:
-#  capacity:
-#    storage: 20Gi
-#  accessModes:
-#    - ReadWriteOnce
-#  hostPath:
-#    path: /var/jenkins_home
-#
-#---
-#apiVersion: v1
-#kind: PersistentVolumeClaim
-#metadata:
-#  name: jenkins-homevol-claim
-#  labels:
-#    app: jenkins
-#spec:
-#  accessModes:
-#    - ReadWriteOnce
-#  resources:
-#    requests:
-#      storage: 20Gi
-#
-#---
-#apiVersion: v1
-#kind: PersistentVolume
-#metadata:
-#  name: jenkins-logs
-#  labels:
-#    type: local
-#spec:
-#  capacity:
-#    storage: 2Gi
-#  accessModes:
-#    - ReadWriteOnce
-#  hostPath:
-#    path: /var/log/jenkins
-#
-#---
-#apiVersion: v1
-#kind: PersistentVolumeClaim
-#metadata:
-#  name: jenkins-logsvol-claim
-#  labels:
-#    app: jenkins
-#spec:
-#  accessModes:
-#    - ReadWriteOnce
-#  resources:
-#    requests:
-#      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jenkins-home
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /var/jenkins_home
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins-homevol-claim
+  labels:
+    app: jenkins
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jenkins-logs
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /var/log/jenkins
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins-logsvol-claim
+  labels:
+    app: jenkins
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
 
 ---
 apiVersion: apps/v1beta1
@@ -94,7 +94,7 @@ spec:
       securityContext:
         fsGroup: 1000
       containers:
-      - image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/jenkins:latest
+      - image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/jenkins-master:latest
         imagePullPolicy: IfNotPresent
         name: jenkins
         ports:
@@ -102,15 +102,15 @@ spec:
           name: jenkins-ui
         - containerPort: 50000
           name: jenkins-jnpl
-#        volumeMounts:
-#        - name: jenkins-home
-#          mountPath: /var/jenkins_home
-#        - name: jenkins-logs
-#          mountPath: /var/log/jenkins
-#      volumes:
-#      - name: jenkins-home
-#        persistentVolumeClaim:
-#          claimName: jenkins-homevol-claim
-#      - name: jenkins-logs
-#        persistentVolumeClaim:
-#          claimName: jenkins-logsvol-claim
+        volumeMounts:
+        - name: jenkins-home
+          mountPath: /var/jenkins_home
+        - name: jenkins-logs
+          mountPath: /var/log/jenkins
+      volumes:
+      - name: jenkins-home
+        persistentVolumeClaim:
+          claimName: jenkins-homevol-claim
+      - name: jenkins-logs
+        persistentVolumeClaim:
+          claimName: jenkins-logsvol-claim

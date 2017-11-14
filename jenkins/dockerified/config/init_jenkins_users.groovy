@@ -1,3 +1,4 @@
+package dockerified.config
 // from https://gist.github.com/jnbnyc/c6213d3d12c8f848a385
 import jenkins.*
 import hudson.*
