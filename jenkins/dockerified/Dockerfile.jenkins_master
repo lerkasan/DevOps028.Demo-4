@@ -17,7 +17,8 @@ USER jenkins
 COPY config/* ${CONFIG_DIR}/
 COPY config/*.groovy /usr/share/jenkins/ref/init.groovy.d/
 
-RUN mkdir ${JENKINS_HOME}/init.groovy.d && \
+RUN mkdir ${JENKINS_HOME}/workspace && \
+    mkdir ${JENKINS_HOME}/init.groovy.d && \
     /usr/local/bin/install-plugins.sh < ${CONFIG_DIR}/plugins.txt && \
     echo "JENKINS PLUGINS INSTALLED SUCCESSFULLY! "
 
