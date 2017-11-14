@@ -37,6 +37,7 @@ RUN apt-get update -y && \
     pip install --upgrade pip awscli && \
     rm -rf /var/lib/apt/lists/*
 
+# Instal jenkins slave agent
 RUN addgroup --system --gid 1000 jenkins && \
     adduser --system --uid 1000 --home ${JENKINS_HOME} --ingroup jenkins jenkins && \
     chown jenkins:jenkins ${JENKINS_HOME} && \
@@ -44,6 +45,7 @@ RUN addgroup --system --gid 1000 jenkins && \
     chmod 755 /usr/share/jenkins && \
     chmod 644 /usr/share/jenkins/slave.jar
 
+# Install JDK
 RUN cd /tmp && \
     wget --header "Cookie: oraclelicense=accept-securebackup-cookie;" \
         "http://download.oracle.com/otn-pub/java/jdk/${JAVA_VERSION}u${JAVA_UPDATE}-b${JAVA_BUILD}/${JAVA_PATH}/jdk-${JAVA_VERSION}u${JAVA_UPDATE}-linux-x64.tar.gz" && \
@@ -54,6 +56,7 @@ RUN cd /tmp && \
     ln -s "${JAVA_HOME}/bin/"* "/usr/bin/" && \
     rm -rf "${JAVA_HOME}/"*src.zip
 
+# Install Maven
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref && \
     curl -fsSL -o /tmp/apache-maven.tar.gz ${MAVEN_BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz && \
     echo "${MAVEN_SHA}  /tmp/apache-maven.tar.gz" | sha256sum -c - && \
@@ -62,6 +65,7 @@ RUN mkdir -p /usr/share/maven /usr/share/maven/ref && \
     ln -s /usr/share/maven/bin/mvn /usr/bin/mvn && \
     rm /tmp/*
 
+# Install kubectl and kops
 RUN wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
     mv kubectl /usr/local/bin/kubectl && \
     wget -O kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64 && \
@@ -75,9 +79,6 @@ RUN mkdir ${JENKINS_HOME}/.kube && \
     mkdir ${JENKINS_HOME}/.jenkins && \
     mkdir ${JENKINS_HOME}/workspace && \
     mkdir -p ${AGENT_WORKDIR}
-#    chmod 777 ${JENKINS_HOME} && \
-#    chmod -R 777 ${JENKINS_HOME}/workspace && \
-#    chmod 777 ${AGENT_WORKDIR}
 
 VOLUME [${JENKINS_HOME}/.jenkins, ${AGENT_WORKDIR}]
 WORKDIR ${JENKINS_HOME}

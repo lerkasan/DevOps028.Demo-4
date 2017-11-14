@@ -14,10 +14,10 @@ pipeline {
             label 'slave-node'
             containerTemplate {
                 name 'jenkins-slave'
-//                image 'jenkins/jnlp-slave'
                 image '370535134506.dkr.ecr.us-west-2.amazonaws.com/jenkins-slave'
                 alwaysPullImage true
-                workingDir '/home/jenkins'
+                workingDir '/var/jenkins_home'
+//              workingDir '/home/jenkins'
                 privileged false
                 ttyEnabled true
                 command 'cat'
@@ -181,7 +181,7 @@ pipeline {
                 container('jenkins-slave') {
                     echo "Creating cluster ..."
                     sh "kops create -f kubernetes/cluster.yaml"
-//                sh "kops replace -f kubernetes/cluster.yaml"
+//                  sh "kops replace -f kubernetes/cluster.yaml"
                     sh "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub"
                     sh "kops update cluster ${CLUSTER_NAME} --yes"
                     sleep time: 3, unit: 'MINUTES'
