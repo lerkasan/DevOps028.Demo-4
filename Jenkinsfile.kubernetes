@@ -17,10 +17,10 @@ pipeline {
                 image '370535134506.dkr.ecr.us-west-2.amazonaws.com/jenkins-slave'
                 alwaysPullImage true
 //              workingDir '/home/jenkins'
-                privileged false
+                privileged true
                 ttyEnabled true
                 command 'cat'
-                volume '/var/run/docker.sock'
+                volume '/var/run/docker.sock:/var/run/docker.sock'
             }
         }
     }
