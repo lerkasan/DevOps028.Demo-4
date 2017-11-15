@@ -26,8 +26,7 @@ RUN apk add --update --no-cache wget \
         python \
         py-pip && \
     pip install --upgrade pip awscli && \
-    addgroup -S docker && \
-#    usermod -a -G docker jenkins
+    addgroup -g 1000 -S docker && \
     addgroup jenkins docker
 
 # Install Maven
@@ -59,4 +58,3 @@ RUN mkdir ${JENKINS_HOME}/.kube && \
     mkdir ${JENKINS_HOME}/.m2
 
 VOLUME /var/run/docker.sock
-

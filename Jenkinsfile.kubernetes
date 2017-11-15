@@ -82,6 +82,9 @@ pipeline {
                 parallel(
                     jdk_img_build: {
                         echo "Building docker images for dependecy and database..."
+                        sh "id"
+                        sh "grep docker /etc/group"
+                        sh "ls -alh /var/run | grep docker"
                         script {
                             jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .").inside("--volume=/var/run/docker.sock:/var/run/docker.sock")
                         }
