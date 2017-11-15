@@ -14,6 +14,7 @@ pipeline {
             label 'slave-node'
             containerTemplate {
                 name 'jenkins-slave'
+                namespace 'default'
                 image '370535134506.dkr.ecr.us-west-2.amazonaws.com/jenkins-slave'
                 alwaysPullImage true
 //              workingDir '/home/jenkins'

@@ -1,5 +1,8 @@
 FROM jenkins/jnlp-slave:alpine
 
+ARG JENKINS_URL
+ARG JENKINS_SECRET
+
 ARG MAVEN_VERSION=3.5.2
 ARG MAVEN_SHA=707b1f6e390a65bde4af4cdaf2a24d45fc19a6ded00fff02e91626e3e42ceaff
 ARG MAVEN_BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries
@@ -53,4 +56,4 @@ RUN mkdir ${JENKINS_HOME}/.kube && \
     mkdir ${JENKINS_HOME}/.m2
 
 VOLUME /var/run/docker.sock
-CMD ["/usr/local/bin/wrapdocker"]
+
