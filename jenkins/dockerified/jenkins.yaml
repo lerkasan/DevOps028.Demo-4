@@ -92,8 +92,8 @@ spec:
         app: jenkins
     spec:
       securityContext:
-        runAsUser: 1000
-        fsGroup: 1000
+        runAsUser: 10000
+        fsGroup: 10000
       containers:
       - image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/jenkins-master:latest
         imagePullPolicy: IfNotPresent
