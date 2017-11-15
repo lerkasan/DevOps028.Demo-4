@@ -82,12 +82,12 @@ pipeline {
                     jdk_img_build: {
                         echo "Building docker images for dependecy and database..."
                         script {
-                            jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .")
+                            jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .").inside("--volume=/var/run/docker.sock:/var/run/docker.sock")
                         }
                     },
                     db_img_build: {
                         script {
-                            dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db .")
+                            dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db .").inside("--volume=/var/run/docker.sock:/var/run/docker.sock")
                         }
                     }
                 )
@@ -132,7 +132,7 @@ pipeline {
                 echo "Building and pushing samsara webapp image ..."
                 sh "cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ."
                 script {
-                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} .")
+                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} .").inside("--volume=/var/run/docker.sock:/var/run/docker.sock")
                     docker.withRegistry("${params.aws_ecr_url}") {
                         samsaraImage.push()
                     }
