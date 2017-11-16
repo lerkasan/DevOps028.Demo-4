@@ -1,6 +1,6 @@
 #!groovy
 
-node('slave') {
+node('master') {
 
     podTemplate(
             label: 'slave',
