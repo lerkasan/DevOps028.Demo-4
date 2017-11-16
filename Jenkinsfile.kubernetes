@@ -21,7 +21,7 @@ pipeline {
                 privileged true
                 ttyEnabled true
                 command 'cat'
-                volume '/var/run/docker.sock:/var/run/docker.sock'
+                volume '/var/run:/var/run'
             }
         }
     }
@@ -86,7 +86,10 @@ pipeline {
                         sh "id"
                         sh "grep docker /etc/group"
                         sh "ls -alh /var/run | grep docker"
+                        sh "ls -alh /var/run/docker.sock"
                         sh "sudo chmod 660 /var/run/docker.sock"
+                        sh "sudo chown jenkins:docker /var/run/docker.sock"
+                        sh "ls -alh /var/run | grep docker"
                         script {
                             jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .")
                         }
