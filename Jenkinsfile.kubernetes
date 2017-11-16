@@ -24,7 +24,7 @@ podTemplate(
         ]
 ) {
 
-    node('jenkins-slave') {
+    node('slave') {
         options {
             timestamps()
         }
