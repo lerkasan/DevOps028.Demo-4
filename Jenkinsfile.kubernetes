@@ -83,9 +83,7 @@ podTemplate(
                     sh "grep docker /etc/group"
                     sh "ls -alh /var/run | grep docker"
                     sh "ls -alh /var/run/docker.sock"
-                    sh "sudo chmod 660 /var/run/docker.sock"
-                    sh "sudo chown jenkins:docker /var/run/docker.sock"
-                    sh "ls -alh /var/run | grep docker"
+                    sh "cat /etc/group"
 
                     jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .")
                     dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db .")
