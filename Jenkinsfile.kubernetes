@@ -96,12 +96,12 @@ podTemplate(
                 }
             }
             stage("Build and push samsara webapp image") {
-                environment {
-                    ARTIFACT_FILENAME = sh(script: "ls ${WORKSPACE}/target | grep jar | grep -v original",
-                            returnStdout: true
-                    ).trim()
-                }
                 container('jenkins-slave') {
+                    environment {
+                        ARTIFACT_FILENAME = sh(script: "ls ${WORKSPACE}/target | grep jar | grep -v original",
+                                returnStdout: true
+                        ).trim()
+                    }
                     echo "Building and pushing samsara webapp image ..."
                     sh "cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ."
                     sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && docker login -u AWS -p "${docker_pass}" https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3'
