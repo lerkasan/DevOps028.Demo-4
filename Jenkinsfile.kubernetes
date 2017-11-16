@@ -116,12 +116,25 @@ podTemplate(
             }
             stage("Create cluster") {
                 container('jenkins-slave') {
+                    environment {
+                        AWS_DEFAULT_REGION = "us-west-2"
+                        AWS_SECRET_ACCESS_KEY = sh(
+                                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
+                                returnStdout: true
+                        ).trim()
+                        AWS_ACCESS_KEY_ID = sh(
+                                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
+                                returnStdout: true
+                        ).trim()
+                        CLUSTER_NAME = samsara - cluster.k8s.local
+                        KOPS_STATE_STORE = "s3://samsara-cluster-state"
+                    }
                     echo "Creating cluster ..."
                     sh "kops create -f kubernetes/cluster.yaml"
 //                  sh "kops replace -f kubernetes/cluster.yaml"
                     sh "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub"
                     sh "kops update cluster ${CLUSTER_NAME} --yes"
-                    sleep time: 3, unit: 'MINUTES'
+                    sleep time: 5, unit: 'MINUTES'
                     sh "kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword"
                     sh "kubectl apply -f kubernetes/database.yaml"
                     sleep time: 20, unit: 'SECONDS'
@@ -145,6 +158,11 @@ podTemplate(
                     sh "kops update cluster ${CLUSTER_NAME} --yes"
                     sh "kops rolling-update cluster ${CLUSTER_NAME} --yes"
                     sleep time: 2, unit: 'MINUTES'
+
+                    echo "Checking connectivity to webapp load balancer ..."
+                    def response = httpRequest url: "http://${ELB_HOST}:9000/login", httpMode: 'GET', timeout: 60, consoleLogResponseBody: true
+                    println("Webapp HTTP_RESPONSE_CODE = " + response.getStatus())
+                    println("Webapp endpoint: ${ELB_HOST}:9000")
                 }
             }
 //            post {
