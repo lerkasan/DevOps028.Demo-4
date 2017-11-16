@@ -106,7 +106,7 @@ podTemplate(
 //                        KOPS_STATE_STORE = "s3://samsara-cluster-state"
 //                    }
                     withEnv(['KOPS_STATE_STORE=s3://samsara-cluster-state']) {
-                        def AWS_DEFAULT_REGION = us-west-2
+                        def AWS_DEFAULT_REGION = "us-west-2"
                         def AWS_SECRET_ACCESS_KEY = sh(
                                 script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
                                 returnStdout: true
