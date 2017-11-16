@@ -58,4 +58,4 @@ RUN mkdir ${JENKINS_HOME}/.kube && \
     mkdir ${JENKINS_HOME}/.aws && \
     mkdir ${JENKINS_HOME}/.m2
 
-VOLUME /var/run
+# VOLUME /var/run
