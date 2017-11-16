@@ -1,11 +1,11 @@
 #!groovy
 
-node('master') {
+
 
     podTemplate(
             label: 'slave',
             cloud: 'kubernetes',
-            name: 'jenkins-slave-pod',
+            name: 'jenkins-slave',
             namespace: 'default',
             slaveConnectTimeout: 30,
             containers: [
@@ -23,6 +23,7 @@ node('master') {
                     hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
             ]
     )
+node('jenkins-slave') {
     options {
         timestamps()
     }
