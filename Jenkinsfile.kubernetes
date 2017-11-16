@@ -12,7 +12,7 @@ pipeline {
         kubernetes {
             cloud 'kubernetes'
             label 'slave-node'
-            slaveConnectTimeout 30
+//            slaveConnectTimeout 30
             containerTemplate {
                 name 'jenkins-slave'
                 namespace 'default'
