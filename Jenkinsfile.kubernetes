@@ -82,9 +82,8 @@ pipeline {
         stage("Build docker dependency and database images") {
             steps {
                 parallel(
-                        container('jenkins-slave') {
-                            jdk_img_build:
-                            {
+                        jdk_img_build: {
+                            container('jenkins-slave') {
                                 echo "Building docker images for dependecy and database..."
                                 sh "ls -alh /var/run"
                                 sh "id"
@@ -99,9 +98,8 @@ pipeline {
                                 }
                             }
                         },
-                        container('jenkins-slave') {
-                            db_img_build:
-                            {
+                        db_img_build: {
+                            container('jenkins-slave') {
                                 script {
                                     dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db .")
                                 }
