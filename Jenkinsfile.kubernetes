@@ -134,7 +134,7 @@ podTemplate(
                     def CLUSTER_NAME = "samsara-cluster.k8s.local"
                     sh "kops create --state ${KOPS_STATE_STORE} -f kubernetes/cluster.yaml"
 //                  sh "kops replace -f kubernetes/cluster.yaml"
-                    sh "kops create secret --name ${CLUSTER_NAME} --state ${KOPS_STATE_STORE} sshpublickey admin -i ~/.ssh/id_rsa.pub"
+//                  sh "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub"
                     sh "kops update cluster ${CLUSTER_NAME} --state ${KOPS_STATE_STORE} --yes"
                     sleep time: 5, unit: 'MINUTES'
                     sh "kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword"
