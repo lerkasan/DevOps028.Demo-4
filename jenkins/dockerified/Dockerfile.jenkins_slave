@@ -28,7 +28,7 @@ RUN apk add --update --no-cache wget \
     pip install --upgrade pip awscli && \
     addgroup -g 1000 -S docker && \
     addgroup jenkins docker && \
-    addgroup jenkins root
+    addgroup jenkins ping
 
 # Install Maven
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref && \
