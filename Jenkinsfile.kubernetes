@@ -126,15 +126,15 @@ podTemplate(
                                 script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
                                 returnStdout: true
                         ).trim()
-                        CLUSTER_NAME = samsara - cluster.k8s.local
+                        CLUSTER_NAME = "samsara-cluster.k8s.local"
                         KOPS_STATE_STORE = "s3://samsara-cluster-state"
                     }
                     echo "Creating cluster ..."
-                    def KOPS_STATE_STORE = "s3://samsara-cluster-state"
-                    def CLUSTER_NAME = "samsara-cluster.k8s.local"
-                    sh "kops create --state ${KOPS_STATE_STORE} -f kubernetes/cluster.yaml"
+//                    def KOPS_STATE_STORE = "s3://samsara-cluster-state"
+//                    def CLUSTER_NAME = "samsara-cluster.k8s.local"
+                    sh "kops create -f kubernetes/cluster.yaml"
 //                  sh "kops replace -f kubernetes/cluster.yaml"
-//                  sh "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub"
+                    sh "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub"
                     sh "kops update cluster ${CLUSTER_NAME} --yes"
                     sleep time: 5, unit: 'MINUTES'
                     sh "kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword"
