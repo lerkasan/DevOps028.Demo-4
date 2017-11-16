@@ -25,9 +25,9 @@ podTemplate(
 ) {
 
     node('slave') {
-        options {
-            timestamps()
-        }
+//        options {
+//            timestamps()
+//        }
         parameters {
             string(name: 'aws_ecr_url', defaultValue: 'https://370535134506.dkr.ecr.us-west-2.amazonaws.com', description: 'AWS Docker Container Registry URL')
         }
@@ -45,104 +45,105 @@ podTemplate(
             KOPS_STATE_STORE = "s3://demo3-kops-state"
         }
 //    stages {
-        stage('Checkout') {
-            echo "Checkout master branch to workspace folder and checkout jenkins branch to subfolder 'jenkins'"
-            checkout(
-                    [$class           : 'GitSCM',
-                     branches         : [[name: '*/master']], doGenerateSubmoduleConfigurations: false,
-                     browser          : [$class: 'GithubWeb', repoUrl: 'https://github.com/lerkasan/DevOps028.git'],
-                     extensions       : [[$class: 'CleanBeforeCheckout']],
-                     gitTool          : 'git',
-                     submoduleCfg     : [],
-                     userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
-                    ])
-        }
-        stage("Test and build jar") {
-//            steps {
-            container('jenkins-slave') {
-                sh "javac -version"
-                echo "Testing project ..."
-                sh "mvn clean test"
-                echo "Building jar ..."
-                sh "mvn clean package"
-                archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
+        timestamps {
+            stage('Checkout') {
+                echo "Checkout master branch to workspace folder and checkout jenkins branch to subfolder 'jenkins'"
+                checkout(
+                        [$class           : 'GitSCM',
+                         branches         : [[name: '*/master']], doGenerateSubmoduleConfigurations: false,
+                         browser          : [$class: 'GithubWeb', repoUrl: 'https://github.com/lerkasan/DevOps028.git'],
+                         extensions       : [[$class: 'CleanBeforeCheckout']],
+                         gitTool          : 'git',
+                         submoduleCfg     : [],
+                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
+                        ])
             }
+            stage("Test and build jar") {
+//            steps {
+                container('jenkins-slave') {
+                    sh "javac -version"
+                    echo "Testing project ..."
+                    sh "mvn clean test"
+                    echo "Building jar ..."
+                    sh "mvn clean package"
+                    archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
+                }
 //            }
 //            post {
 //                success {
 //                    archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
 //                }
 //            }
-        }
-        stage("Build docker dependency and database images") {
-            container('jenkins-slave') {
-                echo "Building docker images for dependecy and database..."
-                sh "ls -alh /var/run"
-                sh "id"
-                sh "grep docker /etc/group"
-                sh "ls -alh /var/run | grep docker"
-                sh "ls -alh /var/run/docker.sock"
-                sh "sudo chmod 660 /var/run/docker.sock"
-                sh "sudo chown jenkins:docker /var/run/docker.sock"
-                sh "ls -alh /var/run | grep docker"
+            }
+            stage("Build docker dependency and database images") {
+                container('jenkins-slave') {
+                    echo "Building docker images for dependecy and database..."
+                    sh "ls -alh /var/run"
+                    sh "id"
+                    sh "grep docker /etc/group"
+                    sh "ls -alh /var/run | grep docker"
+                    sh "ls -alh /var/run/docker.sock"
+                    sh "sudo chmod 660 /var/run/docker.sock"
+                    sh "sudo chown jenkins:docker /var/run/docker.sock"
+                    sh "ls -alh /var/run | grep docker"
 
-                jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .")
-                dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db .")
-                docker.withRegistry("${params.aws_ecr_url}") {
-                    jdkImage.push()
-                    dbImage.push()
+                    jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .")
+                    dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db .")
+                    docker.withRegistry("${params.aws_ecr_url}") {
+                        jdkImage.push()
+                        dbImage.push()
+                    }
                 }
             }
-        }
-        stage("Build and push samsara webapp image") {
-            environment {
-                ARTIFACT_FILENAME = sh(script: "ls ${WORKSPACE}/target | grep jar | grep -v original",
-                        returnStdout: true
-                ).trim()
-            }
-            container('jenkins-slave') {
-                echo "Building and pushing samsara webapp image ..."
-                sh "cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ."
-                samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} .")
-                docker.withRegistry("${params.aws_ecr_url}") {
-                    samsaraImage.push()
+            stage("Build and push samsara webapp image") {
+                environment {
+                    ARTIFACT_FILENAME = sh(script: "ls ${WORKSPACE}/target | grep jar | grep -v original",
+                            returnStdout: true
+                    ).trim()
                 }
-                sh "docker rmi `docker images -q` | true"
+                container('jenkins-slave') {
+                    echo "Building and pushing samsara webapp image ..."
+                    sh "cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ."
+                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} .")
+                    docker.withRegistry("${params.aws_ecr_url}") {
+                        samsaraImage.push()
+                    }
+                    sh "docker rmi `docker images -q` | true"
+                }
             }
-        }
-        stage("Create cluster") {
-            container('jenkins-slave') {
-                echo "Creating cluster ..."
-                sh "kops create -f kubernetes/cluster.yaml"
+            stage("Create cluster") {
+                container('jenkins-slave') {
+                    echo "Creating cluster ..."
+                    sh "kops create -f kubernetes/cluster.yaml"
 //                  sh "kops replace -f kubernetes/cluster.yaml"
-                sh "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub"
-                sh "kops update cluster ${CLUSTER_NAME} --yes"
-                sleep time: 3, unit: 'MINUTES'
-                sh "kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword"
-                sh "kubectl apply -f kubernetes/database.yaml"
-                sleep time: 20, unit: 'SECONDS'
-                sh "kubectl apply -f kubernetes/webapp.yaml"
-                sleep time: 20, unit: 'SECONDS'
-                sh "kubectl apply -f kubernetes/pod.yaml"
-                sleep time: 20, unit: 'SECONDS'
-                sh "aws s3 cp ~/.kube/config ${KOPS_STATE_STORE}/kube-config"
-                echo "Adding dashboard ..."
-                sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml"
-                sleep time: 20, unit: 'SECONDS'
+                    sh "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub"
+                    sh "kops update cluster ${CLUSTER_NAME} --yes"
+                    sleep time: 3, unit: 'MINUTES'
+                    sh "kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword"
+                    sh "kubectl apply -f kubernetes/database.yaml"
+                    sleep time: 20, unit: 'SECONDS'
+                    sh "kubectl apply -f kubernetes/webapp.yaml"
+                    sleep time: 20, unit: 'SECONDS'
+                    sh "kubectl apply -f kubernetes/pod.yaml"
+                    sleep time: 20, unit: 'SECONDS'
+                    sh "aws s3 cp ~/.kube/config ${KOPS_STATE_STORE}/kube-config"
+                    echo "Adding dashboard ..."
+                    sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml"
+                    sleep time: 20, unit: 'SECONDS'
+                }
             }
-        }
-        stage("Deploy webapp") {
-            environment {
-                ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
-                        returnStdout: true
-                ).trim()
+            stage("Deploy webapp") {
+                environment {
+                    ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
+                            returnStdout: true
+                    ).trim()
+                }
+                container('jenkins-slave') {
+                    sh "kops update cluster ${CLUSTER_NAME} --yes"
+                    sh "kops rolling-update cluster ${CLUSTER_NAME} --yes"
+                    sleep time: 2, unit: 'MINUTES'
+                }
             }
-            container('jenkins-slave') {
-                sh "kops update cluster ${CLUSTER_NAME} --yes"
-                sh "kops rolling-update cluster ${CLUSTER_NAME} --yes"
-                sleep time: 2, unit: 'MINUTES'
-            }
-        }
 //            post {
 //                success {
 //                    echo "Checking connectivity to webapp load balancer ..."
@@ -167,5 +168,6 @@ podTemplate(
 //                    to: 'lerkasan@gmail.com'
 //        }
 //    }
+        }
     }
 }
