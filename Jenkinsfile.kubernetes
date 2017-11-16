@@ -25,26 +25,9 @@ podTemplate(
 ) {
 
     node('slave') {
-//        options {
-//            timestamps()
-//        }
         parameters {
             string(name: 'aws_ecr_url', defaultValue: 'https://370535134506.dkr.ecr.us-west-2.amazonaws.com', description: 'AWS Docker Container Registry URL')
         }
-        environment {
-            AWS_DEFAULT_REGION = "us-west-2"
-            AWS_SECRET_ACCESS_KEY = sh(
-                    script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
-                    returnStdout: true
-            ).trim()
-            AWS_ACCESS_KEY_ID = sh(
-                    script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
-                    returnStdout: true
-            ).trim()
-            CLUSTER_NAME = "jenkins-cluster.k8s.local"
-            KOPS_STATE_STORE = "s3://demo3-kops-state"
-        }
-//    stages {
         timestamps {
             stage('Checkout') {
                 echo "Checkout master branch to workspace folder and checkout jenkins branch to subfolder 'jenkins'"
@@ -59,7 +42,6 @@ podTemplate(
                         ])
             }
             stage("Test and build jar") {
-//            steps {
                 container('jenkins-slave') {
                     sh "javac -version"
                     echo "Testing project ..."
@@ -68,12 +50,6 @@ podTemplate(
                     sh "mvn clean package"
                     archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
                 }
-//            }
-//            post {
-//                success {
-//                    archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
-//                }
-//            }
             }
             stage("Build docker dependency and database images") {
                 container('jenkins-slave') {
@@ -135,6 +111,7 @@ podTemplate(
                         echo "Creating cluster ..."
                         echo "Cluster name is ${CLUSTER_NAME}"
                         echo "S3 bucket for state is ${KOPS_STATE_STORE}"
+                        sh "export"
 //                    def KOPS_STATE_STORE = "s3://samsara-cluster-state"
 //                    def CLUSTER_NAME = "samsara-cluster.k8s.local"
                         sh "kops create --state ${KOPS_STATE_STORE} -f kubernetes/cluster.yaml"
