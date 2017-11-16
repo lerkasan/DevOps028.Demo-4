@@ -99,7 +99,7 @@ podTemplate(
                 container('jenkins-slave') {
                     echo "Building and pushing samsara webapp image ..."
                     def ARTIFACT_FILENAME = sh(
-                            script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name demo3_kops_state_bucket --output text | awk '{print \$4}'",
+                            script: "ls ${WORKSPACE}/target | grep jar | grep -v original",
                             returnStdout: true
                     ).trim()
                     sh "cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ."
