@@ -82,7 +82,7 @@ podTemplate(
                     docker.withRegistry("${params.aws_ecr_url}") {
                         jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .")
 //                        dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db .")
-                        jdkImage.push("152")
+//                        jdkImage.push("152")
 //                        dbImage.push("latest")
                     }
                 }
