@@ -130,6 +130,8 @@ podTemplate(
                         KOPS_STATE_STORE = "s3://samsara-cluster-state"
                     }
                     echo "Creating cluster ..."
+                    echo "Cluster name is ${CLUSTER_NAME}"
+                    echo "S3 bucket for state is ${KOPS_STATE_STORE}"
 //                    def KOPS_STATE_STORE = "s3://samsara-cluster-state"
 //                    def CLUSTER_NAME = "samsara-cluster.k8s.local"
                     sh "kops create -f kubernetes/cluster.yaml"
