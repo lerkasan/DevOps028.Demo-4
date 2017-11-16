@@ -106,6 +106,14 @@ podTemplate(
 //                        KOPS_STATE_STORE = "s3://samsara-cluster-state"
 //                    }
                     withEnv(['KOPS_STATE_STORE=s3://samsara-cluster-state']) {
+                        def AWS_SECRET_ACCESS_KEY = sh(
+                                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
+                                returnStdout: true
+                        ).trim()
+                        def AWS_ACCESS_KEY_ID = sh(
+                                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
+                                returnStdout: true
+                        ).trim()
                         echo "Creating cluster ..."
 //                        echo "Cluster name is ${CLUSTER_NAME}"
 //                        echo "Cluster env.name is ${env.CLUSTER_NAME}"
@@ -114,8 +122,11 @@ podTemplate(
 //                        sh "export"
 //                        def KOPS_STATE_STORE = "s3://samsara-cluster-state"
                         def CLUSTER_NAME = "samsara-cluster.k8s.local"
-                        sh "export KOPS_STATE_STORE=s3://samsara-cluster-state && " +
-                                "kops create cluster --zones us-west-2a -f kubernetes/cluster.yaml && " +
+                        sh "export AWS_DEFAULT_REGION=us-west-2 &&" +
+                                "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && "
+                                "export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && "
+                                "export KOPS_STATE_STORE=s3://samsara-cluster-state && " +
+                                "kops create -f kubernetes/cluster.yaml && " +
 //                                "kops replace -f kubernetes/cluster.yaml &&"
 //                                "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub && " +
                                 "kops update cluster ${CLUSTER_NAME} --yes"
