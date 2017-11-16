@@ -123,7 +123,7 @@ podTemplate(
 //                        sh "export"
 //                        def KOPS_STATE_STORE = "s3://samsara-cluster-state"
                         def CLUSTER_NAME = "samsara-cluster.k8s.local"
-                        sh "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} &&" +
+                        sh "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && " +
                                 "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && "
                                 "export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && "
                                 "export KOPS_STATE_STORE=s3://samsara-cluster-state && " +
