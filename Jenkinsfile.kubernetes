@@ -137,7 +137,7 @@ podTemplate(
                         echo "S3 bucket for state is ${KOPS_STATE_STORE}"
 //                    def KOPS_STATE_STORE = "s3://samsara-cluster-state"
 //                    def CLUSTER_NAME = "samsara-cluster.k8s.local"
-                        sh "kops create -f kubernetes/cluster.yaml"
+                        sh "kops create --state ${KOPS_STATE_STORE} -f kubernetes/cluster.yaml"
 //                  sh "kops replace -f kubernetes/cluster.yaml"
                         sh "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub"
                         sh "kops update cluster ${CLUSTER_NAME} --yes"
