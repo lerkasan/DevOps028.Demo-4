@@ -43,7 +43,7 @@ pipelineJob('demo3-kubernetes') {
                     }
                 }
             }
-            scriptPath('Jenkinsfile.kubernetes')
+            scriptPath('Jenkinsfile')
         }
     }
 }

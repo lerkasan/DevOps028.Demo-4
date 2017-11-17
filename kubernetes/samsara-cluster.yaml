@@ -2,7 +2,7 @@ apiVersion: kops/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: 2017-11-04T18:36:19Z
-  name: demo3-cluster.k8s.local
+  name: samsara-cluster.k8s.local
 spec:
   api:
     loadBalancer:
@@ -11,7 +11,7 @@ spec:
     alwaysAllow: {}
   channel: stable
   cloudProvider: aws
-  configBase: s3://demo3-kops-state/demo3-cluster.k8s.local
+  configBase: s3://samsara-kops-state/samsara-cluster.k8s.local
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-west-2a
@@ -26,7 +26,7 @@ spec:
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: 1.7.4
-  masterPublicName: api.demo3-cluster.k8s.local
+  masterPublicName: api.samsara-cluster.k8s.local
   networkCIDR: 172.20.0.0/16
   networking:
     kubenet: {}
@@ -50,7 +50,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-11-04T18:36:19Z
   labels:
-    kops.k8s.io/cluster: demo3-cluster.k8s.local
+    kops.k8s.io/cluster: samsara-cluster.k8s.local
   name: master-us-west-2a
 spec:
   image: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
@@ -68,7 +68,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-11-04T18:36:19Z
   labels:
-    kops.k8s.io/cluster: demo3-cluster.k8s.local
+    kops.k8s.io/cluster: samsara-cluster.k8s.local
   name: nodes
 spec:
   image: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
@@ -79,4 +79,3 @@ spec:
   rootVolumeSize: 8
   subnets:
   - us-west-2a
-

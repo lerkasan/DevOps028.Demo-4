@@ -1,7 +1,5 @@
 #!groovy
 
-
-
 podTemplate(
         label: 'slave',
         cloud: 'kubernetes',
@@ -43,7 +41,6 @@ podTemplate(
             }
             stage("Test and build jar") {
                 container('jenkins-slave') {
-                    sh "javac -version"
                     echo "Testing project ..."
                     sh "mvn clean test"
                     echo "Building jar ..."
@@ -51,7 +48,7 @@ podTemplate(
                     archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
                 }
             }
-            stage("Build docker dependency and database images") {
+            stage("Build docker dependency and database images") { // TODO this stage to be deleted from final pipeline
                 container('jenkins-slave') {
                     echo "Building docker images for dependecy and database..."
                     sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && docker login -u AWS -p "${docker_pass}" https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3'
@@ -59,7 +56,7 @@ podTemplate(
                     sh 'docker tag jdk8:152 370535134506.dkr.ecr.us-west-2.amazonaws.com/jdk8:152'
                     sh 'docker push 370535134506.dkr.ecr.us-west-2.amazonaws.com/jdk8:152'
 
-                    sh 'docker build -t db:latest -f kubernetes/Dockerfile.jdk .'
+                    sh 'docker build -t db:latest -f kubernetes/Dockerfile.db .'
                     sh 'docker tag db:latest 370535134506.dkr.ecr.us-west-2.amazonaws.com/db:latest'
                     sh 'docker push 370535134506.dkr.ecr.us-west-2.amazonaws.com/db:latest'
 //                    jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .")
@@ -90,90 +87,22 @@ podTemplate(
                     sh "docker rmi `docker images -q` | true"
                 }
             }
-            stage("Create cluster") {
-                container('jenkins-slave') {
-//                    environment {
-//                        AWS_DEFAULT_REGION = "us-west-2"
-//                        AWS_SECRET_ACCESS_KEY = sh(
-//                                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
-//                                returnStdout: true
-//                        ).trim()
-//                        AWS_ACCESS_KEY_ID = sh(
-//                                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
-//                                returnStdout: true
-//                        ).trim()
-//                        CLUSTER_NAME = "samsara-cluster.k8s.local"
-//                        KOPS_STATE_STORE = "s3://samsara-cluster-state"
-//                    }
-                    withEnv(['KOPS_STATE_STORE=s3://samsara-cluster-state']) {
-                        def AWS_DEFAULT_REGION = "us-west-2"
-                        def AWS_SECRET_ACCESS_KEY = sh(
-                                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_secret_access_key --with-decryption --output text | awk '{print \$4}'",
-                                returnStdout: true
-                        ).trim()
-                        def AWS_ACCESS_KEY_ID = sh(
-                                script: "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && aws ssm get-parameter --name jenkins_access_key_id --with-decryption --output text | awk '{print \$4}'",
-                                returnStdout: true
-                        ).trim()
-                        echo "Creating cluster ..."
-//                        echo "Cluster name is ${CLUSTER_NAME}"
-//                        echo "Cluster env.name is ${env.CLUSTER_NAME}"
-//                        echo "S3 bucket for state is ${KOPS_STATE_STORE}"
-//                        echo "S3 bucket for env.state is ${env.KOPS_STATE_STORE}"
-//                        sh "export"
-//                        def KOPS_STATE_STORE = "s3://samsara-cluster-state"
-                        def CLUSTER_NAME = "samsara-cluster.k8s.local"
-                        sh "export AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} && " +
-                                "export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} && "
-                                "export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} && "
-                                "export KOPS_STATE_STORE=s3://samsara-cluster-state && " +
-                                "kops create -f kubernetes/cluster.yaml && " +
-//                                "kops replace -f kubernetes/cluster.yaml &&"
-//                                "kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub && " +
-                                "kops update cluster ${CLUSTER_NAME} --yes"
-                        sleep time: 5, unit: 'MINUTES'
-                        sh "kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword"
-                        sh "kubectl apply -f kubernetes/database.yaml"
-                        sleep time: 20, unit: 'SECONDS'
-                        sh "kubectl apply -f kubernetes/webapp.yaml"
-                        sleep time: 20, unit: 'SECONDS'
-                        sh "kubectl apply -f kubernetes/pod.yaml"
-                        sleep time: 20, unit: 'SECONDS'
-                        sh "aws s3 cp ~/.kube/config ${KOPS_STATE_STORE}/kube-config"
-                        echo "Adding dashboard ..."
-                        sh "kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.7.1.yaml"
-                        sleep time: 20, unit: 'SECONDS'
-                    }
-                }
-            }
             stage("Deploy webapp") {
-                environment {
-                    ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
-                            returnStdout: true
-                    ).trim()
-                }
                 container('jenkins-slave') {
-                    sh "kops update cluster ${CLUSTER_NAME} --yes"
+//                    sh "kops update cluster ${CLUSTER_NAME} --yes"
+                    def CLUSTER_NAME="samsara-cluster.k8s.local"
                     sh "kops rolling-update cluster ${CLUSTER_NAME} --yes"
                     sleep time: 2, unit: 'MINUTES'
 
                     echo "Checking connectivity to webapp load balancer ..."
+                    def ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
+                            returnStdout: true
+                    ).trim()
                     def response = httpRequest url: "http://${ELB_HOST}:9000/login", httpMode: 'GET', timeout: 60, consoleLogResponseBody: true
                     println("Webapp HTTP_RESPONSE_CODE = " + response.getStatus())
                     println("Webapp endpoint: ${ELB_HOST}:9000")
                 }
             }
-//            post {
-//                success {
-//                    echo "Checking connectivity to webapp load balancer ..."
-//                    script {
-//                        def response = httpRequest url: "http://${ELB_HOST}:9000/login", httpMode: 'GET', timeout: 60, consoleLogResponseBody: true
-//                        println("Webapp HTTP_RESPONSE_CODE = " + response.getStatus())
-//                        println("Webapp endpoint: ${ELB_HOST}:9000")
-//                    }
-//                }
-//            }
-//    }
 //    post {
 //        success {
 //            emailext body: '${BUILD_LOG_REGEX, regex="Webapp endpoint", showTruncatedLines=false}',

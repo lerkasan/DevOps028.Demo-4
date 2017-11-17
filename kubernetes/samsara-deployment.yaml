@@ -8,6 +8,7 @@ spec:
   containers:
   - name: samsara
     image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest
+    imagePullPolicy: "Always"
     ports:
       - containerPort: 9000
     env:
