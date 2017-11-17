@@ -91,7 +91,7 @@ podTemplate(
                 container('jenkins-slave') {
 //                    sh "kops update cluster ${CLUSTER_NAME} --yes"
                     def CLUSTER_NAME="samsara-cluster.k8s.local"
-                    sh "kops rolling-update cluster ${CLUSTER_NAME} --yes"
+                    sh "kops rolling-update cluster ${CLUSTER_NAME} --state 's3://samsara-cluster-state' --yes"
                     sleep time: 2, unit: 'MINUTES'
 
                     echo "Checking connectivity to webapp load balancer ..."
