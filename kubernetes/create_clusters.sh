@@ -40,6 +40,7 @@ function create_cluster {
 
 create_cluster jenkins
 kubectl apply -f "jenkins-deployment.yaml"
+aws iam  attach-role-policy --role-name nodes.jenkins-cluster.k8s.local --policy-arn arn:aws:iam::370535134506:policy/jenkins-nodes-kops
 
 create_cluster samsara
 kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword
