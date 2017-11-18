@@ -7,6 +7,7 @@ metadata:
 spec:
   ports:
     - port: 5000
+      targetPort: 443
       name: registry-port
   selector:
     app: registry
@@ -61,12 +62,28 @@ spec:
         app: registry
     spec:
       containers:
+
+      e REGISTRY_HTTP_ADDR=0.0.0.0:5000 \
+        -e REGISTRY_HTTP_HOST=https://docker.example.com \
+        -e REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/etc/docker/registry/letsencrypt.json \
+        -e REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL=admin@example.com
+
+
       - image: registry:latest
         imagePullPolicy: IfNotPresent
         name: registry
         ports:
-        - containerPort: 5000
+        - containerPort: 443
           name: registry-port
+        env:
+          - name: REGISTRY_HTTP_ADDR
+            value: "0.0.0.0:443"
+          - name: REGISTRY_HTTP_HOST
+            value: https://{{registry_url}}
+          - name: REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE
+            value: /etc/docker/registry/letsencrypt.json
+          - name: REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL
+            value: lerkasan@gmail.com
         volumeMounts:
         - name: registry-storage
           mountPath: /var/lib/registry

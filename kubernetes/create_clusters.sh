@@ -41,7 +41,8 @@ function create_cluster {
 create_cluster jenkins
 kubectl apply -f "registry-deployment.yaml"
 
-REGISTRY_URL="`kubectl describe svc registry | grep Ingress | awk '{print $3}'`:5000"
+# REGISTRY_URL="`kubectl describe svc registry | grep Ingress | awk '{print $3}'`:5000"
+REGISTRY_URL=`kubectl describe svc registry | grep Ingress | awk '{print $3}'`
 sed -i "s/{{registry_url}}/${REGISTRY_URL}/g" *.yaml
 
 docker build -t jenkins-slave:latest -f ../jenkins/dockerified/Dockerfile.jenkins_slave .
