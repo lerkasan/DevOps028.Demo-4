@@ -5,7 +5,6 @@ podTemplate(
         cloud: 'kubernetes',
         name: 'jenkins-slave',
         namespace: 'default',
-        slaveConnectTimeout: 30,
         containers: [
                 containerTemplate(
                         name: 'jenkins-slave',
@@ -95,7 +94,7 @@ podTemplate(
                     def KOPS_STATE_STORE = "s3://${NAME}-cluster-state"
                     sh "aws s3 cp ${KOPS_STATE_STORE}/kube-config ~/.kube/config"
                     sh "kops rolling-update cluster ${CLUSTER_NAME} --state ${KOPS_STATE_STORE} --yes"
-                    sleep time: 30, unit: 'SECONDS'
+                    sleep time: 2, unit: 'MINUTES'
 
                     echo "Checking connectivity to webapp load balancer ..."
                     sh "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'"
