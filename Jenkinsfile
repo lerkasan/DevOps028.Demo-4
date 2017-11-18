@@ -98,16 +98,16 @@ podTemplate(
                     sleep time: 2, unit: 'MINUTES'
 
                     echo "Checking connectivity to webapp load balancer ..."
+                    sh "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'"
+                    echo "Setting variable ELB_HOST ..."
                     def ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
                             returnStdout: true
                     ).trim()
                     echo "URL is ${ELB_HOST}:9000/login"
-                }
-                echo "URL is ${ELB_HOST}:9000/login"
                     def response = httpRequest url: "http://${ELB_HOST}:9000/login", httpMode: 'GET', timeout: 60, consoleLogResponseBody: true
                     println("Webapp HTTP_RESPONSE_CODE = " + response.getStatus())
                     println("Webapp endpoint: ${ELB_HOST}:9000")
-                // }
+                }
             }
 //    post {
 //        success {
