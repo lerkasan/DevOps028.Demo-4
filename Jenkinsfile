@@ -83,7 +83,7 @@ podTemplate(
 //                    docker.withRegistry("${params.aws_ecr_url}") {
 //                        samsaraImage.push("latest")
 //                    }
-                    sh "docker rmi `docker images -qf` | true"
+                    sh "docker rmi -f `docker images -q` | true"
                 }
             }
             stage("Deploy webapp") {
