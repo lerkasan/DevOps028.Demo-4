@@ -45,12 +45,12 @@ kubectl apply -f "registry-deployment.yaml"
 REGISTRY_URL=`kubectl describe svc registry | grep Ingress | awk '{print $3}'`
 sed -i "s/{{registry_url}}/${REGISTRY_URL}/g" *.yaml
 
-docker build -t jenkins-slave:latest -f ../jenkins/dockerified/Dockerfile.jenkins_slave .
+docker build -t jenkins-slave:latest -f jenkins/Dockerfile.jenkins_slave .
 docker tag jenkins-slave:latest "${REGISTRY_URL}/jenkins-slave:latest"
 docker push "${REGISTRY_URL}/jenkins-slave:latest"
 
-docker build -t jenkins-master:latest -f ../jenkins/dockerified/Dockerfile.jenkins_master .
-docker tag "${REGISTRY_URL}/jenkins-master:latest"
+docker build -t jenkins-master:latest -f jenkins/Dockerfile.jenkins_master .
+docker tag jenkins-master:latest "${REGISTRY_URL}/jenkins-master:latest"
 docker push "${REGISTRY_URL}/jenkins-master:latest"
 
 kubectl apply -f "jenkins-deployment.yaml"

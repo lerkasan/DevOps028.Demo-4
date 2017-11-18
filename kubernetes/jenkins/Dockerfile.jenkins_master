@@ -1,0 +1,25 @@
+FROM jenkins/jenkins:lts
+
+# ENV JAVA_OPTS="-Xmx896m -Djenkins.install.runSetupWizard=false"
+ENV JAVA_OPTS="-Xmx896m" \
+    CONFIG_DIR="/home/config" \
+    LOG_DIR="/var/log/jenkins"
+
+USER root
+RUN mkdir ${LOG_DIR} && \
+    chown -R  jenkins:jenkins ${LOG_DIR} && \
+    mkdir ${CONFIG_DIR} && \
+    chown -R jenkins:jenkins ${CONFIG_DIR}
+#   ln -s ${JENKINS_HOME} /home/jenkins
+
+USER jenkins
+
+COPY config/* ${CONFIG_DIR}/
+COPY config/*.groovy /usr/share/jenkins/ref/init.groovy.d/
+
+RUN mkdir ${JENKINS_HOME}/workspace && \
+    mkdir ${JENKINS_HOME}/init.groovy.d && \
+    /usr/local/bin/install-plugins.sh < ${CONFIG_DIR}/plugins.txt && \
+    echo "JENKINS PLUGINS INSTALLED SUCCESSFULLY! "
+
+VOLUME ["${LOG_DIR}", "${JENKINS_HOME}"]
