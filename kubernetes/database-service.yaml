@@ -61,7 +61,7 @@ spec:
         tier: postgres
     spec:
       containers:
-      - image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/db:latest
+      - image: {{registry_url}}:5000/db:latest
         name: postgres
         env:
         - name: DB_PORT

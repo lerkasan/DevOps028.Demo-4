@@ -17,7 +17,7 @@ function create_cluster {
     kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub
     kops update cluster ${CLUSTER_NAME} --yes
 
-    sleep 200
+    sleep 250
     CLUSTER_STATUS=`kops validate cluster ${CLUSTER_NAME} | grep "Your cluster" | grep "is ready"`
     MAX_RETRIES=20
     RETRIES=0
@@ -39,6 +39,19 @@ function create_cluster {
 }
 
 create_cluster jenkins
+kubectl apply -f "registry-deployment.yaml"
+
+REGISTRY_URL="`kubectl describe svc registry | grep Ingress | awk '{print $3}'`:5000"
+sed -i "s/{{registry_url}}/${REGISTRY_URL}/g" *.yaml
+
+docker build -t jenkins-slave:latest -f ../jenkins/dockerified/Dockerfile.jenkins_slave .
+docker tag jenkins-slave:latest "${REGISTRY_URL}/jenkins-slave:latest"
+docker push "${REGISTRY_URL}/jenkins-slave:latest"
+
+docker build -t jenkins-master:latest -f ../jenkins/dockerified/Dockerfile.jenkins_master .
+docker tag "${REGISTRY_URL}/jenkins-master:latest"
+docker push "${REGISTRY_URL}/jenkins-master:latest"
+
 kubectl apply -f "jenkins-deployment.yaml"
 aws iam  attach-role-policy --role-name nodes.jenkins-cluster.k8s.local --policy-arn arn:aws:iam::370535134506:policy/jenkins-nodes-kops
 

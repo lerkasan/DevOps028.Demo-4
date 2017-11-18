@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
   - name: samsara
-    image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/samsara:latest
+    image: {{registry_url}}:5000/samsara:latest
     imagePullPolicy: "Always"
     ports:
       - containerPort: 9000
@@ -26,7 +26,7 @@ spec:
             name: dbuser-pass
             key: password
   - name: samsara-postgres
-    image: 370535134506.dkr.ecr.us-west-2.amazonaws.com/db:latest
+    image: {{regiry_url}}/db:latest
     ports:
       - containerPort: 5432
     env:
