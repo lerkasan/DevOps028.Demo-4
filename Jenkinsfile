@@ -98,8 +98,6 @@ podTemplate(
                     sleep time: 2, unit: 'MINUTES'
 
                     echo "Checking connectivity to webapp load balancer ..."
-                    sh "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'"
-                    echo "Setting variable ELB_HOST ..."
                     def ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
                             returnStdout: true
                     ).trim()
