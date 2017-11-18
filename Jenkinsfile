@@ -5,7 +5,6 @@ podTemplate(
         cloud: 'kubernetes',
         name: 'jenkins-slave',
         namespace: 'default',
-        slaveConnectTimeout: 600,
         containers: [
                 containerTemplate(
                         name: 'jenkins-slave',
@@ -84,7 +83,7 @@ podTemplate(
 //                    docker.withRegistry("${params.aws_ecr_url}") {
 //                        samsaraImage.push("latest")
 //                    }
-                    sh "docker rmi `docker images -q` | true"
+                    sh "docker rmi `docker images -qf` | true"
                 }
             }
             stage("Deploy webapp") {
@@ -95,7 +94,7 @@ podTemplate(
                     def KOPS_STATE_STORE = "s3://${NAME}-cluster-state"
                     sh "aws s3 cp ${KOPS_STATE_STORE}/kube-config ~/.kube/config"
                     sh "kops rolling-update cluster ${CLUSTER_NAME} --state ${KOPS_STATE_STORE} --yes"
-                    sleep time: 2, unit: 'MINUTES'
+                    sleep time: 20, unit: 'SECONDS'
 
                     echo "Checking connectivity to webapp load balancer ..."
                     def ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
