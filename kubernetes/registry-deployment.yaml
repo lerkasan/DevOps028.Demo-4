@@ -62,13 +62,6 @@ spec:
         app: registry
     spec:
       containers:
-
-      e REGISTRY_HTTP_ADDR=0.0.0.0:5000 \
-        -e REGISTRY_HTTP_HOST=https://docker.example.com \
-        -e REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE=/etc/docker/registry/letsencrypt.json \
-        -e REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL=admin@example.com
-
-
       - image: registry:latest
         imagePullPolicy: IfNotPresent
         name: registry

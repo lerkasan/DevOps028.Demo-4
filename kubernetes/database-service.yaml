@@ -61,7 +61,7 @@ spec:
         tier: postgres
     spec:
       containers:
-      - image: {{registry_url}}:5000/db:latest
+      - image: {{registry_url}}/db:latest
         name: postgres
         env:
         - name: DB_PORT

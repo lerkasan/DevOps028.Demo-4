@@ -34,7 +34,7 @@ spec:
         tier: backend
     spec:
       containers:
-      - image: {{registry_url}}:5000/samsara:latest
+      - image: {{registry_url}}/samsara:latest
         imagePullPolicy: "Always"
         name: samsara
         env:
