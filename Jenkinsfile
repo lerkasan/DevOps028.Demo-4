@@ -90,9 +90,9 @@ podTemplate(
             stage("Deploy webapp") {
                 container('jenkins-slave') {
 //                    sh "kops update cluster ${CLUSTER_NAME} --yes"
-                    def NAME="samsara"
-                    def CLUSTER_NAME="${NAME}-cluster.k8s.local"
-                    def KOPS_STATE_STORE="s3://${NAME}-cluster-state"
+                    def NAME = "samsara"
+                    def CLUSTER_NAME = "${NAME}-cluster.k8s.local"
+                    def KOPS_STATE_STORE = "s3://${NAME}-cluster-state"
                     sh "aws s3 cp ${KOPS_STATE_STORE}/kube-config ~/.kube/config"
                     sh "kops rolling-update cluster ${CLUSTER_NAME} --state ${KOPS_STATE_STORE} --yes"
                     sleep time: 2, unit: 'MINUTES'
@@ -101,10 +101,12 @@ podTemplate(
                     def ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
                             returnStdout: true
                     ).trim()
+                }
+                    echo "URL is ${ELB_HOST}:9000/login"
                     def response = httpRequest url: "http://${ELB_HOST}:9000/login", httpMode: 'GET', timeout: 60, consoleLogResponseBody: true
                     println("Webapp HTTP_RESPONSE_CODE = " + response.getStatus())
                     println("Webapp endpoint: ${ELB_HOST}:9000")
-                }
+               // }
             }
 //    post {
 //        success {
