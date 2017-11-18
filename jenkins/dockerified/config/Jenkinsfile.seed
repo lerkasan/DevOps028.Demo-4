@@ -1,4 +1,4 @@
-pipelineJob('demo3-kubernetes') {
+pipelineJob('demo4') {
     properties {
         githubProjectUrl('https://github.com/lerkasan/DevOps028.git')
     }

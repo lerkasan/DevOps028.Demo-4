@@ -90,8 +90,11 @@ podTemplate(
             stage("Deploy webapp") {
                 container('jenkins-slave') {
 //                    sh "kops update cluster ${CLUSTER_NAME} --yes"
-                    def CLUSTER_NAME="samsara-cluster.k8s.local"
-                    sh "kops rolling-update cluster ${CLUSTER_NAME} --state 's3://samsara-cluster-state' --yes"
+                    def NAME="samsara"
+                    def CLUSTER_NAME="${NAME}-cluster.k8s.local"
+                    def KOPS_STATE_STORE="s3://${NAME}-cluster-state"
+                    sh "aws s3 cp ${KOPS_STATE_STORE}/kube-config ~/.kube/config"
+                    sh "kops rolling-update cluster ${CLUSTER_NAME} --state ${KOPS_STATE_STORE} --yes"
                     sleep time: 2, unit: 'MINUTES'
 
                     echo "Checking connectivity to webapp load balancer ..."

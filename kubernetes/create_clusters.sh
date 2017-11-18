@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 export AWS_DEFAULT_REGION="us-west-2"
-export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
-export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
+# export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
+# export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 
 function create_cluster {
     NAME=$1
@@ -11,8 +11,8 @@ function create_cluster {
     echo $CLUSTER_NAME
     echo $KOPS_STATE_STORE
 
-    kops create cluster --zones us-west-2a ${CLUSTER_NAME} --master-size=t2.micro --node-size=t2.micro \
-                                                           --master-volume-size=8 --node-volume-size=8
+    kops create cluster --zones us-west-2a ${CLUSTER_NAME} # --master-size=t2.medium--node-size=t2.medium \
+                                                           # --master-volume-size=20 --node-volume-size=20
 #    kops create -f "./${NAME}-cluster.yaml"
     kops create secret --name ${CLUSTER_NAME} sshpublickey admin -i ~/.ssh/id_rsa.pub
     kops update cluster ${CLUSTER_NAME} --yes
@@ -39,10 +39,10 @@ function create_cluster {
 }
 
 create_cluster jenkins
-kubectl apply -f "./jenkins-deployment.yaml"
+kubectl apply -f "jenkins-deployment.yaml"
 
 create_cluster samsara
 kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword
-kubectl apply -f "./database-service.yaml"
-kubectl apply -f "./samsara-service.yaml"
-kubectl apply -f "./samsara-deployment.yaml"
+kubectl apply -f "database-service.yaml"
+kubectl apply -f "samsara-service.yaml"
+kubectl apply -f "samsara-deployment.yaml"
