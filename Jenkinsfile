@@ -5,6 +5,7 @@ podTemplate(
         cloud: 'kubernetes',
         name: 'jenkins-slave',
         namespace: 'default',
+        slaveConnectTimeout: 600,
         containers: [
                 containerTemplate(
                         name: 'jenkins-slave',
