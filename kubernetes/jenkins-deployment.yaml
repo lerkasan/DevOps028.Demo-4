@@ -95,7 +95,7 @@ spec:
         runAsUser: 10000
         fsGroup: 10000
       containers:
-      - image: {{registry_url}}/jenkins-master:latest
+      - image: registry.lerkasan.de/jenkins-master:latest
         imagePullPolicy: IfNotPresent
         name: jenkins
         ports:
