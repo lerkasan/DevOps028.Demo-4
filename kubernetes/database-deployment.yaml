@@ -81,6 +81,12 @@ spec:
         volumeMounts:
         - name: postgres-volume
           mountPath: /var/lib/postgresql
+        livenessProbe:
+          tcpSocket:
+            port: 5432
+          initialDelaySeconds: 60
+          timeoutSeconds: 10
+          periodSeconds: 60
       volumes:
       - name: postgres-volume
         persistentVolumeClaim:

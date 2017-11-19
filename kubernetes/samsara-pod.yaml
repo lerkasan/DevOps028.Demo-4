@@ -25,6 +25,20 @@ spec:
           secretKeyRef:
             name: dbuser-pass
             key: password
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: 9000
+      initialDelaySeconds: 150
+      timeoutSeconds: 10
+      periodSeconds: 60
+      successThreshold: 3
+    livenessProbe:
+      tcpSocket:
+        port: 9000
+      initialDelaySeconds: 90
+      timeoutSeconds: 10
+      periodSeconds: 60
   - name: samsara-postgres
     image: registry.lerkasan.de:5000/db:latest
     ports:
@@ -40,8 +54,14 @@ spec:
             name: dbuser-pass
             key: password
     volumeMounts:
-       - mountPath: /var/lib/postgresql
-         name: postgres-volume
+      - mountPath: /var/lib/postgresql
+        name: postgres-volume
+    livenessProbe:
+      tcpSocket:
+        port: 5432
+        initialDelaySeconds: 60
+        timeoutSeconds: 10
+        periodSeconds: 60
   volumes:
   - name: postgres-volume
   initContainers:

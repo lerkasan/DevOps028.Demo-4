@@ -55,3 +55,17 @@ spec:
         ports:
         - containerPort: 9000
           name: samsara
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9000
+          initialDelaySeconds: 150
+          timeoutSeconds: 10
+          periodSeconds: 60
+          successThreshold: 3
+        livenessProbe:
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 90
+          timeoutSeconds: 10
+          periodSeconds: 60
