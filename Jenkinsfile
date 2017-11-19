@@ -48,7 +48,8 @@ podTemplate(
             stage("Build docker dependency and database images") { // TODO this stage to be deleted from final pipeline
                 container('jenkins-slave') {
                     echo "Building docker images for dependecy and database..."
-
+// Docker Pipeline plugin doesn't work and return error  "Expecting 64-char full image ID, but got"  https://issues.jenkins-ci.org/browse/JENKINS-32792
+// Docker version 1.12.6
 //                    jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk kubernetes")
 //                    dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db kubernetes")
 //                    echo "DOCKER IMAGE WAS BUILT SUCCESSFULLY"
