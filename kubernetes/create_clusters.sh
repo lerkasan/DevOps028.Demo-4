@@ -87,10 +87,20 @@ aws route53 change-resource-record-sets --hosted-zone-id ${HOSTED_ZONE_ID} --cha
 
 docker build -t jenkins-slave:latest -f jenkins/Dockerfile.jenkins_slave jenkins
 docker tag jenkins-slave:latest "${REGISTRY_URL}/jenkins-slave:latest"
-docker push "${REGISTRY_URL}/jenkins-slave:latest"
 
 docker build -t jenkins-master:latest -f jenkins/Dockerfile.jenkins_master jenkins
 docker tag jenkins-master:latest "${REGISTRY_URL}/jenkins-master:latest"
+
+MAX_RETRIES=50
+RETRIES=0
+while [[ -z `dig A ${REGISTRY_URL} | grep "NOERROR"` ]] && [ ${RETRIES} -lt ${MAX_RETRIES} ]; do
+    let "RETRIES++"
+    date
+    echo "Try: ${RETRIES}  ${REGISTRY_URL} domain is unavailable. Sleeping for 1 minute."
+    sleep 60
+done
+
+docker push "${REGISTRY_URL}/jenkins-slave:latest"
 docker push "${REGISTRY_URL}/jenkins-master:latest"
 
 kubectl apply -f "jenkins-deployment.yaml" --namespace=jenkins
