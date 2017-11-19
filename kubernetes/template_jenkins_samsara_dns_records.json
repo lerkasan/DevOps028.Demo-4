@@ -1,18 +1,6 @@
 {
-  "Comment": "Adding alias dns records for Jenkins, Registry and Samsara loadbalancers",
+  "Comment": "Adding alias dns records for Jenkins and Samsara loadbalancers",
   "Changes": [
-    {
-      "Action": "UPSERT",
-      "ResourceRecordSet": {
-        "Name": "registry.lerkasan.de.",
-        "Type": "A",
-        "AliasTarget": {
-          "HostedZoneId": "%REGISTRY_ELB_ZONE_ID%",
-          "DNSName": "%REGISTRY_ELB_DNS%",
-          "EvaluateTargetHealth": false
-        }
-      }
-    },
     {
       "Action": "UPSERT",
       "ResourceRecordSet": {

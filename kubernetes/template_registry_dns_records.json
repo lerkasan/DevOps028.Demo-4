@@ -1,0 +1,17 @@
+{
+  "Comment": "Adding alias dns records for Registry loadbalancer",
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "registry.lerkasan.de.",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "%REGISTRY_ELB_ZONE_ID%",
+          "DNSName": "%REGISTRY_ELB_DNS%",
+          "EvaluateTargetHealth": false
+        }
+      }
+    }
+  ]
+}
