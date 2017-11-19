@@ -53,7 +53,8 @@ podTemplate(
                     echo "Building docker images for dependecy and database..."
                     sh 'docker build -t jdk8:152 -f kubernetes/Dockerfile.jdk kubernetes'
                     sh 'docker build -t db:latest -f kubernetes/Dockerfile.db kubernetes'
-                    withEnv(["REGISTRY_URL=${params.registry_url}"]) {
+                    withEnv(["REGISTRY_URL=registry.lerkasan.de:5000"]) {
+                        echo "Registry URL is: ${REGISTRY_URL}"
 //                    sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && docker login -u AWS -p "${docker_pass}" https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3'
                         sh "docker tag jdk8:152 ${REGISTRY_URL}/jdk8:152"
                         sh "docker push ${REGISTRY_URL}/jdk8:152"
@@ -79,7 +80,7 @@ podTemplate(
                     sh "cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ."
 //                    sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && docker login -u AWS -p "${docker_pass}" https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3'
                     sh "docker build -t samsara:latest --build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} ."
-                    withEnv(["REGISTRY_URL=${params.registry_url}"]) {
+                    withEnv(["REGISTRY_URL=registry.lerkasan.de:5000"]) {
                         sh "docker tag samsara:latest ${REGISTRY_URL}/samsara:latest"
                         sh "docker push ${REGISTRY_URL}/samsara:latest"
                     }
