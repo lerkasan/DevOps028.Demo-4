@@ -51,14 +51,14 @@ podTemplate(
             stage("Build docker dependency and database images") { // TODO this stage to be deleted from final pipeline
                 container('jenkins-slave') {
                     echo "Building docker images for dependecy and database..."
+                    sh 'docker build -t jdk8:152 -f kubernetes/Dockerfile.jdk kubernetes'
+                    sh 'docker build -t db:latest -f kubernetes/Dockerfile.db kubernetes'
+                    withEnv(["REGISTRY=${params.registry_url}"]) {
 //                    sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && docker login -u AWS -p "${docker_pass}" https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3'
-                    sh 'docker build -t jdk8:152 -f kubernetes/Dockerfile.jdk .'
-                    sh "docker tag jdk8:152 ${params.registry_url}/jdk8:152"
-                    sh "docker push ${params.registry_url}/jdk8:152"
-
-                    sh 'docker build -t db:latest -f kubernetes/Dockerfile.db .'
-                    sh "docker tag db:latest ${params.registry_url}/db:latest"
-                    sh "docker push ${params.registry_url}/db:latest"
+                        sh "docker tag jdk8:152 ${REGISTRY_URL}/jdk8:152"
+                        sh "docker push ${REGISTRY_URL}/jdk8:152"
+                        sh "docker tag db:latest ${REGISTRY_URL}/db:latest"
+                        sh "docker push ${REGISTRY_URL}/db:latest"
 //                    jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .")
 //                    echo "DOCKER IMAGE WAS BUILT SUCCESSFULLY"
 //                    dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db .")
@@ -66,6 +66,7 @@ podTemplate(
 //                        jdkImage.push("152")
 //                        dbImage.push("latest")
 //                    }
+                    }
                 }
             }
             stage("Build and push samsara webapp image") {
@@ -78,8 +79,10 @@ podTemplate(
                     sh "cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ."
 //                    sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && docker login -u AWS -p "${docker_pass}" https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3'
                     sh "docker build -t samsara:latest --build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} ."
-                    sh "docker tag samsara:latest 3${params.registry_url}/samsara:latest"
-                    sh "docker push ${params.registry_url}/samsara:latest"
+                    withEnv(["REGISTRY=${params.registry_url}"]) {
+                        sh "docker tag samsara:latest ${REGISTRY_URL}/samsara:latest"
+                        sh "docker push ${REGISTRY_URL}/samsara:latest"
+                    }
 //                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} .")
 //                    docker.withRegistry("${params.aws_ecr_url}") {
 //                        samsaraImage.push("latest")
