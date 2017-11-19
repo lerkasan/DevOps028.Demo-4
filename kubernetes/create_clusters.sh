@@ -54,7 +54,7 @@ function create_cluster {
     cat ~/.kube/config
 }
 
-create_cluster jenkins
+create_cluster jenkins-registry
 kubectl create namespace registry
 kubectl create namespace jenkins
 kubectl apply -f "registry-deployment.yaml" --namespace=registry
