@@ -38,8 +38,8 @@ function create_cluster {
     cat ~/.kube/config
 }
 
-# create_cluster jenkins
-#kubectl apply -f "registry-deployment.yaml"
+create_cluster jenkins
+kubectl apply -f "registry-deployment.yaml"
 REGISTRY_URL=registry.lerkasan.de
 
 # REGISTRY_URL="`kubectl describe svc registry | grep Ingress | awk '{print $3}'`:5000"
@@ -47,19 +47,19 @@ REGISTRY_URL=registry.lerkasan.de
 ## sed -i "s/{{registry_url}}/${REGISTRY_URL}/g" *.yaml
 ## kubectl apply -f "registry-deployment.yaml"
 
-#docker build -t jenkins-slave:latest -f jenkins/Dockerfile.jenkins_slave jenkins
-#docker tag jenkins-slave:latest "${REGISTRY_URL}/jenkins-slave:latest"
-#docker push "${REGISTRY_URL}/jenkins-slave:latest"
-#
-#docker build -t jenkins-master:latest -f jenkins/Dockerfile.jenkins_master jenkins
-#docker tag jenkins-master:latest "${REGISTRY_URL}/jenkins-master:latest"
-#docker push "${REGISTRY_URL}/jenkins-master:latest"
+docker build -t jenkins-slave:latest -f jenkins/Dockerfile.jenkins_slave jenkins
+docker tag jenkins-slave:latest "${REGISTRY_URL}/jenkins-slave:latest"
+docker push "${REGISTRY_URL}/jenkins-slave:latest"
+
+docker build -t jenkins-master:latest -f jenkins/Dockerfile.jenkins_master jenkins
+docker tag jenkins-master:latest "${REGISTRY_URL}/jenkins-master:latest"
+docker push "${REGISTRY_URL}/jenkins-master:latest"
 #
 kubectl apply -f "jenkins-deployment.yaml"
 aws iam  attach-role-policy --role-name nodes.jenkins-cluster.k8s.local --policy-arn arn:aws:iam::370535134506:policy/jenkins-nodes-kops
 #
 create_cluster samsara
 kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword
-kubectl apply -f "database-service.yaml"
-kubectl apply -f "samsara-service.yaml"
+kubectl apply -f "database-deployment.yaml"
 kubectl apply -f "samsara-deployment.yaml"
+kubectl apply -f "samsara-pod.yaml"

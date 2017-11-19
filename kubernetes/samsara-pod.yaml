@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: samsara-pod
+  labels:
+    app: samsara
+spec:
+  containers:
+  - name: samsara
+    image: registry.lerkasan.de:5000/samsara:latest
+    imagePullPolicy: "Always"
+    ports:
+      - containerPort: 9000
+    env:
+      - name: DB_HOST
+        value: samsara-postgres
+      - name: DB_PORT
+        value: "5432"
+      - name: DB_NAME
+        value: auradb
+      - name: DB_USER
+        value: aura
+      - name: DB_PASS
+        valueFrom:
+          secretKeyRef:
+            name: dbuser-pass
+            key: password
+  - name: samsara-postgres
+    image: registry.lerkasan.de:5000/db:latest
+    ports:
+      - containerPort: 5432
+    env:
+      - name: DB_NAME
+        value: auradb
+      - name: DB_USER
+        value: aura
+      - name: DB_PASS
+        valueFrom:
+          secretKeyRef:
+            name: dbuser-pass
+            key: password
+    volumeMounts:
+       - mountPath: /var/lib/postgresql
+         name: postgres-volume
+  volumes:
+  - name: postgres-volume
+  initContainers:
+  - name: init-db
+    image: busybox
+    command: ['sh', '-c', 'until nslookup samsara-postgres; do echo "waiting for db"; sleep 10; done;']

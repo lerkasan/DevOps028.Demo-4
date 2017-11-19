@@ -1,50 +1,57 @@
 apiVersion: v1
-kind: Pod
+kind: Service
 metadata:
-  name: samsara-pod
+  name: samsara
   labels:
     app: samsara
 spec:
-  containers:
-  - name: samsara
-    image: registry.lerkasan.de:5000/samsara:latest
-    imagePullPolicy: "Always"
-    ports:
-      - containerPort: 9000
-    env:
-      - name: DB_HOST
-        value: samsara-postgres
-      - name: DB_PORT
-        value: "5432"
-      - name: DB_NAME
-        value: auradb
-      - name: DB_USER
-        value: aura
-      - name: DB_PASS
-        valueFrom:
-          secretKeyRef:
-            name: dbuser-pass
-            key: password
-  - name: samsara-postgres
-    image: registry.lerkasan.de:5000/db:latest
-    ports:
-      - containerPort: 5432
-    env:
-      - name: DB_NAME
-        value: auradb
-      - name: DB_USER
-        value: aura
-      - name: DB_PASS
-        valueFrom:
-          secretKeyRef:
-            name: dbuser-pass
-            key: password
-    volumeMounts:
-       - mountPath: /var/lib/postgresql
-         name: postgres-volume
-  volumes:
-  - name: postgres-volume
-  initContainers:
-  - name: init-db
-    image: busybox
-    command: ['sh', '-c', 'until nslookup samsara-postgres; do echo "waiting for db"; sleep 10; done;']
+  ports:
+    - port: 80
+      targetPort: 9000
+  selector:
+    app: samsara
+    tier: backend
+  type: LoadBalancer
+
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: samsara
+  labels:
+    app: samsara
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: samsara
+      tier: backend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: samsara
+        tier: backend
+    spec:
+      containers:
+      - image: registry.lerkasan.de:5000/samsara:latest
+        imagePullPolicy: "Always"
+        name: samsara
+        env:
+        - name: DB_HOST
+          value: samsara-postgres
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: auradb
+        - name: DB_USER
+          value: aura
+        - name: DB_PASS
+          valueFrom:
+            secretKeyRef:
+              name: dbuser-pass
+              key: password
+        ports:
+        - containerPort: 9000
+          name: samsara

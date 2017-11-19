@@ -51,23 +51,32 @@ podTemplate(
             stage("Build docker dependency and database images") { // TODO this stage to be deleted from final pipeline
                 container('jenkins-slave') {
                     echo "Building docker images for dependecy and database..."
-                    sh 'docker build -t jdk8:152 -f kubernetes/Dockerfile.jdk kubernetes'
-                    sh 'docker build -t db:latest -f kubernetes/Dockerfile.db kubernetes'
-                    withEnv(["REGISTRY_URL=registry.lerkasan.de:5000"]) {
-                        echo "Registry URL is: ${REGISTRY_URL}"
-//                    sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && docker login -u AWS -p "${docker_pass}" https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3'
-                        sh "docker tag jdk8:152 ${REGISTRY_URL}/jdk8:152"
-                        sh "docker push ${REGISTRY_URL}/jdk8:152"
-                        sh "docker tag db:latest ${REGISTRY_URL}/db:latest"
-                        sh "docker push ${REGISTRY_URL}/db:latest"
-//                    jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .")
-//                    echo "DOCKER IMAGE WAS BUILT SUCCESSFULLY"
-//                    dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db .")
-//                    docker.withRegistry("${params.aws_ecr_url}") {
-//                        jdkImage.push("152")
-//                        dbImage.push("latest")
-//                    }
+
+                    jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk kubernetes")
+                    dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db kubernetes")
+                    echo "DOCKER IMAGE WAS BUILT SUCCESSFULLY"
+                    docker.withRegistry("https://registry.lerkasan.de:5000") {
+                        jdkImage.push("152")
+                        dbImage.push("latest")
                     }
+
+//                    sh 'docker build -t jdk8:152 -f kubernetes/Dockerfile.jdk kubernetes'
+//                    sh 'docker build -t db:latest -f kubernetes/Dockerfile.db kubernetes'
+//                    withEnv(["REGISTRY_URL=registry.lerkasan.de:5000"]) {
+//                        echo "Registry URL is: ${REGISTRY_URL}"
+////                    sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && docker login -u AWS -p "${docker_pass}" https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3'
+//                        sh "docker tag jdk8:152 ${REGISTRY_URL}/jdk8:152"
+//                        sh "docker push ${REGISTRY_URL}/jdk8:152"
+//                        sh "docker tag db:latest ${REGISTRY_URL}/db:latest"
+//                        sh "docker push ${REGISTRY_URL}/db:latest"
+////                    jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .")
+////                    echo "DOCKER IMAGE WAS BUILT SUCCESSFULLY"
+////                    dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db .")
+////                    docker.withRegistry("${params.aws_ecr_url}") {
+////                        jdkImage.push("152")
+////                        dbImage.push("latest")
+////                    }
+//                    }
                 }
             }
             stage("Build and push samsara webapp image") {
