@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
   - name: samsara
-    image: registry.lerkasan.de/samsara:latest
+    image: registry.lerkasan.de:5000/samsara:latest
     imagePullPolicy: "Always"
     ports:
       - containerPort: 9000
@@ -26,7 +26,7 @@ spec:
             name: dbuser-pass
             key: password
   - name: samsara-postgres
-    image: registry.lerkasan.de/db:latest
+    image: registry.lerkasan.de:5000/db:latest
     ports:
       - containerPort: 5432
     env:

@@ -8,7 +8,7 @@ podTemplate(
         containers: [
                 containerTemplate(
                         name: 'jenkins-slave',
-                        image: '370535134506.dkr.ecr.us-west-2.amazonaws.com/jenkins-slave',
+                        image: 'registry.lerkasan.de:5000/jenkins-slave',
                         ttyEnabled: true,
                         privileged: true,
                         alwaysPullImage: true,
@@ -23,7 +23,7 @@ podTemplate(
 
     node('slave') {
         parameters {
-            string(name: 'registry_url', defaultValue: 'a0c447b4ecc5111e7b35502cab5b7ee6-669942456.us-west-2.elb.amazonaws.com:5000', description: 'Docker Container Registry URL')
+            string(name: 'registry_url', defaultValue: 'registry.lerkasan.de:5000', description: 'Docker Container Registry URL')
         }
         timestamps {
 //            stage('Checkout') {
@@ -91,7 +91,7 @@ podTemplate(
                 container('jenkins-slave') {
 //                    sh "kops update cluster ${CLUSTER_NAME} --yes"
                     def NAME = "samsara"
-                    def CLUSTER_NAME = "${NAME}-cluster.k8s.local"
+                    def CLUSTER_NAME = "${NAME}.lerkasan.de"
                     def KOPS_STATE_STORE = "s3://${NAME}-cluster-state"
                     sh "aws s3 cp ${KOPS_STATE_STORE}/kube-config ~/.kube/config"
                     sh "kops rolling-update cluster ${CLUSTER_NAME} --state ${KOPS_STATE_STORE} --yes"

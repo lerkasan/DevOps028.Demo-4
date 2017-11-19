@@ -7,10 +7,8 @@ metadata:
 spec:
   ports:
     - port: 5000
-#      targetPort: 5000
       name: registry-port
-    - port: 80
-#      targetPort: 80
+    - port: 443
       name: registry-ui
   selector:
     app: registry
@@ -76,27 +74,20 @@ spec:
             value: /var/lib/registry
           - name: REGISTRY_HTTP_ADDR
             value: 0.0.0.0:5000
-#          - name: REGISTRY_HTTP_HOST
-#            value: http://registry.lerkasan.de
-            # https://registry.lerkasan.de
           - name: REGISTRY_HTTP_TLS_CERTIFICATE
             value: /cert/fullchain.pem
           - name: REGISTRY_HTTP_TLS_KEY
             value: /cert/privkey.pem
-#          - name: REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE
-#            value: /etc/docker/registry/letsencrypt.json
-#          - name: REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL
-#            value: lerkasan@gmail.com
         volumeMounts:
         - name: registry-storage
           mountPath: /var/lib/registry
-        - name: tls-cert
+        - name: tls-certs-back
           mountPath: /cert
       - name: registry-ui
         image: konradkleine/docker-registry-frontend:v2
         imagePullPolicy: IfNotPresent
         ports:
-        - containerPort: 80
+        - containerPort: 443
           name: registry-ui
           protocol: TCP
         env:
@@ -106,13 +97,26 @@ spec:
             value: "5000"
           - name: ENV_DOCKER_REGISTRY_USE_SSL
             value: "1"
+          - name: ENV_USE_SSL
+            value: "yes"
+        volumeMounts:
+        - name: tls-cert-front
+          mountPath: /etc/apache2/server.crt
+        - name: tls-key-front
+          mountPath: /etc/apache2/server.key
       volumes:
       - name: registry-storage
         persistentVolumeClaim:
           claimName: registry-vol-claim
-      - name: tls-cert
+      - name: tls-certs-back
         hostPath:
           path: /home/admin
+      - name: tls-cert-front
+        hostPath:
+          path: /home/admin/server.crt
+      - name: tls-key-front
+        hostPath:
+          path: /home/admin/server.key
 #          type: Directory
 #      - name: tls-cert
 #        awsElasticBlockStore:

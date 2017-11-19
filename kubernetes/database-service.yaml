@@ -61,7 +61,7 @@ spec:
         tier: postgres
     spec:
       containers:
-      - image: registry.lerkasan.de/db:latest
+      - image: registry.lerkasan.de:5000/db:latest
         name: postgres
         env:
         - name: DB_PORT

@@ -34,7 +34,7 @@ spec:
         tier: backend
     spec:
       containers:
-      - image: registry.lerkasan.de/samsara:latest
+      - image: registry.lerkasan.de:5000/samsara:latest
         imagePullPolicy: "Always"
         name: samsara
         env:
