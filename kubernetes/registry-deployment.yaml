@@ -7,11 +7,11 @@ metadata:
 spec:
   ports:
     - port: 5000
-      targetPort: 5000
+#      targetPort: 5000
       name: registry-port
-#    - port: 80
+    - port: 80
 #      targetPort: 80
-#      name: registry-ui
+      name: registry-ui
   selector:
     app: registry
   type: LoadBalancer
@@ -76,12 +76,13 @@ spec:
             value: /var/lib/registry
           - name: REGISTRY_HTTP_ADDR
             value: 0.0.0.0:5000
-          - name: REGISTRY_HTTP_HOST
-            value: http://registry.lerkasan.de # https://registry.lerkasan.de
-#          - name: REGISTRY_HTTP_TLS_CERTIFICATE
-#            value: /cert/fullchain.pem
-#          - name: REGISTRY_HTTP_TLS_KEY
-#            value: /cert/privkey.pem
+#          - name: REGISTRY_HTTP_HOST
+#            value: http://registry.lerkasan.de
+            # https://registry.lerkasan.de
+          - name: REGISTRY_HTTP_TLS_CERTIFICATE
+            value: /cert/fullchain.pem
+          - name: REGISTRY_HTTP_TLS_KEY
+            value: /cert/privkey.pem
 #          - name: REGISTRY_HTTP_TLS_LETSENCRYPT_CACHEFILE
 #            value: /etc/docker/registry/letsencrypt.json
 #          - name: REGISTRY_HTTP_TLS_LETSENCRYPT_EMAIL
@@ -91,20 +92,20 @@ spec:
           mountPath: /var/lib/registry
         - name: tls-cert
           mountPath: /cert
-#      - name: registry-ui
-#        image: konradkleine/docker-registry-frontend:v2
-#        imagePullPolicy: IfNotPresent
-#        ports:
-#        - containerPort: 80
-#          name: registry-ui
-#          protocol: TCP
-#        env:
-#          - name: ENV_DOCKER_REGISTRY_HOST
-#            value: "localhost"
-#          - name: ENV_DOCKER_REGISTRY_PORT
-#            value: "5000"
-#          - name: ENV_DOCKER_REGISTRY_USE_SSL
-#            value: "0" # 1
+      - name: registry-ui
+        image: konradkleine/docker-registry-frontend:v2
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+          name: registry-ui
+          protocol: TCP
+        env:
+          - name: ENV_DOCKER_REGISTRY_HOST
+            value: "localhost"
+          - name: ENV_DOCKER_REGISTRY_PORT
+            value: "5000"
+          - name: ENV_DOCKER_REGISTRY_USE_SSL
+            value: "1"
       volumes:
       - name: registry-storage
         persistentVolumeClaim:
