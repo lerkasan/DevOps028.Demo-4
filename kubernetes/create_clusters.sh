@@ -4,6 +4,18 @@ export AWS_DEFAULT_REGION="us-west-2"
 # export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
 # export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 
+function get_loadbalancer_name {
+    kubectl describe svc $1 | grep Ingress | awk '{print $3}' | awk -F "-" '{print $1}'
+}
+
+function get_loadbalancer_dns {
+    kubectl describe svc $1 | grep Ingress | awk '{print $3}'
+}
+
+function get_loadbalancer_zoneid {
+    aws elb describe-load-balancers --load-balancer-name $1 --output text --query 'LoadBalancerDescriptions[*].{Name:CanonicalHostedZoneNameID}'
+}
+
 function create_cluster {
     NAME=$1
 #    export CLUSTER_NAME="${NAME}-cluster.k8s.local"
@@ -54,12 +66,34 @@ docker push "${REGISTRY_URL}/jenkins-slave:latest"
 docker build -t jenkins-master:latest -f jenkins/Dockerfile.jenkins_master jenkins
 docker tag jenkins-master:latest "${REGISTRY_URL}/jenkins-master:latest"
 docker push "${REGISTRY_URL}/jenkins-master:latest"
-#
+
 kubectl apply -f "jenkins-deployment.yaml"
 aws iam  attach-role-policy --role-name nodes.jenkins-cluster.k8s.local --policy-arn arn:aws:iam::370535134506:policy/jenkins-nodes-kops
-#
+
 create_cluster samsara
 kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword
 kubectl apply -f "database-deployment.yaml"
 kubectl apply -f "samsara-deployment.yaml"
 kubectl apply -f "samsara-pod.yaml"
+
+JENKINS_ELB_NAME=`get_loadbalancer_name jenkins`
+JENKINS_ELB_DNS=`get_loadbalancer_dns jenkins`
+JENKINS_ELB_ZONE_ID=`get_loadbalancer_zoneid ${JENKINS_ELB_NAME}`
+
+REGISTRY_ELB_NAME=`get_loadbalancer_name registry`
+REGISTRY_ELB_DNS=`get_loadbalancer_dns registry`
+REGISTRY_ELB_ZONE_ID=`get_loadbalancer_zoneid ${REGISTRY_ELB_NAME}`
+
+SAMSARA_ELB_NAME=`get_loadbalancer_name samsara`
+SAMSARA_ELB_DNS=`get_loadbalancer_dns samsara`
+SAMSARA_ELB_ZONE_ID=`get_loadbalancer_zoneid ${SAMSARA_ELB_NAME}`
+
+sed "s/%JENKINS_ELB_DNS%/${JENKINS_ELB_DNS}/g" dns_records_template.json |
+    sed "s/%JENKINS_ELB_ZONE_ID%/${JENKINS_ELB_ZONE_ID}/g" |
+    sed "s/%REGISTRY_ELB_DNS%/${REGISTRY_ELB_DNS}/g" |
+    sed "s/%REGISTRY_ELB_ZONE_ID%/${REGISTRY_ELB_ZONE_ID}/g" |
+    sed "s/%SAMSARA_ELB_DNS%/${SAMSARA_ELB_DNS}/g" |
+    sed "s/%SAMSARA_ELB_ZONE_ID%/${SAMSARA_ELB_ZONE_ID}/g" > dns_records.json
+
+aws route53 change-resource-record-sets --hosted-zone-id ZZ3Z055672IF0 --change-batch file://dns_records.json
+# aws route53 get-change --id <place-change-id-here>
