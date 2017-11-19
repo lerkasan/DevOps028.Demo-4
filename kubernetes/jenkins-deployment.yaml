@@ -6,8 +6,7 @@ metadata:
     app: jenkins
 spec:
   ports:
-    - port: 80
-      targetPort: 8080
+    - port: 8080
       name: jenkins-ui
     - port: 50000
       name: jenkins-jnpl
