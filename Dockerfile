@@ -15,9 +15,21 @@ ENV DB_PASS ${DB_PASS}
 ENV LOGIN_HOST localhost
 
 EXPOSE 9000
+
 WORKDIR /home/demo3
+
 COPY ${ARTIFACT_FILENAME} .
 COPY liquibase ./liquibase
+
+USER root
+
+RUN apt-get update -y && \
+    apt-get install -y apt-transport-https && \
+    sh -c "echo 'deb https://apt.datadoghq.com/ stable main' > /etc/apt/sources.list.d/datadog.list" && \
+    apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 C7A7DA52 && \
+    apt-get update && \
+    apt-get install datadog-agent
+
 
 RUN sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" liquibase/liquibase.properties.template | \
         sed "s/%DB_HOST%/${DB_HOST}/g" | \
@@ -27,5 +39,8 @@ RUN sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" liquibase/liquibase.properties.template
         sed "s/%DB_PASS%/${DB_PASS}/g" > liquibase/liquibase.properties
 
 USER demo3
+
 CMD bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defaultsFile=liquibase/liquibase.properties update && \
-    java -jar *.jar
+    java -Dcom.sun.management.jmxremote.port=7199 \
+         -Dcom.sun.management.jmxremote.ssl=false \
+         -jar *.jar

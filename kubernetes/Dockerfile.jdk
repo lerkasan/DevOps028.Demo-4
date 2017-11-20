@@ -11,7 +11,8 @@ WORKDIR /home/demo3
 
 RUN useradd -ms /bin/bash  demo3 && \
     apt-get update -y && \
-    apt-get install -y wget && \
+    apt-get install -y wget \
+                       apt-transport-https && \
     mkdir bin && \
     wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" ${JDK_URL} && \
     mkdir ${JDK_INSTALL_DIR} && \
@@ -22,4 +23,15 @@ RUN useradd -ms /bin/bash  demo3 && \
     tar -xzf liquibase-*-bin.tar.gz -C bin && \
     wget ${POSTGRES_JDBC_DRIVER_URL} -P bin/lib
 
-#USER demo3
+RUN sh -c "echo 'deb https://apt.datadoghq.com/ stable main' > /etc/apt/sources.list.d/datadog.list" && \
+    apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 C7A7DA52 && \
+    apt-get update -y && \
+    apt-get install -y datadog-agent && \
+    apt-get remove -y wget
+
+COPY datadog/jmxremote.password ${JAVA_HOME}/jre/lib/management/jmxremote.password
+COPY datadog/jmx.yaml /etc/dd-agent/conf.d/jmx.yaml
+
+RUN chmod 600 ${JAVA_HOME}/jre/lib/management/jmxremote.password
+
+USER demo3

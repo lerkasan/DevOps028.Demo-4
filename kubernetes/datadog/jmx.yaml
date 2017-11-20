@@ -1,0 +1,53 @@
+init_config:
+#  custom_jar_paths: # optional
+#    - /path/to/custom/jarfile.jar
+  #is_jmx: true
+
+instances:
+  - host: localhost
+    port: 7199
+    user: monitorRole
+    password: HtR4!Wb9L*2
+
+#    jmx_url: "service:jmx:rmi:///jndi/rmi://myhost.host:9999/custompath" # optional
+
+    name: jmx_instance  # optional
+    java_bin_path: /usr/lib/jvm/jdk1.8.0_152/bin
+#    java_options: "-Xmx200m -Xms50m"
+#    trust_store_path: /path/to/trustStore.jks
+#    trust_store_password: password
+
+    process_name_regex: .*process_name.*
+    tools_jar_path: /usr/lib/jvm/jdk1.8.0_152/lib/tools.jar
+    refresh_beans: 600 # optional (in seconds)
+    tags:
+      env: stage
+      newTag: samsara
+
+#    conf:
+#      - include:
+#          domain: my_domain
+#          tags:
+#              simple: $attr0
+#              raw_value: my_chosen_value
+#              multiple: $attr0-$attr1
+#          bean:
+#            - my_bean
+#            - my_second_bean
+#          attribute:
+#            attribute1:
+#              metric_type: counter
+#              alias: jmx.my_metric_name
+#            attribute2:
+#              metric_type: gauge
+#              alias: jmx.my2ndattribute
+#      - include:
+#          domain: 2nd_domain
+#        exclude:
+#          bean:
+#            - excluded_bean
+#      - include:
+#          domain_regex: regex_on_domain
+#        exclude:
+#          bean_regex:
+#            - regex_on_excluded_bean

@@ -128,6 +128,7 @@ kubectl create secret generic dbuser-pass --from-literal=password=mysecretpasswo
 kubectl apply -f "database-deployment.yaml" --namespace=samsara
 kubectl apply -f "samsara-deployment.yaml" --namespace=samsara
 kubectl apply -f "samsara-pod.yaml" --namespace=samsara
+kubectl apply -f "datadog/dd_agent_kubernetes.yaml" --namespace=samsara
 
 SAMSARA_ELB_NAME=`get_loadbalancer_name samsara`
 SAMSARA_ELB_DNS=`get_loadbalancer_dns samsara`

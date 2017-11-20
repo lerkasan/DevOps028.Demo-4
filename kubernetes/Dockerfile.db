@@ -20,8 +20,8 @@ RUN apt-get update -y && \
     apt-get install -y apt-transport-https && \
     sh -c "echo 'deb https://apt.datadoghq.com/ stable main' > /etc/apt/sources.list.d/datadog.list" && \
     apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 C7A7DA52 && \
-    apt-get update && \
-    apt-get install datadog-agent \
+    apt-get update -y && \
+    apt-get install -y datadog-agent \
                     dd-check-postgres
 
 COPY datadog/postgres.yaml /etc/dd-agent/conf.d/postgres.yaml
