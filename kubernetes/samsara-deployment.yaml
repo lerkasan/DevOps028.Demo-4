@@ -59,13 +59,12 @@ spec:
           httpGet:
             path: /health
             port: 9000
-          initialDelaySeconds: 150
-          timeoutSeconds: 10
-          periodSeconds: 60
-          successThreshold: 3
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15
         livenessProbe:
           tcpSocket:
             port: 9000
-          initialDelaySeconds: 90
-          timeoutSeconds: 10
-          periodSeconds: 60
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15

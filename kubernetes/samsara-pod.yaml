@@ -29,16 +29,15 @@ spec:
       httpGet:
         path: /health
         port: 9000
-      initialDelaySeconds: 150
-      timeoutSeconds: 10
-      periodSeconds: 60
-      successThreshold: 3
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      periodSeconds: 15
     livenessProbe:
       tcpSocket:
         port: 9000
-      initialDelaySeconds: 90
-      timeoutSeconds: 10
-      periodSeconds: 60
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      periodSeconds: 15
   - name: samsara-postgres
     image: registry.lerkasan.de:5000/db:latest
     ports:
@@ -59,9 +58,9 @@ spec:
     livenessProbe:
       tcpSocket:
         port: 5432
-        initialDelaySeconds: 60
-        timeoutSeconds: 10
-        periodSeconds: 60
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+      periodSeconds: 15
   volumes:
   - name: postgres-volume
   initContainers:

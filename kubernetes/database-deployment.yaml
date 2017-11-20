@@ -84,9 +84,9 @@ spec:
         livenessProbe:
           tcpSocket:
             port: 5432
-          initialDelaySeconds: 60
-          timeoutSeconds: 10
-          periodSeconds: 60
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          periodSeconds: 15
       volumes:
       - name: postgres-volume
         persistentVolumeClaim:
