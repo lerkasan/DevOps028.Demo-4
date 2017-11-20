@@ -4,7 +4,7 @@ podTemplate(
         label: 'slave',
         cloud: 'kubernetes',
         name: 'jenkins-slave',
-        namespace: 'default',
+        namespace: 'jenkins',
         containers: [
                 containerTemplate(
                         name: 'jenkins-slave',
@@ -67,13 +67,6 @@ podTemplate(
                         sh "docker push ${REGISTRY_URL}/jdk8:152"
                         sh "docker tag db:latest ${REGISTRY_URL}/db:latest"
                         sh "docker push ${REGISTRY_URL}/db:latest"
-//                    jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk .")
-//                    echo "DOCKER IMAGE WAS BUILT SUCCESSFULLY"
-//                    dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db .")
-//                    docker.withRegistry("${params.aws_ecr_url}") {
-//                        jdkImage.push("152")
-//                        dbImage.push("latest")
-//                    }
                     }
                 }
             }
@@ -91,10 +84,6 @@ podTemplate(
                         sh "docker tag samsara:latest ${REGISTRY_URL}/samsara:latest"
                         sh "docker push ${REGISTRY_URL}/samsara:latest"
                     }
-//                    samsaraImage = docker.build("samsara:latest", "--build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} .")
-//                    docker.withRegistry("${params.aws_ecr_url}") {
-//                        samsaraImage.push("latest")
-//                    }
                     sh "docker rmi -f `docker images -q` | true"
                 }
             }

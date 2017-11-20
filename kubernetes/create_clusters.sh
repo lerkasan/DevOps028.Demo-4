@@ -4,7 +4,7 @@ export AWS_DEFAULT_REGION="us-west-2"
 # export AWS_SECRET_ACCESS_KEY=`get_from_parameter_store "jenkins_secret_access_key"`
 # export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 
-JENKINS_REGISTRY_CLUSTER="jenkins-registry"
+JENKINS_REGISTRY_CLUSTER="jenkins"
 REGISTRY_URL="registry.lerkasan.de"
 REGISTRY_DNS_RECORDS_FILE="registry_dns_records.json"
 JENKINS_SAMSARA_DNS_RECORDS_FILE="jenkins_samsara_dns_records.json"
@@ -13,11 +13,11 @@ PATH_TO_TLS="/etc/letsencrypt/live/registry.lerkasan.de"
 
 
 function get_loadbalancer_name {
-    kubectl describe svc $1 | grep Ingress | awk '{print $3}' | awk -F "-" '{print $1}'
+    kubectl describe svc $1 --namespace=$1 | grep Ingress | awk '{print $3}' | awk -F "-" '{print $1}'
 }
 
 function get_loadbalancer_dns {
-    kubectl describe svc $1 | grep Ingress | awk '{print $3}'
+    kubectl describe svc $1 --namespace=$1 | grep Ingress | awk '{print $3}'
 }
 
 function get_loadbalancer_zoneid {
@@ -63,23 +63,28 @@ create_cluster ${JENKINS_REGISTRY_CLUSTER}
 aws iam  attach-role-policy --role-name "nodes.${JENKINS_REGISTRY_CLUSTER}.lerkasan.de" --policy-arn arn:aws:iam::370535134506:policy/jenkins-nodes-kops
 kubectl create namespace registry
 kubectl create namespace jenkins
+
+REGISTRY_EC2_INSTANCES=`aws ec2 describe-instances --filters "Name=tag:Name,Values=nodes.${JENKINS_REGISTRY_CLUSTER}.lerkasan.de" \
+--query 'Reservations[*].Instances[*].[PublicDnsName]' --output text | grep -v -e terminated -e shutting-down`
+
+for INSTANCE in ${REGISTRY_EC2_INSTANCES}; do
+    scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_rsa "${PATH_TO_TLS}/privkey.pem" "admin@${INSTANCE}:/home/admin/privkey.pem"
+    scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_rsa "${PATH_TO_TLS}/fullchain.pem" "admin@${INSTANCE}:/home/admin/fullchain.pem"
+    scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_rsa "${PATH_TO_TLS}/privkey.pem" "admin@${INSTANCE}:/home/admin/server.key"
+    scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_rsa "${PATH_TO_TLS}/fullchain.pem" "admin@${INSTANCE}:/home/admin/server.crt"
+done
+
 kubectl apply -f "registry-deployment.yaml" --namespace=registry
 
 REGISTRY_ELB_NAME=`get_loadbalancer_name registry`
 REGISTRY_ELB_DNS=`get_loadbalancer_dns registry`
 REGISTRY_ELB_ZONE_ID=`get_loadbalancer_zoneid ${REGISTRY_ELB_NAME}`
+# REGISTRY_ELB_EC2_INSTANCES=`aws elb describe-load-balancers --load-balancer-name ${REGISTRY_ELB_NAME} \
+#    --output text --query 'LoadBalancerDescriptions[*].Instances[*].InstanceId'`
 
-REGISTRY_ELB_EC2_INSTANCES=`aws elb describe-load-balancers --load-balancer-name ${REGISTRY_ELB_NAME} \
-    --output text --query 'LoadBalancerDescriptions[*].Instances[*].InstanceId'`
-
-for INSTANCE_ID in ${REGISTRY_ELB_EC2_INSTANCES}; do
-    EC2_HOST=`aws ec2 describe-instances --instance-ids ${INSTANCE_ID} \
-        --query 'Reservations[*].Instances[*].[PublicDnsName]' --output text`
-    sudo scp -q -i ~/.ssh/id_rsa "${PATH_TO_TLS}/privkey.pem" "admin@${EC2_HOST}:/home/admin/privkey.pem"
-    sudo scp -q -i ~/.ssh/id_rsa "${PATH_TO_TLS}/fullchain.pem" "admin@${EC2_HOST}:/home/admin/fullchain.pem"
-    sudo scp -q -i ~/.ssh/id_rsa "${PATH_TO_TLS}/privkey.pem" "admin@${EC2_HOST}:/home/admin/server.key"
-    sudo scp -q -i ~/.ssh/id_rsa "${PATH_TO_TLS}/fullchain.pem" "admin@${EC2_HOST}:/home/admin/server.crt"
-done
+echo "Registry ELB name is ${REGISTRY_ELB_NAME}"
+echo "Registry ELB DNS is ${REGISTRY_ELB_DNS}"
+echo "Registry ELB DNS zoneId is ${REGISTRY_ELB_ZONE_ID}"
 
 sed "s/%REGISTRY_ELB_DNS%/${REGISTRY_ELB_DNS}/g" "template_${REGISTRY_DNS_RECORDS_FILE}" |
     sed "s/%REGISTRY_ELB_ZONE_ID%/${REGISTRY_ELB_ZONE_ID}/g" > ${REGISTRY_DNS_RECORDS_FILE}
@@ -91,19 +96,32 @@ docker tag jenkins-slave:latest "${REGISTRY_URL}/jenkins-slave:latest"
 docker build -t jenkins-master:latest -f jenkins/Dockerfile.jenkins_master jenkins
 docker tag jenkins-master:latest "${REGISTRY_URL}/jenkins-master:latest"
 
+sleep 600
 MAX_RETRIES=50
 RETRIES=0
 while [[ -z `dig A ${REGISTRY_URL} | grep "NOERROR"` ]] && [ ${RETRIES} -lt ${MAX_RETRIES} ]; do
     let "RETRIES++"
     date
-    echo "Try: ${RETRIES}  ${REGISTRY_URL} domain is unavailable. Sleeping for 1 minute."
-    sleep 60
+    echo "Digging ${REGISTRY_URL} from 8.8.8.8"
+    dig A ${REGISTRY_URL} @8.8.8.8
+    echo "Digging ${REGISTRY_URL} from localhost"
+    dig A ${REGISTRY_URL}
+    echo "Try: ${RETRIES}  ${REGISTRY_URL} domain is unavailable. Sleeping for 2 minutes."
+    sleep 120
 done
 
 docker push "${REGISTRY_URL}/jenkins-slave:latest"
 docker push "${REGISTRY_URL}/jenkins-master:latest"
 
 kubectl apply -f "jenkins-deployment.yaml" --namespace=jenkins
+
+JENKINS_ELB_NAME=`get_loadbalancer_name jenkins`
+JENKINS_ELB_DNS=`get_loadbalancer_dns jenkins`
+JENKINS_ELB_ZONE_ID=`get_loadbalancer_zoneid ${JENKINS_ELB_NAME}`
+
+echo "Jenkins ELB name is ${JENKINS_ELB_NAME}"
+echo "Jenkins ELB DNS is ${JENKINS_ELB_DNS}"
+echo "Jenkins ELB DNS zoneId is ${JENKINS_ELB_ZONE_ID}"
 
 
 create_cluster samsara
@@ -113,13 +131,13 @@ kubectl apply -f "database-deployment.yaml" --namespace=samsara
 kubectl apply -f "samsara-deployment.yaml" --namespace=samsara
 kubectl apply -f "samsara-pod.yaml" --namespace=samsara
 
-JENKINS_ELB_NAME=`get_loadbalancer_name jenkins`
-JENKINS_ELB_DNS=`get_loadbalancer_dns jenkins`
-JENKINS_ELB_ZONE_ID=`get_loadbalancer_zoneid ${JENKINS_ELB_NAME}`
-
 SAMSARA_ELB_NAME=`get_loadbalancer_name samsara`
 SAMSARA_ELB_DNS=`get_loadbalancer_dns samsara`
 SAMSARA_ELB_ZONE_ID=`get_loadbalancer_zoneid ${SAMSARA_ELB_NAME}`
+
+echo "Samsara ELB name is ${SAMSARA_ELB_NAME}"
+echo "Samsara ELB DNS is ${SAMSARA_ELB_DNS}"
+echo "Samsara ELB DNS zoneId is ${SAMSARA_ELB_ZONE_ID}"
 
 sed "s/%JENKINS_ELB_DNS%/${JENKINS_ELB_DNS}/g" "template_${JENKINS_SAMSARA_DNS_RECORDS_FILE}" |
     sed "s/%JENKINS_ELB_ZONE_ID%/${JENKINS_ELB_ZONE_ID}/g" |
