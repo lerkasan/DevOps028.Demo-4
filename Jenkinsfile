@@ -41,7 +41,7 @@ podTemplate(
     node('slave') {
         timestamps {
             stage("Test and build jar") {
-                git url: 'https://github.com/lerkasan/DevOps028.git'
+                git url: 'https://github.com/lerkasan/DevOps028.Demo4.git'
                 container('jenkins-slave-mvn') {
                     echo "Testing project ..."
                     sh "mvn clean test"
