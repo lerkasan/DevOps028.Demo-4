@@ -20,21 +20,8 @@ podTemplate(
                 hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
         ]
 ) {
-
     node('slave') {
         timestamps {
-//            stage('Checkout') {
-//                echo "Checkout master branch to workspace folder and checkout jenkins branch to subfolder 'jenkins'"
-//                checkout(
-//                        [$class           : 'GitSCM',
-//                         branches         : [[name: '*/master']], doGenerateSubmoduleConfigurations: false,
-//                         browser          : [$class: 'GithubWeb', repoUrl: 'https://github.com/lerkasan/DevOps028.git'],
-//                         extensions       : [[$class: 'CleanBeforeCheckout']],
-//                         gitTool          : 'git',
-//                         submoduleCfg     : [],
-//                         userRemoteConfigs: [[url: 'https://github.com/lerkasan/DevOps028.git', credentialsId: 'github_lerkasan']]
-//                        ])
-//            }
             stage("Test and build jar") {
                 git url: 'https://github.com/lerkasan/DevOps028.git'
                 container('jenkins-slave') {
@@ -45,62 +32,34 @@ podTemplate(
                     archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
                 }
             }
-//            stage("Build docker dependency and database images") { // TODO this stage to be deleted from final pipeline
-//                container('jenkins-slave') {
-//                    echo "Building docker images for dependecy and database..."
-//// Docker Pipeline plugin doesn't work and return error  "Expecting 64-char full image ID, but got"  https://issues.jenkins-ci.org/browse/JENKINS-32792
-//// Docker version 1.12.6
-////                    jdkImage = docker.build("jdk8:152", "-f kubernetes/Dockerfile.jdk kubernetes")
-////                    dbImage = docker.build("db:latest", "-f kubernetes/Dockerfile.db kubernetes")
-////                    echo "DOCKER IMAGE WAS BUILT SUCCESSFULLY"
-////                    docker.withRegistry("https://registry.lerkasan.de:5000") {
-////                        jdkImage.push("152")
-////                        dbImage.push("latest")
-////                    }
-//
-//                    sh 'docker build -t jdk8:152 -f kubernetes/Dockerfile.jdk kubernetes'
-//                    sh 'docker build -t db:latest -f kubernetes/Dockerfile.db kubernetes'
-//                    withEnv(["REGISTRY_URL=registry.lerkasan.de:5000"]) {
-//                        echo "Registry URL is: ${REGISTRY_URL}"
-////                    sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && docker login -u AWS -p "${docker_pass}" https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3'
-//                        sh "docker tag jdk8:152 ${REGISTRY_URL}/jdk8:152"
-//                        sh "docker push ${REGISTRY_URL}/jdk8:152"
-//                        sh "docker tag db:latest ${REGISTRY_URL}/db:latest"
-//                        sh "docker push ${REGISTRY_URL}/db:latest"
-//                    }
-//                }
-//            }
             stage("Build and push samsara webapp image") {
                 container('jenkins-slave') {
                     echo "Building and pushing samsara webapp image ..."
+                    def REGISTRY_URL="registry.lerkasan.de:5000"
+                    def REGISTRY_LOGIN="lerkasan"
+                    def REGISTRY_PASSWORD="J*t47X8#RmF2"
                     def ARTIFACT_FILENAME = sh(
                             script: "ls ${WORKSPACE}/target | grep jar | grep -v original",
                             returnStdout: true
                     ).trim()
                     sh "cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ."
-//                    sh 'docker_pass=`aws ecr get-login --no-include-email --region us-west-2 | awk \'{print \$6}\'` && docker login -u AWS -p "${docker_pass}" https://370535134506.dkr.ecr.us-west-2.amazonaws.com/demo3'
                     sh "docker build -t samsara:latest --build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} ."
-                    withEnv(["REGISTRY_URL=registry.lerkasan.de:5000"]) {
-                        sh "docker tag samsara:latest ${REGISTRY_URL}/samsara:latest"
-                        sh "docker push ${REGISTRY_URL}/samsara:latest"
-                    }
+                    sh "docker login ${REGISTRY_URL}:5000 -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}"
+                    sh "docker tag samsara:latest ${REGISTRY_URL}/samsara:latest"
+                    sh "docker push ${REGISTRY_URL}/samsara:latest"
                     sh "docker rmi -f `docker images -q` | true"
                 }
             }
             stage("Deploy webapp") {
                 container('jenkins-slave') {
-//                    sh "kops update cluster ${CLUSTER_NAME} --yes"
                     def NAME = "samsara"
                     def CLUSTER_NAME = "${NAME}.lerkasan.de"
                     def KOPS_STATE_STORE = "s3://${NAME}-cluster-state"
                     sh "aws s3 cp ${KOPS_STATE_STORE}/kube-config ~/.kube/config"
                     sh "kops rolling-update cluster ${CLUSTER_NAME} --state ${KOPS_STATE_STORE} --yes"
-                    sleep time: 20, unit: 'SECONDS'
+                    sleep time: 90, unit: 'SECONDS'
 
                     echo "Checking connectivity to webapp load balancer ..."
-//                    def ELB_HOST = sh(script: "kubectl describe svc samsara | grep Ingress | awk '{print \$3}'",
-//                            returnStdout: true
-//                    ).trim()
                     def WEBAPP_HOST = "samsara.lerkasan.de"
                     echo "URL is ${WEBAPP_HOST}/login"
                     def response = httpRequest url: "http://${WEBAPP_HOST}/login", httpMode: 'GET', timeout: 60, consoleLogResponseBody: true
