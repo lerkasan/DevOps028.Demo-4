@@ -2,16 +2,34 @@
 
 podTemplate(
         label: 'slave',
-        cloud: 'kubernetes',
+        cloud: 'jenkins',
         name: 'jenkins-slave',
         namespace: 'jenkins',
         containers: [
                 containerTemplate(
-                        name: 'jenkins-slave',
-                        image: 'registry.lerkasan.de:5000/jenkins-slave',
+                        name: 'jenkins-slave-mvn',
+                        image: 'registry.lerkasan.de:5000/jenkins-slave-mvn',
+                        ttyEnabled: true,
+                        privileged: false,
+                        alwaysPullImage: false,
+                        workingDir: '/home/jenkins',
+                        command: 'cat'
+                ),
+                containerTemplate(
+                        name: 'jenkins-slave-docker',
+                        image: 'registry.lerkasan.de:5000/jenkins-slave-docker',
                         ttyEnabled: true,
                         privileged: true,
-                        alwaysPullImage: true,
+                        alwaysPullImage: false,
+                        workingDir: '/home/jenkins',
+                        command: 'cat'
+                ),
+                containerTemplate(
+                        name: 'jenkins-slave-kops',
+                        image: 'registry.lerkasan.de:5000/jenkins-slave-kops',
+                        ttyEnabled: true,
+                        privileged: false,
+                        alwaysPullImage: false,
                         workingDir: '/home/jenkins',
                         command: 'cat'
                 )
@@ -24,7 +42,7 @@ podTemplate(
         timestamps {
             stage("Test and build jar") {
                 git url: 'https://github.com/lerkasan/DevOps028.git'
-                container('jenkins-slave') {
+                container('jenkins-slave-mvn') {
                     echo "Testing project ..."
                     sh "mvn clean test"
                     echo "Building jar ..."
@@ -33,7 +51,7 @@ podTemplate(
                 }
             }
             stage("Build and push samsara webapp image") {
-                container('jenkins-slave') {
+                container('jenkins-slave-docker') {
                     echo "Building and pushing samsara webapp image ..."
                     def REGISTRY_URL="registry.lerkasan.de:5000"
                     def REGISTRY_LOGIN="lerkasan"
@@ -51,7 +69,7 @@ podTemplate(
                 }
             }
             stage("Deploy webapp") {
-                container('jenkins-slave') {
+                container('jenkins-slave-kops') {
                     def NAME = "samsara"
                     def CLUSTER_NAME = "${NAME}.lerkasan.de"
                     def KOPS_STATE_STORE = "s3://${NAME}-cluster-state"

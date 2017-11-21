@@ -1,0 +1,30 @@
+FROM jenkins/jnlp-slave:alpine
+
+ARG JENKINS_URL
+ARG JENKINS_SECRET
+
+ARG MAVEN_VERSION=3.5.2
+ARG MAVEN_SHA=707b1f6e390a65bde4af4cdaf2a24d45fc19a6ded00fff02e91626e3e42ceaff
+ARG MAVEN_BASE_URL=https://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries
+
+ARG JENKINS_HOME="/home/jenkins"
+
+ENV MAVEN_HOME=/usr/share/maven \
+    MAVEN_CONFIG="${JENKINS_HOME}/.m2" \
+    JENKINS_HOME=${JENKINS_HOME}
+
+USER root
+RUN apk add --update --no-cache curl \
+                                ca-certificates
+
+# Install Maven
+RUN mkdir -p /usr/share/maven /usr/share/maven/ref && \
+    curl -fsSL -o /tmp/apache-maven.tar.gz ${MAVEN_BASE_URL}/apache-maven-${MAVEN_VERSION}-bin.tar.gz && \
+    echo "${MAVEN_SHA}  /tmp/apache-maven.tar.gz" | sha256sum -c - && \
+    tar -xzf /tmp/apache-maven.tar.gz -C /usr/share/maven --strip-components=1 && \
+    rm -f /tmp/apache-maven.tar.gz && \
+    ln -s /usr/share/maven/bin/mvn /usr/bin/mvn && \
+    apk del curl
+
+USER jenkins
+RUN mkdir ${JENKINS_HOME}/.m2

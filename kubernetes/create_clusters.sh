@@ -6,10 +6,10 @@ export AWS_DEFAULT_REGION="us-west-2"
 
 JENKINS_REGISTRY_CLUSTER="jenkins"
 REGISTRY_URL="registry.lerkasan.de"
-REGISTRY_DNS_RECORDS_FILE="registry_dns_records.json"
+REGISTRY_DNS_RECORDS_FILE="conf/registry_dns_records.json"
 REGISTRY_LOGIN="lerkasan"
 REGISTRY_PASSWORD="J*t47X8#RmF2"
-JENKINS_SAMSARA_DNS_RECORDS_FILE="jenkins_samsara_dns_records.json"
+JENKINS_SAMSARA_DNS_RECORDS_FILE="conf/jenkins_samsara_dns_records.json"
 HOSTED_ZONE_ID="ZZ3Z055672IF0"
 PATH_TO_TLS="/etc/letsencrypt/live/registry.lerkasan.de"
 PATH_TO_PASS="/home/lerkasan/auth/htpasswd"
@@ -92,11 +92,20 @@ sed "s/%REGISTRY_ELB_DNS%/${REGISTRY_ELB_DNS}/g" "template_${REGISTRY_DNS_RECORD
     sed "s/%REGISTRY_ELB_ZONE_ID%/${REGISTRY_ELB_ZONE_ID}/g" > ${REGISTRY_DNS_RECORDS_FILE}
 aws route53 change-resource-record-sets --hosted-zone-id ${HOSTED_ZONE_ID} --change-batch "file://${REGISTRY_DNS_RECORDS_FILE}"
 
-docker build -t jenkins-slave:latest -f jenkins/Dockerfile.jenkins_slave jenkins
-docker tag jenkins-slave:latest "${REGISTRY_URL}:5000/jenkins-slave:latest"
-
 docker build -t jenkins-master:latest -f jenkins/Dockerfile.jenkins_master jenkins
 docker tag jenkins-master:latest "${REGISTRY_URL}:5000/jenkins-master:latest"
+
+# docker build -t jenkins-slave:latest -f jenkins/Dockerfile.jenkins_slave jenkins
+# docker tag jenkins-slave:latest "${REGISTRY_URL}:5000/jenkins-slave:latest"
+
+docker build -t jenkins-slave-mvn:latest -f jenkins/Dockerfile.jenkins_slave_mvn jenkins
+docker tag jenkins-slave-mvn:latest "${REGISTRY_URL}:5000/jenkins-slave-mvn:latest"
+
+docker build -t jenkins-slave-docker:latest -f jenkins/Dockerfile.jenkins_slave_docker jenkins
+docker tag jenkins-slave-docker:latest "${REGISTRY_URL}:5000/jenkins-slave-docker:latest"
+
+docker build -t jenkins-slave-kops:latest -f jenkins/Dockerfile.jenkins_slave_kops jenkins
+docker tag jenkins-slave-kops:latest "${REGISTRY_URL}:5000/jenkins-slave-kops:latest"
 
 sleep 600
 MAX_RETRIES=50
@@ -113,8 +122,11 @@ while [[ -z `dig A ${REGISTRY_URL} | grep "NOERROR"` ]] && [ ${RETRIES} -lt ${MA
 done
 
 docker login "${REGISTRY_URL}:5000" -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
-docker push "${REGISTRY_URL}:5000/jenkins-slave:latest"
 docker push "${REGISTRY_URL}:5000/jenkins-master:latest"
+# docker push "${REGISTRY_URL}:5000/jenkins-slave:latest"
+docker push "${REGISTRY_URL}:5000/jenkins-slave-mvn:latest"
+docker push "${REGISTRY_URL}:5000/jenkins-slave-docker:latest"
+docker push "${REGISTRY_URL}:5000/jenkins-slave-kops:latest"
 
 kubectl apply -f "jenkins-deployment.yaml" --namespace=jenkins
 
@@ -127,10 +139,10 @@ echo "Jenkins ELB DNS is ${JENKINS_ELB_DNS}"
 echo "Jenkins ELB DNS zoneId is ${JENKINS_ELB_ZONE_ID}"
 
 
-docker build -t jdk8:152 -f Dockerfile.jdk .
+docker build -t jdk8:152 -f docker/Dockerfile.jdk docker
 docker tag jdk8:152 "${REGISTRY_URL}:5000/jdk8:152"
 
-docker build -t samsara_db:latest -f Dockerfile.db .
+docker build -t samsara_db:latest -f docker/Dockerfile.db docker
 docker tag samsara_db:latest "${REGISTRY_URL}:5000/samsara_db:latest"
 
 docker login "${REGISTRY_URL}:5000" -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}

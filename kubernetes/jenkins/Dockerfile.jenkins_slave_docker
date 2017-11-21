@@ -1,0 +1,29 @@
+FROM jenkins/jnlp-slave:alpine
+
+ARG JENKINS_URL
+ARG JENKINS_SECRET
+ARG JENKINS_HOME="/home/jenkins"
+
+ARG DOCKER_VERSION=17.10.0-ce
+
+ARG AGENT_VERSION=3.10
+ARG AGENT_WORKDIR=/home/jenkins/agent
+
+ENV JENKINS_HOME=${JENKINS_HOME} \
+    AGENT_WORKDIR=${AGENT_WORKDIR} \
+    DOCKER_VERSION=${DOCKER_VERSION}
+
+USER root
+RUN apk add --update --no-cache curl \
+                                ca-certificates & \
+    addgroup -g 1000 -S docker && \
+    addgroup jenkins docker && \
+    addgroup jenkins ping
+
+# Install Docker
+RUN curl -fL -o docker.tgz https://download.docker.com/linux/static/edge/x86_64/docker-${DOCKER_VERSION}.tgz && \
+	tar -xzf docker.tgz -C /usr/local/bin/ --strip-components=1  && \
+	rm docker.tgz && \
+	apk del curl
+
+USER jenkins

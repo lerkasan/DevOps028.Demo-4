@@ -1,0 +1,27 @@
+FROM jenkins/jnlp-slave:alpine
+
+ARG JENKINS_URL
+ARG JENKINS_SECRET
+ARG JENKINS_HOME="/home/jenkins"
+
+ENV JENKINS_HOME=${JENKINS_HOME}
+
+USER root
+RUN apk add --update --no-cache wget \
+                                curl \
+                                ca-certificates \
+                                python \
+                                py-pip && \
+    pip install --upgrade pip awscli
+
+# Install kubectl and kops
+RUN wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
+    mv kubectl /usr/local/bin/kubectl && \
+    wget -O kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64 && \
+    mv kops /usr/local/bin/kops && \
+    chmod +x /usr/local/bin/kops /usr/local/bin/kubectl && \
+    apk del curl wget py-pip
+
+USER jenkins
+RUN mkdir ${JENKINS_HOME}/.kube && \
+    mkdir ${JENKINS_HOME}/.aws
