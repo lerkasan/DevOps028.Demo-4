@@ -61,7 +61,7 @@ spec:
         tier: postgres
     spec:
       containers:
-      - image: registry.lerkasan.de:5000/db:latest
+      - image: registry.lerkasan.de:5000/samsara_db:latest
         name: postgres
         env:
         - name: DB_PORT
@@ -87,6 +87,8 @@ spec:
           initialDelaySeconds: 30
           timeoutSeconds: 5
           periodSeconds: 15
+      imagePullSecrets:
+        - name: registry-pass
       volumes:
       - name: postgres-volume
         persistentVolumeClaim:

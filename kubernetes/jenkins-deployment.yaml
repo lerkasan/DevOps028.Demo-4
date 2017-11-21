@@ -108,6 +108,8 @@ spec:
           mountPath: /var/jenkins_home
         - name: jenkins-logs
           mountPath: /var/log/jenkins
+      imagePullSecrets:
+        - name: registry-pass
       volumes:
       - name: jenkins-home
         persistentVolumeClaim:

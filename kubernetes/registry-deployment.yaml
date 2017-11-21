@@ -78,11 +78,19 @@ spec:
             value: /cert/fullchain.pem
           - name: REGISTRY_HTTP_TLS_KEY
             value: /cert/privkey.pem
+          - name: REGISTRY_AUTH
+            value: htpasswd
+          - name: REGISTRY_AUTH_HTPASSWD_REALM
+            value: "Registry Realm"
+          - name: REGISTRY_AUTH_HTPASSWD_PATH
+            value: /auth/htpasswd
         volumeMounts:
         - name: registry-storage
           mountPath: /var/lib/registry
         - name: tls-certs-back
           mountPath: /cert
+        - name: auth
+          mountPath: /auth/htpasswd
       - name: registry-ui
         image: konradkleine/docker-registry-frontend:v2
         imagePullPolicy: IfNotPresent
@@ -117,6 +125,9 @@ spec:
       - name: tls-key-front
         hostPath:
           path: /home/admin/server.key
+      - name: auth
+        hostPath:
+          path: /home/admin/htpasswd
 #          type: Directory
 #      - name: tls-cert
 #        awsElasticBlockStore:

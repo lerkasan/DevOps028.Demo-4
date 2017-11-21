@@ -2,6 +2,7 @@ FROM jenkins/jenkins:lts
 
 # ENV JAVA_OPTS="-Xmx896m -Djenkins.install.runSetupWizard=false"
 ENV JAVA_OPTS="-Xmx896m" \
+    JAVA_ARGS="-Dorg.apache.commons.jelly.tags.fmt.timeZone=Europe/Kiev" \
     CONFIG_DIR="/home/config" \
     LOG_DIR="/var/log/jenkins"
 

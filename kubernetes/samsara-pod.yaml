@@ -39,7 +39,7 @@ spec:
       timeoutSeconds: 5
       periodSeconds: 15
   - name: samsara-postgres
-    image: registry.lerkasan.de:5000/db:latest
+    image: registry.lerkasan.de:5000/samsara_db:latest
     ports:
       - containerPort: 5432
     env:
@@ -61,6 +61,8 @@ spec:
       initialDelaySeconds: 30
       timeoutSeconds: 5
       periodSeconds: 15
+  imagePullSecrets:
+    - name: registry-pass
   volumes:
   - name: postgres-volume
   initContainers:
