@@ -39,7 +39,7 @@ spec:
       timeoutSeconds: 5
       periodSeconds: 15
   - name: samsara-postgres
-    image: registry.lerkasan.de:5000/samsara_db:latest
+    image: registry.lerkasan.de:5000/samsara-db:latest
     ports:
       - containerPort: 5432
     env:

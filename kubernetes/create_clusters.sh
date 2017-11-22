@@ -78,7 +78,6 @@ for INSTANCE in ${REGISTRY_EC2_INSTANCES}; do
 done
 
 kubectl apply -f "registry-deployment.yaml" --namespace=registry
-kubectl create secret docker-registry registry-pass --docker-server=${REGISTRY_URL}:5000 --docker-username=lerkasan --docker-password="J*t47X8#RmF2" --docker-email=lerkasan@gmail.com
 
 REGISTRY_ELB_NAME=`get_loadbalancer_name registry`
 REGISTRY_ELB_DNS=`get_loadbalancer_dns registry`
@@ -128,6 +127,8 @@ docker push "${REGISTRY_URL}:5000/jenkins-slave-mvn:latest"
 docker push "${REGISTRY_URL}:5000/jenkins-slave-docker:latest"
 docker push "${REGISTRY_URL}:5000/jenkins-slave-kops:latest"
 
+kubectl create secret docker-registry registry-pass --docker-server=${REGISTRY_URL}:5000 --docker-username=lerkasan --docker-password="J*t47X8#RmF2" --docker-email=lerkasan@gmail.com --namespace=jenkins
+kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "registry-pass"}]}' --namespace=jenkins
 kubectl apply -f "jenkins-deployment.yaml" --namespace=jenkins
 
 JENKINS_ELB_NAME=`get_loadbalancer_name jenkins`
@@ -142,20 +143,22 @@ echo "Jenkins ELB DNS zoneId is ${JENKINS_ELB_ZONE_ID}"
 docker build -t jdk8:152 -f docker/Dockerfile.jdk docker
 docker tag jdk8:152 "${REGISTRY_URL}:5000/jdk8:152"
 
-docker build -t samsara_db:latest -f docker/Dockerfile.db docker
-docker tag samsara_db:latest "${REGISTRY_URL}:5000/samsara_db:latest"
+docker build -t samsara-db:latest -f docker/Dockerfile.db docker
+docker tag samsara-db:latest "${REGISTRY_URL}:5000/samsara-db:latest"
 
 docker login "${REGISTRY_URL}:5000" -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
 docker push "${REGISTRY_URL}:5000/jdk8:152"
-docker push "${REGISTRY_URL}:5000/samsara_db:latest"
+docker push "${REGISTRY_URL}:5000/samsara-db:latest"
 
 create_cluster samsara
 kubectl create namespace samsara
 kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword --namespace=samsara
+kubectl create secret docker-registry registry-pass --docker-server=${REGISTRY_URL}:5000 --docker-username=lerkasan --docker-password="J*t47X8#RmF2" --docker-email=lerkasan@gmail.com --namespace=samsara
+kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "registry-pass"}]}' --namespace=samsara
 kubectl apply -f "database-deployment.yaml" --namespace=samsara
 kubectl apply -f "samsara-deployment.yaml" --namespace=samsara
 kubectl apply -f "samsara-pod.yaml" --namespace=samsara
-kubectl apply -f "datadog/dd_agent_kubernetes.yaml" --namespace=samsara
+kubectl apply -f "docker/datadog/dd_agent_kubernetes.yaml" --namespace=samsara
 
 SAMSARA_ELB_NAME=`get_loadbalancer_name samsara`
 SAMSARA_ELB_DNS=`get_loadbalancer_dns samsara`

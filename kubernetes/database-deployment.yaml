@@ -61,7 +61,7 @@ spec:
         tier: postgres
     spec:
       containers:
-      - image: registry.lerkasan.de:5000/samsara_db:latest
+      - image: registry.lerkasan.de:5000/samsara-db:latest
         name: postgres
         env:
         - name: DB_PORT
