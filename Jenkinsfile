@@ -75,7 +75,7 @@ podTemplate(
                     def KOPS_STATE_STORE = "s3://${NAME}-cluster-state"
                     sh "aws s3 cp ${KOPS_STATE_STORE}/kube-config ~/.kube/config"
                     sh "kops rolling-update cluster ${CLUSTER_NAME} --state ${KOPS_STATE_STORE} --yes"
-                    sleep time: 90, unit: 'SECONDS'
+                    sleep time: 120, unit: 'SECONDS'
 
                     echo "Checking connectivity to webapp load balancer ..."
                     def WEBAPP_HOST = "samsara.lerkasan.de"

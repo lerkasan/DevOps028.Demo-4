@@ -32,6 +32,9 @@ RUN sh -c "echo 'deb https://apt.datadoghq.com/ stable main' > /etc/apt/sources.
 COPY datadog/jmxremote.password ${JAVA_HOME}/jre/lib/management/jmxremote.password
 COPY datadog/jmx.yaml /etc/dd-agent/conf.d/jmx.yaml
 
-RUN chmod 640 ${JAVA_HOME}/jre/lib/management/jmxremote.password
+RUN chmod 600 ${JAVA_HOME}/jre/lib/management/jmxremote.password && \
+    user=`ls -alh ${JAVA_HOME}/jre/lib | grep management | grep dr | awk '{print $3}'` && \
+    group=`ls -alh ${JAVA_HOME}/jre/lib | grep management | grep dr | awk '{print $4}'` && \
+    chown ${user}:${group} "${JAVA_HOME}/jre/lib/management/jmxremote.password"
 
 USER demo3
