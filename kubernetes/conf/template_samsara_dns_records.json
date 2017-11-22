@@ -1,0 +1,17 @@
+{
+  "Comment": "Adding alias dns records for Samsara loadbalancer",
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "samsara.lerkasan.de.",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "%SAMSARA_ELB_ZONE_ID%",
+          "DNSName": "%SAMSARA_ELB_DNS%",
+          "EvaluateTargetHealth": false
+        }
+      }
+    }
+  ]
+}

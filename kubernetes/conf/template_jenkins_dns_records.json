@@ -1,0 +1,17 @@
+{
+  "Comment": "Adding alias dns records for Jenkins loadbalancer",
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "jenkins.lerkasan.de.",
+        "Type": "A",
+        "AliasTarget": {
+          "HostedZoneId": "%JENKINS_ELB_ZONE_ID%",
+          "DNSName": "%JENKINS_ELB_DNS%",
+          "EvaluateTargetHealth": false
+        }
+      }
+    }
+  ]
+}

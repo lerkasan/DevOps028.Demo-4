@@ -61,8 +61,8 @@ podTemplate(
                             returnStdout: true
                     ).trim()
                     sh "cp ${WORKSPACE}/target/${ARTIFACT_FILENAME} ."
-                    sh "docker build -t samsara:latest --build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} ."
                     sh "docker login ${REGISTRY_URL}:5000 -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}"
+                    sh "docker build -t samsara:latest --build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} ."
                     sh "docker tag samsara:latest ${REGISTRY_URL}/samsara:latest"
                     sh "docker push ${REGISTRY_URL}/samsara:latest"
                     sh "docker rmi -f `docker images -q` | true"

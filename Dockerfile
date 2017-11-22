@@ -1,4 +1,4 @@
-FROM jdk8:152
+FROM registry.lerkasan.de:5000/jdk8:152
 
 ARG DB_HOST=samsara-postgres
 ARG DB_PORT=5432

@@ -6,10 +6,11 @@ export AWS_DEFAULT_REGION="us-west-2"
 
 JENKINS_REGISTRY_CLUSTER="jenkins"
 REGISTRY_URL="registry.lerkasan.de"
-REGISTRY_DNS_RECORDS_FILE="registry_dns_records.json"
 REGISTRY_LOGIN="lerkasan"
 REGISTRY_PASSWORD="J*t47X8#RmF2"
-JENKINS_SAMSARA_DNS_RECORDS_FILE="jenkins_samsara_dns_records.json"
+REGISTRY_DNS_RECORDS_FILE="registry_dns_records.json"
+JENKINS_DNS_RECORDS_FILE="jenkins_dns_records.json"
+SAMSARA_DNS_RECORDS_FILE="samsara_dns_records.json"
 HOSTED_ZONE_ID="ZZ3Z055672IF0"
 PATH_TO_TLS="/etc/letsencrypt/live/registry.lerkasan.de"
 PATH_TO_PASS="/home/lerkasan/auth"
@@ -139,6 +140,9 @@ echo "Jenkins ELB name is ${JENKINS_ELB_NAME}"
 echo "Jenkins ELB DNS is ${JENKINS_ELB_DNS}"
 echo "Jenkins ELB DNS zoneId is ${JENKINS_ELB_ZONE_ID}"
 
+sed "s/%JENKINS_ELB_DNS%/${JENKINS_ELB_DNS}/g" "conf/template_${JENKINS_DNS_RECORDS_FILE}" |
+    sed "s/%JENKINS_ELB_ZONE_ID%/${JENKINS_ELB_ZONE_ID}/g" > ${JENKINS_DNS_RECORDS_FILE}
+aws route53 change-resource-record-sets --hosted-zone-id ${HOSTED_ZONE_ID} --change-batch "file://${JENKINS_DNS_RECORDS_FILE}"
 
 docker build -t jdk8:152 -f docker/Dockerfile.jdk docker
 docker tag jdk8:152 "${REGISTRY_URL}:5000/jdk8:152"
@@ -168,10 +172,9 @@ echo "Samsara ELB name is ${SAMSARA_ELB_NAME}"
 echo "Samsara ELB DNS is ${SAMSARA_ELB_DNS}"
 echo "Samsara ELB DNS zoneId is ${SAMSARA_ELB_ZONE_ID}"
 
-sed "s/%JENKINS_ELB_DNS%/${JENKINS_ELB_DNS}/g" "conf/template_${JENKINS_SAMSARA_DNS_RECORDS_FILE}" |
-    sed "s/%JENKINS_ELB_ZONE_ID%/${JENKINS_ELB_ZONE_ID}/g" |
-    sed "s/%SAMSARA_ELB_DNS%/${SAMSARA_ELB_DNS}/g" |
-    sed "s/%SAMSARA_ELB_ZONE_ID%/${SAMSARA_ELB_ZONE_ID}/g" > ${JENKINS_SAMSARA_DNS_RECORDS_FILE}
+sed "s/%SAMSARA_ELB_DNS%/${SAMSARA_ELB_DNS}/g" "conf/template_${SAMSARA_DNS_RECORDS_FILE}" |
+    sed "s/%SAMSARA_ELB_ZONE_ID%/${SAMSARA_ELB_ZONE_ID}/g" > ${SAMSARA_DNS_RECORDS_FILE}
 
-aws route53 change-resource-record-sets --hosted-zone-id ${HOSTED_ZONE_ID} --change-batch "file://${JENKINS_SAMSARA_DNS_RECORDS_FILE}"
+aws route53 change-resource-record-sets --hosted-zone-id ${HOSTED_ZONE_ID} --change-batch "file://${SAMSARA_DNS_RECORDS_FILE}"
 # aws route53 get-change --id <place-change-id-here>
+# sudo systemd-resolve --flush-caches
