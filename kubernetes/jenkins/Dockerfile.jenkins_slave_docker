@@ -15,7 +15,7 @@ ENV JENKINS_HOME=${JENKINS_HOME} \
 
 USER root
 RUN apk add --update --no-cache curl \
-                                ca-certificates & \
+                                ca-certificates && \
     addgroup -g 1000 -S docker && \
     addgroup jenkins docker && \
     addgroup jenkins ping

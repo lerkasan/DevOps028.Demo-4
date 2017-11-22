@@ -6,13 +6,13 @@ export AWS_DEFAULT_REGION="us-west-2"
 
 JENKINS_REGISTRY_CLUSTER="jenkins"
 REGISTRY_URL="registry.lerkasan.de"
-REGISTRY_DNS_RECORDS_FILE="conf/registry_dns_records.json"
+REGISTRY_DNS_RECORDS_FILE="registry_dns_records.json"
 REGISTRY_LOGIN="lerkasan"
 REGISTRY_PASSWORD="J*t47X8#RmF2"
-JENKINS_SAMSARA_DNS_RECORDS_FILE="conf/jenkins_samsara_dns_records.json"
+JENKINS_SAMSARA_DNS_RECORDS_FILE="jenkins_samsara_dns_records.json"
 HOSTED_ZONE_ID="ZZ3Z055672IF0"
 PATH_TO_TLS="/etc/letsencrypt/live/registry.lerkasan.de"
-PATH_TO_PASS="/home/lerkasan/auth/htpasswd"
+PATH_TO_PASS="/home/lerkasan/auth"
 
 function get_loadbalancer_name {
     kubectl describe svc $1 --namespace=$1 | grep Ingress | awk '{print $3}' | awk -F "-" '{print $1}'
@@ -88,7 +88,7 @@ echo "Registry ELB name is ${REGISTRY_ELB_NAME}"
 echo "Registry ELB DNS is ${REGISTRY_ELB_DNS}"
 echo "Registry ELB DNS zoneId is ${REGISTRY_ELB_ZONE_ID}"
 
-sed "s/%REGISTRY_ELB_DNS%/${REGISTRY_ELB_DNS}/g" "template_${REGISTRY_DNS_RECORDS_FILE}" |
+sed "s/%REGISTRY_ELB_DNS%/${REGISTRY_ELB_DNS}/g" "conf/template_${REGISTRY_DNS_RECORDS_FILE}" |
     sed "s/%REGISTRY_ELB_ZONE_ID%/${REGISTRY_ELB_ZONE_ID}/g" > ${REGISTRY_DNS_RECORDS_FILE}
 aws route53 change-resource-record-sets --hosted-zone-id ${HOSTED_ZONE_ID} --change-batch "file://${REGISTRY_DNS_RECORDS_FILE}"
 
@@ -165,7 +165,7 @@ echo "Samsara ELB name is ${SAMSARA_ELB_NAME}"
 echo "Samsara ELB DNS is ${SAMSARA_ELB_DNS}"
 echo "Samsara ELB DNS zoneId is ${SAMSARA_ELB_ZONE_ID}"
 
-sed "s/%JENKINS_ELB_DNS%/${JENKINS_ELB_DNS}/g" "template_${JENKINS_SAMSARA_DNS_RECORDS_FILE}" |
+sed "s/%JENKINS_ELB_DNS%/${JENKINS_ELB_DNS}/g" "conf/template_${JENKINS_SAMSARA_DNS_RECORDS_FILE}" |
     sed "s/%JENKINS_ELB_ZONE_ID%/${JENKINS_ELB_ZONE_ID}/g" |
     sed "s/%SAMSARA_ELB_DNS%/${SAMSARA_ELB_DNS}/g" |
     sed "s/%SAMSARA_ELB_ZONE_ID%/${SAMSARA_ELB_ZONE_ID}/g" > ${JENKINS_SAMSARA_DNS_RECORDS_FILE}
