@@ -40,7 +40,9 @@ RUN sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" liquibase/liquibase.properties.template
 
 USER demo3
 
-CMD bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defaultsFile=liquibase/liquibase.properties update && \
+CMD ls -alh ${JAVA_HOME}/jre/lib/management && \
+    ls -alh ${JAVA_HOME}/jre/lib && \
+    bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defaultsFile=liquibase/liquibase.properties update && \
     java -Dcom.sun.management.jmxremote.port=7199 \
          -Dcom.sun.management.jmxremote.ssl=false \
          -jar *.jar
