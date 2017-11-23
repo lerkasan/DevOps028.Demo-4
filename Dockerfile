@@ -15,6 +15,7 @@ ENV DB_PASS ${DB_PASS}
 ENV LOGIN_HOST localhost
 
 EXPOSE 9000
+EXPOSE 7199
 
 USER root
 
@@ -46,6 +47,6 @@ CMD bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defa
          -Dcom.sun.management.jmxremote.authenticate=true \
          -Dcom.sun.management.jmxremote.password.file="${JAVA_HOME}/jre/lib/management/jmxremote.password" \
          -Dcom.sun.management.jmxremote.ssl=false \
-         -Djava.rmi.server.hostname=samsara.lerkasan.de \
+         -Djava.rmi.server.hostname=localhost \
          -Dcom.sun.management.jmxremote.rmi.port=7199 \
          -jar *.jar

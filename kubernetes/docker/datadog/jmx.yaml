@@ -10,7 +10,7 @@ instances:
 
 #    jmx_url: "service:jmx:rmi:///jndi/rmi://myhost.host:9999/custompath" # optional
 
-    name: jmx_instance  # optional
+#    name: jmx_instance  # optional
 #    java_bin_path: /usr/lib/jvm/jdk1.8.0_152/bin/java
 #    java_options: "-Xmx200m -Xms50m"
 #    trust_store_path: /path/to/trustStore.jks

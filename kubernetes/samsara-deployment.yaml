@@ -8,6 +8,8 @@ spec:
   ports:
     - port: 80
       targetPort: 9000
+    - port: 7199
+      targetPort: 7199
   selector:
     app: samsara
     tier: backend

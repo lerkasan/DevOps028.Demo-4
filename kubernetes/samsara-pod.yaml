@@ -11,6 +11,7 @@ spec:
     imagePullPolicy: "Always"
     ports:
       - containerPort: 9000
+      - containerPort: 7199
     env:
       - name: DB_HOST
         value: samsara-postgres
