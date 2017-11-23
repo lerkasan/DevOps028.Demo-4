@@ -28,6 +28,7 @@ RUN apt-get update -y && \
 
 WORKDIR /home/samsara
 
+COPY kubernetes/docker/datadog/jmx.yaml /etc/dd-agent/conf.d/jmx.yaml
 COPY ${ARTIFACT_FILENAME} .
 COPY liquibase ./liquibase
 

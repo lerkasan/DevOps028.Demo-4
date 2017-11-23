@@ -8,8 +8,9 @@ spec:
   ports:
     - port: 80
       targetPort: 9000
+      name: http
     - port: 7199
-      targetPort: 7199
+      name: jmx
   selector:
     app: samsara
     tier: backend
