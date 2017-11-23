@@ -5,6 +5,10 @@ export AWS_DEFAULT_REGION="us-west-2"
 # export AWS_ACCESS_KEY_ID=`get_from_parameter_store "jenkins_access_key_id"`
 
 JENKINS_REGISTRY_CLUSTER="jenkins"
+JENKINS_NAMESPACE="jenkins"
+SAMSARA_CLUSTER="samsara"
+SAMSARA_NAMESPACE="samsara"
+REGISTRY_NAMESPACE="registry"
 REGISTRY_URL="registry.lerkasan.de"
 REGISTRY_LOGIN="lerkasan"
 REGISTRY_PASSWORD="J*t47X8#RmF2"
@@ -78,7 +82,7 @@ for INSTANCE in ${REGISTRY_EC2_INSTANCES}; do
     scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_rsa "${PATH_TO_PASS}/htpasswd" "admin@${INSTANCE}:/home/admin/htpasswd"
 done
 
-kubectl apply -f "registry-deployment.yaml" --namespace=registry
+kubectl apply -f "registry-deployment.yaml" --namespace=${REGISTRY_NAMESPACE}
 
 REGISTRY_ELB_NAME=`get_loadbalancer_name registry`
 REGISTRY_ELB_DNS=`get_loadbalancer_dns registry`
@@ -128,9 +132,9 @@ docker push "${REGISTRY_URL}:5000/jenkins-slave-mvn:latest"
 docker push "${REGISTRY_URL}:5000/jenkins-slave-docker:latest"
 docker push "${REGISTRY_URL}:5000/jenkins-slave-kops:latest"
 
-kubectl create secret docker-registry registry-pass --docker-server=${REGISTRY_URL}:5000 --docker-username=lerkasan --docker-password="J*t47X8#RmF2" --docker-email=lerkasan@gmail.com --namespace=jenkins
-kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "registry-pass"}]}' --namespace=jenkins
-kubectl apply -f "jenkins-deployment.yaml" --namespace=jenkins
+kubectl create secret docker-registry registry-pass --docker-server=${REGISTRY_URL}:5000 --docker-username=lerkasan --docker-password="J*t47X8#RmF2" --docker-email=lerkasan@gmail.com --namespace=${JENKINS_NAMESPACE}
+kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "registry-pass"}]}' --namespace=${JENKINS_NAMESPACE}
+kubectl apply -f "jenkins-deployment.yaml" --namespace=${JENKINS_NAMESPACE}
 
 JENKINS_ELB_NAME=`get_loadbalancer_name jenkins`
 JENKINS_ELB_DNS=`get_loadbalancer_dns jenkins`
@@ -154,15 +158,22 @@ docker login "${REGISTRY_URL}:5000" -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
 docker push "${REGISTRY_URL}:5000/jdk8:152"
 docker push "${REGISTRY_URL}:5000/samsara-db:latest"
 
-create_cluster samsara
-kubectl create namespace samsara
-kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword --namespace=samsara
-kubectl create secret docker-registry registry-pass --docker-server=${REGISTRY_URL}:5000 --docker-username=lerkasan --docker-password="J*t47X8#RmF2" --docker-email=lerkasan@gmail.com --namespace=samsara
-kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "registry-pass"}]}' --namespace=samsara
-kubectl apply -f "database-deployment.yaml" --namespace=samsara
-kubectl apply -f "samsara-deployment.yaml" --namespace=samsara
-kubectl apply -f "samsara-pod.yaml" --namespace=samsara
-kubectl apply -f "docker/datadog/dd_agent_kubernetes.yaml" --namespace=samsara
+create_cluster ${SAMSARA_CLUSTER}
+kubectl create namespace ${SAMSARA_NAMESPACE}
+kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword --namespace=${SAMSARA_NAMESPACE}
+kubectl create secret docker-registry registry-pass --docker-server=${REGISTRY_URL}:5000 --docker-username=lerkasan --docker-password="J*t47X8#RmF2" --docker-email=lerkasan@gmail.com --namespace=${SAMSARA_NAMESPACE}
+kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "registry-pass"}]}' --namespace=${SAMSARA_NAMESPACE}
+kubectl apply -f "database-deployment.yaml" --namespace=${SAMSARA_NAMESPACE}
+kubectl apply -f "samsara-deployment.yaml" --namespace=${SAMSARA_NAMESPACE}
+kubectl apply -f "samsara-pod.yaml" --namespace=${SAMSARA_NAMESPACE}
+kubectl apply -f "docker/datadog/dd_agent_kubernetes.yaml" --namespace=${SAMSARA_NAMESPACE}
+
+SAMSARA_EC2_INSTANCES=`aws ec2 describe-instances --filters "Name=tag:Name,Values=nodes.${SAMSARA_CLUSTER}.lerkasan.de" \
+--query 'Reservations[*].Instances[*].[PublicDnsName]' --output text | grep -v -e terminated -e shutting-down`
+
+for INSTANCE in ${SAMSARA_EC2_INSTANCES}; do
+    scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_rsa "docker/datadog/kubernetes.yaml" "admin@${INSTANCE}:/etc/dd-agent/conf.d/kubernetes.yaml"
+done
 
 SAMSARA_ELB_NAME=`get_loadbalancer_name samsara`
 SAMSARA_ELB_DNS=`get_loadbalancer_dns samsara`

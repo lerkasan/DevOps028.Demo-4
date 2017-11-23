@@ -1,7 +1,6 @@
 init_config:
-#  custom_jar_paths: # optional
-#    - /path/to/custom/jarfile.jar
-  #is_jmx: true
+  is_jmx: true
+  collect_default_metrics: true
 
 instances:
   - host: localhost
@@ -19,7 +18,7 @@ instances:
 
     process_name_regex: .*process_name.*
     tools_jar_path: /usr/lib/jvm/jdk1.8.0_152/lib/tools.jar
-    refresh_beans: 600 # optional (in seconds)
+    refresh_beans: 60 # optional (in seconds)
     tags:
       env: stage
       newTag: samsara

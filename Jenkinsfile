@@ -64,8 +64,9 @@ podTemplate(
                     sh "docker login ${REGISTRY_URL} -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}"
                     sh "docker build -t samsara-webapp:latest -t samsara-webapp:${env.BUILD_NUMBER} --build-arg ARTIFACT_FILENAME=${ARTIFACT_FILENAME} --pull ."
                     sh "docker tag samsara-webapp:latest ${REGISTRY_URL}/samsara-webapp:latest"
-                    sh "docker tag samsara-webapp:latest ${REGISTRY_URL}/samsara-webapp:${env.BUILD_NUMBER}"
+                    sh "docker tag samsara-webapp:${env.BUILD_NUMBER} ${REGISTRY_URL}/samsara-webapp:${env.BUILD_NUMBER}"
                     sh "docker push ${REGISTRY_URL}/samsara-webapp:latest"
+                    sh "docker push ${REGISTRY_URL}/samsara-webapp:${env.BUILD_NUMBER}"
                     sh "docker rmi -f `docker images -q` | true"
                 }
             }
