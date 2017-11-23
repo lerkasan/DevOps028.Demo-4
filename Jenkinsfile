@@ -76,6 +76,8 @@ podTemplate(
                     def CLUSTER_NAME = "${NAME}.lerkasan.de"
                     def KOPS_STATE_STORE = "s3://${NAME}-cluster-state"
                     sh "aws s3 cp ${KOPS_STATE_STORE}/kube-config ~/.kube/config"
+                    // Adding current datetime annotation patch forces kubernetes to do rolling-update of samsara and pull latest image from registry
+                    sh 'kubectl patch deployment samsara -p "{\\"spec\\":{\\"template\\":{\\"metadata\\":{\\"annotations\\":{\\"date\\":\\"`date +\'%s\'`\\"}}}}}"'
                     sh "kops rolling-update cluster ${CLUSTER_NAME} --state ${KOPS_STATE_STORE} --yes"
                     sleep time: 120, unit: 'SECONDS'
 
