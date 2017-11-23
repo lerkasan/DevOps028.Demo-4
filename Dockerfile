@@ -46,4 +46,6 @@ CMD bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defa
          -Dcom.sun.management.jmxremote.authenticate=true \
          -Dcom.sun.management.jmxremote.password.file="${JAVA_HOME}/jre/lib/management/jmxremote.password" \
          -Dcom.sun.management.jmxremote.ssl=false \
+         -Djava.rmi.server.hostname=samsara.lerkasan.de \
+         -Dcom.sun.management.jmxremote.rmi.port=7199 \
          -jar *.jar

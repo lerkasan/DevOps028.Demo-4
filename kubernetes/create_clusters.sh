@@ -166,7 +166,7 @@ kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "registr
 kubectl apply -f "database-deployment.yaml" --namespace=${SAMSARA_NAMESPACE}
 kubectl apply -f "samsara-deployment.yaml" --namespace=${SAMSARA_NAMESPACE}
 kubectl apply -f "samsara-pod.yaml" --namespace=${SAMSARA_NAMESPACE}
-kubectl apply -f "docker/datadog/dd_agent_kubernetes.yaml" --namespace=${SAMSARA_NAMESPACE}
+kubectl apply -f "docker/datadog/dd_agent_kubernetes.yaml"
 
 SAMSARA_EC2_INSTANCES=`aws ec2 describe-instances --filters "Name=tag:Name,Values=nodes.${SAMSARA_CLUSTER}.lerkasan.de" \
 --query 'Reservations[*].Instances[*].[PublicDnsName]' --output text | grep -v -e terminated -e shutting-down`
