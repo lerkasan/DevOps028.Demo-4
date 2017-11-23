@@ -1,4 +1,5 @@
-FROM registry.lerkasan.de:5000/jdk8:152
+# FROM registry.lerkasan.de:5000/jdk8:152
+FROM jdk8:152
 
 ARG DB_HOST=samsara-postgres
 ARG DB_PORT=5432
@@ -16,11 +17,6 @@ ENV LOGIN_HOST localhost
 
 EXPOSE 9000
 
-WORKDIR /home/demo3
-
-COPY ${ARTIFACT_FILENAME} .
-COPY liquibase ./liquibase
-
 USER root
 
 RUN apt-get update -y && \
@@ -30,6 +26,10 @@ RUN apt-get update -y && \
     apt-get update && \
     apt-get install datadog-agent
 
+WORKDIR /home/samsara
+
+COPY ${ARTIFACT_FILENAME} .
+COPY liquibase ./liquibase
 
 RUN sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" liquibase/liquibase.properties.template | \
         sed "s/%DB_HOST%/${DB_HOST}/g" | \
@@ -38,11 +38,9 @@ RUN sed "s/%LOGIN_HOST%/${LOGIN_HOST}/g" liquibase/liquibase.properties.template
         sed "s/%DB_USER%/${DB_USER}/g" | \
         sed "s/%DB_PASS%/${DB_PASS}/g" > liquibase/liquibase.properties
 
-USER demo3
+USER samsara
 
-CMD ls -alh ${JAVA_HOME}/jre/lib/management && \
-    ls -alh ${JAVA_HOME}/jre/lib && \
-    bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defaultsFile=liquibase/liquibase.properties update && \
+CMD bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defaultsFile=liquibase/liquibase.properties update && \
     java -Dcom.sun.management.jmxremote.port=7199 \
          -Dcom.sun.management.jmxremote.ssl=false \
          -jar *.jar
