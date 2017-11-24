@@ -66,11 +66,13 @@ function create_cluster {
 }
 
 
+# Create Kubernetes cluster for Jenkins and Registry
 create_cluster ${JENKINS_REGISTRY_CLUSTER}
 aws iam  attach-role-policy --role-name "nodes.${JENKINS_REGISTRY_CLUSTER}.lerkasan.de" --policy-arn arn:aws:iam::370535134506:policy/jenkins-nodes-kops
 kubectl create namespace registry
 kubectl create namespace jenkins
 
+# Copy TLS certificate and private key for registry domain to kubernetes nodes
 REGISTRY_EC2_INSTANCES=`aws ec2 describe-instances --filters "Name=tag:Name,Values=nodes.${JENKINS_REGISTRY_CLUSTER}.lerkasan.de" \
 --query 'Reservations[*].Instances[*].[PublicDnsName]' --output text | grep -v -e terminated -e shutting-down`
 
@@ -82,8 +84,10 @@ for INSTANCE in ${REGISTRY_EC2_INSTANCES}; do
     scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_rsa "${PATH_TO_PASS}/htpasswd" "admin@${INSTANCE}:/home/admin/htpasswd"
 done
 
+# Deploy Registry to Kubernetes cluster
 kubectl apply -f "registry-deployment.yaml" --namespace=${REGISTRY_NAMESPACE}
 
+# Set alias record in DNS for Registry loadbalancer
 REGISTRY_ELB_NAME=`get_loadbalancer_name registry`
 REGISTRY_ELB_DNS=`get_loadbalancer_dns registry`
 REGISTRY_ELB_ZONE_ID=`get_loadbalancer_zoneid ${REGISTRY_ELB_NAME}`
@@ -96,6 +100,7 @@ sed "s/%REGISTRY_ELB_DNS%/${REGISTRY_ELB_DNS}/g" "conf/template_${REGISTRY_DNS_R
     sed "s/%REGISTRY_ELB_ZONE_ID%/${REGISTRY_ELB_ZONE_ID}/g" > ${REGISTRY_DNS_RECORDS_FILE}
 aws route53 change-resource-record-sets --hosted-zone-id ${HOSTED_ZONE_ID} --change-batch "file://${REGISTRY_DNS_RECORDS_FILE}"
 
+# Build images for Jenkins
 docker build -t jenkins-master:latest -f jenkins/Dockerfile.jenkins_master jenkins
 docker tag jenkins-master:latest "${REGISTRY_URL}:5000/jenkins-master:latest"
 
@@ -111,6 +116,7 @@ docker tag jenkins-slave-docker:latest "${REGISTRY_URL}:5000/jenkins-slave-docke
 docker build -t jenkins-slave-kops:latest -f jenkins/Dockerfile.jenkins_slave_kops jenkins
 docker tag jenkins-slave-kops:latest "${REGISTRY_URL}:5000/jenkins-slave-kops:latest"
 
+# Wait for Registry domain to be available
 sleep 600
 MAX_RETRIES=50
 RETRIES=0
@@ -125,6 +131,7 @@ while [[ -z `dig A ${REGISTRY_URL} | grep "NOERROR"` ]] && [ ${RETRIES} -lt ${MA
     sleep 120
 done
 
+# Push Jenkins images to Registry
 docker login "${REGISTRY_URL}:5000" -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
 docker push "${REGISTRY_URL}:5000/jenkins-master:latest"
 # docker push "${REGISTRY_URL}:5000/jenkins-slave:latest"
@@ -132,10 +139,12 @@ docker push "${REGISTRY_URL}:5000/jenkins-slave-mvn:latest"
 docker push "${REGISTRY_URL}:5000/jenkins-slave-docker:latest"
 docker push "${REGISTRY_URL}:5000/jenkins-slave-kops:latest"
 
+# Deploy Jenkins to Kubernetes cluster
 kubectl create secret docker-registry registry-pass --docker-server=${REGISTRY_URL}:5000 --docker-username=lerkasan --docker-password="J*t47X8#RmF2" --docker-email=lerkasan@gmail.com --namespace=${JENKINS_NAMESPACE}
 kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "registry-pass"}]}' --namespace=${JENKINS_NAMESPACE}
 kubectl apply -f "jenkins-deployment.yaml" --namespace=${JENKINS_NAMESPACE}
 
+# Set alias record in DNS for Jenkins loadbalancer
 JENKINS_ELB_NAME=`get_loadbalancer_name jenkins`
 JENKINS_ELB_DNS=`get_loadbalancer_dns jenkins`
 JENKINS_ELB_ZONE_ID=`get_loadbalancer_zoneid ${JENKINS_ELB_NAME}`
@@ -148,6 +157,7 @@ sed "s/%JENKINS_ELB_DNS%/${JENKINS_ELB_DNS}/g" "conf/template_${JENKINS_DNS_RECO
     sed "s/%JENKINS_ELB_ZONE_ID%/${JENKINS_ELB_ZONE_ID}/g" > ${JENKINS_DNS_RECORDS_FILE}
 aws route53 change-resource-record-sets --hosted-zone-id ${HOSTED_ZONE_ID} --change-batch "file://${JENKINS_DNS_RECORDS_FILE}"
 
+# Build and push to Registry images with dependences for web application
 docker build -t jdk8:152 -f docker/Dockerfile.jdk docker
 docker tag jdk8:152 "${REGISTRY_URL}:5000/jdk8:152"
 
@@ -158,7 +168,10 @@ docker login "${REGISTRY_URL}:5000" -u ${REGISTRY_LOGIN} -p ${REGISTRY_PASSWORD}
 docker push "${REGISTRY_URL}:5000/jdk8:152"
 docker push "${REGISTRY_URL}:5000/samsara-db:latest"
 
+# Create Kubernetes cluster for Samsara web application
 create_cluster ${SAMSARA_CLUSTER}
+
+# Deploy web application to cluster
 kubectl create namespace ${SAMSARA_NAMESPACE}
 kubectl create secret generic dbuser-pass --from-literal=password=mysecretpassword --namespace=${SAMSARA_NAMESPACE}
 kubectl create secret docker-registry registry-pass --docker-server=${REGISTRY_URL}:5000 --docker-username=lerkasan --docker-password="J*t47X8#RmF2" --docker-email=lerkasan@gmail.com --namespace=${SAMSARA_NAMESPACE}
@@ -166,8 +179,11 @@ kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "registr
 kubectl apply -f "database-deployment.yaml" --namespace=${SAMSARA_NAMESPACE}
 kubectl apply -f "samsara-deployment.yaml" --namespace=${SAMSARA_NAMESPACE}
 kubectl apply -f "samsara-pod.yaml" --namespace=${SAMSARA_NAMESPACE}
+
+# Deploy Datadog agent to the nodes of webapp cluster
 kubectl apply -f "docker/datadog/dd_agent_kubernetes.yaml"
 
+# Copy Datadog agent config to cluster nodes
 SAMSARA_EC2_INSTANCES=`aws ec2 describe-instances --filters "Name=tag:Name,Values=nodes.${SAMSARA_CLUSTER}.lerkasan.de" \
 --query 'Reservations[*].Instances[*].[PublicDnsName]' --output text | grep -v -e terminated -e shutting-down`
 
@@ -175,6 +191,7 @@ for INSTANCE in ${SAMSARA_EC2_INSTANCES}; do
     scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i ~/.ssh/id_rsa "docker/datadog/kubernetes.yaml" "admin@${INSTANCE}:/etc/dd-agent/conf.d/kubernetes.yaml"
 done
 
+# Set alias record in DNS for Samsara webapp loadbalancer
 SAMSARA_ELB_NAME=`get_loadbalancer_name samsara`
 SAMSARA_ELB_DNS=`get_loadbalancer_dns samsara`
 SAMSARA_ELB_ZONE_ID=`get_loadbalancer_zoneid ${SAMSARA_ELB_NAME}`

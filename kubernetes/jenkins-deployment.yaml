@@ -98,7 +98,7 @@ spec:
       - name: registry-pass
       containers:
       - image: registry.lerkasan.de:5000/jenkins-master:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: "Always"
         name: jenkins
         ports:
         - containerPort: 8080
