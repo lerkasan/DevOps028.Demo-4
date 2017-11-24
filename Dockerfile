@@ -17,18 +17,8 @@ ENV LOGIN_HOST localhost
 EXPOSE 9000
 EXPOSE 7199
 
-USER root
-
-RUN apt-get update -y && \
-    apt-get install -y apt-transport-https && \
-    sh -c "echo 'deb https://apt.datadoghq.com/ stable main' > /etc/apt/sources.list.d/datadog.list" && \
-    apt-key adv --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 C7A7DA52 && \
-    apt-get update && \
-    apt-get install datadog-agent
-
 WORKDIR /home/samsara
 
-COPY kubernetes/docker/datadog/jmx.yaml /etc/dd-agent/conf.d/jmx.yaml
 COPY ${ARTIFACT_FILENAME} .
 COPY liquibase ./liquibase
 
@@ -48,6 +38,6 @@ CMD bin/liquibase --changeLogFile=liquibase/changelogs/changelog-main.xml --defa
          -Dcom.sun.management.jmxremote.authenticate=true \
          -Dcom.sun.management.jmxremote.password.file="${JAVA_HOME}/jre/lib/management/jmxremote.password" \
          -Dcom.sun.management.jmxremote.ssl=false \
-         -Djava.rmi.server.hostname=localhost \
+         -Djava.rmi.server.hostname=samsara.lerkasan.de \
          -Dcom.sun.management.jmxremote.rmi.port=7199 \
          -jar *.jar
